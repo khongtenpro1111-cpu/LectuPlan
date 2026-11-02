@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="6dp"
+    app:strokeWidth="0dp"
+    app:cardBackgroundColor="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Tiêu đề Dialog -->
+        <TextView
+            android:id="@+id/tvDialogHeaderTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📝 THÊM CÔNG VIỆC / SỰ KIỆN"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:textColor="#1E3A8A" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Nhập thông tin lịch biểu công việc giảng dạy"
+            android:textSize="12sp"
+            android:textColor="#64748B"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Ô nhập STT -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="STT (Số thứ tự)"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#334155"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/edtStt"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_search_input"
+            android:hint="Ví dụ: 1, 2, 3..."
+            android:inputType="number"
+            android:maxLength="3"
+            android:paddingHorizontal="14dp"
+            android:textSize="13sp"
+            android:textColor="#1E293B"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Ô nhập Tên sự kiện -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tên sự kiện / Lớp giảng dạy *"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#334155"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/edtTitle"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_search_input"
+            android:hint="Tên sự kiện / Lớp / Hội đồng (Tối đa 100 ký tự)"
+            android:inputType="textCapSentences"
+            android:maxLength="100"
+            android:paddingHorizontal="14dp"
+            android:textSize="13sp"
+            android:textColor="#1E293B"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Ô chọn Ngày tổ chức -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ngày tổ chức *"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#334155"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/edtDate"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_search_input"
+            android:hint="📅 Bấm để chọn ngày tổ chức"
+            android:focusable="false"
+            android:clickable="true"
+            android:paddingHorizontal="14dp"
+            android:textSize="13sp"
+            android:textColor="#1E293B"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Ô nhập Người tổ chức -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Đơn vị / Người tổ chức"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#334155"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/edtOrganizer"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_search_input"
+            android:hint="👤 Tên người / Đơn vị giao việc"
+            android:inputType="textCapWords"
+            android:maxLength="50"
+            android:paddingHorizontal="14dp"
+            android:textSize="13sp"
+            android:textColor="#1E293B"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Hàng nút bấm Hủy & Lưu -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnCancelDialog"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:text="Hủy"
+                android:textColor="#64748B"
+                android:backgroundTint="#F1F5F9"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                app:cornerRadius="12dp" />
+
+            <Button
+                android:id="@+id/btnSaveDialog"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1.2"
+                android:layout_marginStart="10dp"
+                android:text="Lưu công việc"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#2563EB"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                app:cornerRadius="12dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

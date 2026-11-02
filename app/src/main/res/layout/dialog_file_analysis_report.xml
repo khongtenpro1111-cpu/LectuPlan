@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="8dp"
+    app:strokeWidth="0dp"
+    app:cardBackgroundColor="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Tiêu đề hộp thoại -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/tvFileAnalysisTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="🔍 XEM NỘI DUNG &amp; PHÂN TÍCH FILE"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="#1E3A8A" />
+
+            <ImageButton
+                android:id="@+id/btnCloseAnalysisTop"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Đóng"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                app:tint="#64748B" />
+        </LinearLayout>
+
+        <!-- Vùng cuộn toàn bộ thông tin + Hình ảnh trang PDF/Ảnh + Văn bản bóc tách đầy đủ không bị che -->
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true"
+            android:scrollbars="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Badge loại file & trạng thái ghi tay / đánh máy -->
+                <TextView
+                    android:id="@+id/tvFileAnalysisBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#EDE9FE"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="5dp"
+                    android:text="✍️ PHÁT HIỆN TÀI LIỆU CÓ CHỮ GHI TAY"
+                    android:textColor="#6D28D9"
+                    android:textSize="11.5sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- Thông tin phân tích chi tiết -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="#F8FAFC"
+                    android:padding="10dp"
+                    android:layout_marginBottom="10dp">
+
+                    <TextView
+                        android:id="@+id/tvFileAnalysisMeta"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="• Tên file: ...\n• Định dạng: ..."
+                        android:textColor="#334155"
+                        android:textSize="12sp"
+                        android:lineSpacingExtra="3dp" />
+                </LinearLayout>
+
+                <!-- Khung hiển thị trực tiếp các trang PDF hoặc Ảnh chụp (nếu là file PDF / Ảnh) -->
+                <LinearLayout
+                    android:id="@+id/layoutFileVisualPreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:layout_marginBottom="10dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="📋 TOÀN BỘ NỘI DUNG CHI TIẾT TRONG FILE:"
+                    android:textColor="#0F172A"
+                    android:textSize="12.5sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="6dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#F1F5F9"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:id="@+id/tvFileAnalysisContent"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="#0F172A"
+                        android:textSize="13sp"
+                        android:textIsSelectable="true"
+                        android:lineSpacingExtra="4dp" />
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <!-- Hàng nút Tải file về máy + Mở bằng ứng dụng ngoài -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp">
+
+            <Button
+                android:id="@+id/btnDownloadFileReport"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:minHeight="44dp"
+                android:layout_weight="1"
+                android:text="⬇️ Tải file về máy"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#059669"
+                android:textSize="11.5sp"
+                android:textStyle="bold"
+                android:paddingHorizontal="6dp"
+                app:cornerRadius="10dp" />
+
+            <Button
+                android:id="@+id/btnOpenExternalReport"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:minHeight="44dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="👁️ Mở bằng App khác"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#2563EB"
+                android:textSize="11.5sp"
+                android:textStyle="bold"
+                android:paddingHorizontal="6dp"
+                app:cornerRadius="10dp" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnCloseAnalysisBottom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="42dp"
+            android:layout_marginTop="6dp"
+            android:text="✅ Đóng cửa sổ"
+            android:textColor="#334155"
+            android:backgroundTint="#E2E8F0"
+            android:textSize="12.5sp"
+            android:textStyle="bold"
+            app:cornerRadius="10dp" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/cellCalendarRoot"
+    android:layout_width="match_parent"
+    android:layout_height="46dp"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:clickable="true"
+    android:focusable="true">
+
+    <TextView
+        android:id="@+id/tvDayNumber"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:gravity="center"
+        android:textSize="13sp"
+        android:textColor="#1E293B"
+        android:text="15" />
+
+    <!-- Container chứa các dấu chấm tròn nhỏ phía dưới ngày -->
+    <LinearLayout
+        android:id="@+id/layoutDots"
+        android:layout_width="wrap_content"
+        android:layout_height="6dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="1dp">
+
+        <!-- Dấu chấm 1: Xanh lá (Lịch dạy/học) -->
+        <View
+            android:id="@+id/dotWork"
+            android:layout_width="5dp"
+            android:layout_height="5dp"
+            android:layout_marginHorizontal="1.5dp"
+            android:background="@drawable/bg_dot_work"
+            android:visibility="gone" />
+
+        <!-- Dấu chấm 2: Cam (Họp/thi/hội đồng) -->
+        <View
+            android:id="@+id/dotMeeting"
+            android:layout_width="5dp"
+            android:layout_height="5dp"
+            android:layout_marginHorizontal="1.5dp"
+            android:background="@drawable/bg_dot_meeting"
+            android:visibility="gone" />
+
+        <!-- Dấu chấm 3: Tím (Viết tay / OCR) -->
+        <View
+            android:id="@+id/dotHandwritten"
+            android:layout_width="5dp"
+            android:layout_height="5dp"
+            android:layout_marginHorizontal="1.5dp"
+            android:background="@drawable/bg_dot_handwritten"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</LinearLayout>
