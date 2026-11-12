@@ -32,8 +32,7 @@ public class VersionCheckHelper {
     private static final String KEY_LAST_VERSION_CODE = "key_last_version_code";
 
     // 🌐 ĐƯỜNG DẪN CẤU HÌNH KIỂM TRA BẢN CẬP NHẬT TRỰC TUYẾN
-    // Bạn có thể thay đổi đường dẫn bên dưới thành link GitHub Raw, Firebase, hoặc Server của bạn chứa file version.json
-    public static final String DEFAULT_UPDATE_CONFIG_URL = "https://raw.githubusercontent.com/tkyl/LectuPlan/main/version.json";
+    public static final String DEFAULT_UPDATE_CONFIG_URL = "https://raw.githubusercontent.com/khongtenpro1111-cpu/LectuPlan/main/version.json";
 
     public static int getCurrentVersionCode(Context context) {
         try {
