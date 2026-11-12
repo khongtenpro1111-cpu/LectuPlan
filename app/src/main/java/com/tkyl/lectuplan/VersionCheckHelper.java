@@ -131,9 +131,13 @@ public class VersionCheckHelper {
                     in.close();
 
                     JSONObject json = new JSONObject(response.toString());
-                    int remoteVersionCode = json.optInt("latest_version_code", 3);
-                    String remoteVersionName = json.optString("latest_version_name", "1.1.1");
-                    String apkUrl = json.optString("apk_url", "");
+                    int remoteVersionCode = json.optInt("latest_version_code", 4);
+                    String remoteVersionName = json.optString("latest_version_name", "1.1.2");
+                    String rawApkUrl = json.optString("apk_url", json.optString("apk_download_url", "https://github.com/khongtenpro1111-cpu/LectuPlan/raw/main/LectuPlan.apk"));
+                    if (rawApkUrl.isEmpty()) {
+                        rawApkUrl = "https://github.com/khongtenpro1111-cpu/LectuPlan/raw/main/LectuPlan.apk";
+                    }
+                    final String apkUrl = rawApkUrl;
                     String releaseNotes = json.optString("release_notes", "Bổ sung các cải tiến và sửa lỗi hiệu năng.");
                     boolean forceUpdate = json.optBoolean("force_update", false);
 

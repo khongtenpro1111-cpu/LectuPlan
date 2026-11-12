@@ -1,7 +1,8 @@
 {
   "latest_version_code": 4,
   "latest_version_name": "1.1.2",
-  "apk_url": "https://github.com/khongtenpro1111-cpu/LectuPlan/releases/latest",
+  "apk_url": "https://github.com/khongtenpro1111-cpu/LectuPlan/raw/main/LectuPlan.apk",
+  "apk_download_url": "https://github.com/khongtenpro1111-cpu/LectuPlan/raw/main/LectuPlan.apk",
   "release_notes": "• ✨ Chỉnh sửa thông tin & thời gian linh hoạt trước khi tạo thiệp Lịch tiếp SV (Office Hours).\n• 📢 Bổ sung nút 'Báo SV' ở tất cả các vị trí thời gian trống trên toàn bộ ứng dụng.\n• 🛡️ Cơ chế co dãn chữ & cắt chữ tự động chống tràn thiệp ảnh chia sẻ.\n• 🚀 Nâng cao trải nghiệm người dùng & hiệu năng ứng dụng.",
   "force_update": false
 }
