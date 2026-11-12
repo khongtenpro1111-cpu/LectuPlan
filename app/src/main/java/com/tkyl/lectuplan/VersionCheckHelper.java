@@ -192,7 +192,7 @@ public class VersionCheckHelper {
         String currentVer = getCurrentVersionName(activity);
         new AlertDialog.Builder(activity)
                 .setTitle("🎉 ỨNG DỤNG ĐÃ Ở PHIÊN BẢN MỚI NHẤT")
-                .setMessage("Bạn đang sử dụng phiên bản LectuPlan v" + currentVer + " mới nhất.\n\nToàn bộ bộ 5 tính năng cao cấp (AI Dạy bù, Auto DND, Check-in GPS, Dự toán Thu nhập, Thiệp Office Hours, Ghi âm giọng nói) đã sẵn sàng phục vụ bạn!")
+                .setMessage("Bạn đang sử dụng phiên bản LectuPlan v" + currentVer + " mới nhất.\n\nToàn bộ bộ 5 tính năng cao cấp (Gợi ý Khung giờ Trống, Auto DND, Check-in GPS, Dự toán Thu nhập, Thiệp Office Hours, Ghi âm giọng nói) đã sẵn sàng phục vụ bạn!")
                 .setPositiveButton("Xem các tính năng mới", (dialog, which) -> {
                     showWhatsNewDialog(activity, getCurrentVersionCode(activity));
                 })
