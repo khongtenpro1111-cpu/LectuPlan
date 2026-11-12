@@ -7,8 +7,10 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
@@ -232,6 +234,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+    // Auto Check-in GPS synchronization fields
+    private boolean mIsSyncingAutoCheckinSwitch = false;
+    private boolean mPendingAutoCheckinEnable = false;
+    private BroadcastReceiver mLocationProviderReceiver;
+
     // 🌟 TÍNH NĂNG 5: Nhận diện giọng nói chuyển đổi thành văn bản (Speech-To-Text)
     private String pendingVoiceSubjectTitle = null;
     private final ActivityResultLauncher<Intent> speechToTextLauncher =
@@ -388,6 +395,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         requestNotificationPermission();
+        registerLocationProviderReceiver();
 
         dbHelper = new DatabaseHelper(this);
         dbHelper.cleanUpGarbageCvEntries();
@@ -1455,6 +1463,13 @@ public class MainActivity extends AppCompatActivity {
         if (AlarmReceiver.isAlarmRinging()) {
             showStopAlarmDialog();
         }
+        syncAutoCheckinState();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterLocationProviderReceiver();
     }
 
     private void showStopAlarmDialog() {
@@ -6281,6 +6296,108 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void registerLocationProviderReceiver() {
+        if (mLocationProviderReceiver == null) {
+            mLocationProviderReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    if (intent != null && android.location.LocationManager.PROVIDERS_CHANGED_ACTION.equals(intent.getAction())) {
+                        syncAutoCheckinState();
+                    }
+                }
+            };
+            android.content.IntentFilter filter = new android.content.IntentFilter(android.location.LocationManager.PROVIDERS_CHANGED_ACTION);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                registerReceiver(mLocationProviderReceiver, filter, Context.RECEIVER_EXPORTED);
+            } else {
+                registerReceiver(mLocationProviderReceiver, filter);
+            }
+        }
+    }
+
+    private void unregisterLocationProviderReceiver() {
+        if (mLocationProviderReceiver != null) {
+            try {
+                unregisterReceiver(mLocationProviderReceiver);
+            } catch (Exception ignored) {}
+            mLocationProviderReceiver = null;
+        }
+    }
+
+    private void syncAutoCheckinState() {
+        android.widget.CompoundButton swAutoCheckin = findViewById(R.id.swAutoCheckin);
+        if (swAutoCheckin == null) return;
+
+        boolean gpsOnDevice = AutoDndHelper.isGpsEnabledOnDevice(this);
+        boolean hasPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+
+        if (!gpsOnDevice) {
+            if (AutoDndHelper.isAutoCheckinEnabled(this)) {
+                AutoDndHelper.setAutoCheckinEnabled(this, false);
+                AutoDndScheduler.syncTodayAlarms(this);
+            }
+            setSwitchCheckedWithoutListener(swAutoCheckin, false);
+        } else {
+            if (mPendingAutoCheckinEnable && hasPermission) {
+                mPendingAutoCheckinEnable = false;
+                AutoDndHelper.setAutoCheckinEnabled(this, true);
+                AutoDndScheduler.syncTodayAlarms(this);
+                setSwitchCheckedWithoutListener(swAutoCheckin, true);
+                Toast.makeText(this, "📍 Đã tự động bật Check-in GPS!", Toast.LENGTH_SHORT).show();
+            } else {
+                boolean enabled = AutoDndHelper.isAutoCheckinEnabled(this);
+                setSwitchCheckedWithoutListener(swAutoCheckin, enabled);
+            }
+        }
+    }
+
+    private void setSwitchCheckedWithoutListener(android.widget.CompoundButton sw, boolean checked) {
+        if (sw == null) return;
+        mIsSyncingAutoCheckinSwitch = true;
+        sw.setChecked(checked);
+        mIsSyncingAutoCheckinSwitch = false;
+    }
+
+    private void showEnableGpsDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("📍 Chưa bật vị trí (GPS)")
+                .setMessage("Dịch vụ Vị trí (GPS) trên điện thoại đang tắt. Vui lòng mở Vị trí trên thiết bị trước, sau đó tính năng tự động Check-in sẽ được bật.")
+                .setPositiveButton("Mở Cài đặt Vị trí", (dialog, which) -> {
+                    try {
+                        Intent intent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                        startActivity(intent);
+                    } catch (Exception e) {
+                        Toast.makeText(this, "Không thể mở Cài đặt Vị trí!", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Hủy", (dialog, which) -> {
+                    mPendingAutoCheckinEnable = false;
+                    dialog.dismiss();
+                })
+                .setCancelable(true)
+                .show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1001) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (mPendingAutoCheckinEnable) {
+                    if (!AutoDndHelper.isGpsEnabledOnDevice(this)) {
+                        showEnableGpsDialog();
+                    } else {
+                        syncAutoCheckinState();
+                    }
+                }
+            } else {
+                mPendingAutoCheckinEnable = false;
+                Toast.makeText(this, "Bạn đã từ chối quyền Vị trí!", Toast.LENGTH_SHORT).show();
+                syncAutoCheckinState();
+            }
+        }
+    }
+
     private void setupAutoDndSettings() {
         android.widget.CompoundButton swAutoDnd = findViewById(R.id.swAutoDnd);
         android.widget.CompoundButton swAutoCheckin = findViewById(R.id.swAutoCheckin);
@@ -6300,13 +6417,32 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (swAutoCheckin != null) {
-            swAutoCheckin.setChecked(AutoDndHelper.isAutoCheckinEnabled(this));
+            syncAutoCheckinState();
             swAutoCheckin.setOnCheckedChangeListener((btn, isChecked) -> {
-                if (isChecked && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1001);
-                    btn.setChecked(false);
+                if (mIsSyncingAutoCheckinSwitch) return;
+
+                if (isChecked) {
+                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        mPendingAutoCheckinEnable = true;
+                        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1001);
+                        setSwitchCheckedWithoutListener(swAutoCheckin, false);
+                        return;
+                    }
+
+                    if (!AutoDndHelper.isGpsEnabledOnDevice(this)) {
+                        mPendingAutoCheckinEnable = true;
+                        setSwitchCheckedWithoutListener(swAutoCheckin, false);
+                        showEnableGpsDialog();
+                        return;
+                    }
+
+                    mPendingAutoCheckinEnable = false;
+                    AutoDndHelper.setAutoCheckinEnabled(this, true);
+                    AutoDndScheduler.syncTodayAlarms(this);
+                    Toast.makeText(this, "📍 Đã bật Tự động Check-in GPS!", Toast.LENGTH_SHORT).show();
                 } else {
-                    AutoDndHelper.setAutoCheckinEnabled(this, isChecked);
+                    mPendingAutoCheckinEnable = false;
+                    AutoDndHelper.setAutoCheckinEnabled(this, false);
                     AutoDndScheduler.syncTodayAlarms(this);
                 }
             });
