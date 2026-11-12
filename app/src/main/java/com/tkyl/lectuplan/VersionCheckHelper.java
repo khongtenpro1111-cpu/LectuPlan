@@ -168,18 +168,22 @@ public class VersionCheckHelper {
         });
     }
 
-    private static void showRemoteUpdateAvailableDialog(Activity activity, String newVersionName, String notes, String apkUrl, boolean forceUpdate) {
+    private static void showRemoteUpdateAvailableDialog(Activity activity, String newVersionName, String notes, String rawApkUrl, boolean forceUpdate) {
+        String targetUrl = rawApkUrl;
+        if (targetUrl == null || targetUrl.trim().isEmpty() || targetUrl.endsWith("/releases") || targetUrl.endsWith("/releases/")) {
+            targetUrl = "https://github.com/khongtenpro1111-cpu/LectuPlan/raw/main/LectuPlan.apk";
+        }
+        final String downloadUrl = targetUrl;
+
         AlertDialog.Builder builder = new AlertDialog.Builder(activity)
                 .setTitle("🚀 ĐÃ CÓ BẢN CẬP NHẬT MỚI (v" + newVersionName + ")")
                 .setMessage("Phiên bản LectuPlan v" + newVersionName + " đã có sẵn với các cải tiến:\n\n" + notes + "\n\nBạn có muốn tải bản cập nhật về ngay không?")
                 .setPositiveButton("TẢI VỀ CẬP NHẬT", (dialog, which) -> {
-                    if (apkUrl != null && !apkUrl.isEmpty()) {
-                        try {
-                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(apkUrl));
-                            activity.startActivity(intent);
-                        } catch (Exception e) {
-                            Toast.makeText(activity, "Không thể mở liên kết tải về!", Toast.LENGTH_SHORT).show();
-                        }
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl));
+                        activity.startActivity(intent);
+                    } catch (Exception e) {
+                        Toast.makeText(activity, "Không thể mở liên kết tải về!", Toast.LENGTH_SHORT).show();
                     }
                 });
 
