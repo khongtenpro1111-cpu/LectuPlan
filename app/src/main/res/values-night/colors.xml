@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Theme Semantic Colors (Dark Mode) -->
+    <color name="window_background">#0F172A</color>
+    <color name="surface_card">#1E293B</color>
+    <color name="surface_card_secondary">#334155</color>
+    <color name="surface_calendar_bg">#1E293B</color>
+    <color name="surface_calendar_header_bg">#334155</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#E2E8F0</color>
+    <color name="text_tertiary">#CBD5E1</color>
+    <color name="border_subtle">#334155</color>
+    <color name="border_default">#475569</color>
+    <color name="bottom_nav_bg">#F21E293B</color>
+    <color name="bottom_nav_card_stroke">#4064748B</color>
+    <color name="calendar_day_current_month">#FFFFFF</color>
+    <color name="calendar_day_other_month">#94A3B8</color>
+    <color name="calendar_day_selected_text">#FFFFFF</color>
+    <color name="calendar_day_today_text">#C4B5FD</color>
+    <color name="tab_header_title">#93C5FD</color>
+    <color name="search_box_bg">#1E293B</color>
+    <color name="card_header_bg">#1E293B</color>
+    <color name="nav_item_unselected_tint">#94A3B8</color>
+    <color name="nav_item_unselected_text">#CBD5E1</color>
+    <color name="chip_unselected_text">#E2E8F0</color>
+    <color name="brand_header_title">#93C5FD</color>
+
+    <!-- Accent / Status Colors (Lightened for dark background contrast) -->
+    <color name="accent_blue">#60A5FA</color>
+    <color name="accent_purple">#C4B5FD</color>
+    <color name="accent_green">#34D399</color>
+    <color name="accent_amber">#FBBF24</color>
+    <color name="accent_red">#F87171</color>
+</resources>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardTimelineSlot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="4dp"
+    android:layout_marginVertical="5dp"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="1.5dp"
+    app:strokeWidth="1.2dp"
+    app:strokeColor="@color/border_default"
+    app:cardBackgroundColor="@color/surface_card">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- Dải màu phân loại bên trái -->
+        <View
+            android:id="@+id/viewSlotLeftStrip"
+            android:layout_width="5dp"
+            android:layout_height="match_parent"
+            android:background="#16A34A" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="12dp">
+
+            <!-- Dòng 1: Thời gian [HH:mm - HH:mm] + Badge trạng thái -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tvSlotTimeDisplay"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="[07:30 - 11:35]"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:fontFamily="monospace" />
+
+                <TextView
+                    android:id="@+id/tvSlotBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#DCFCE7"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"
+                    android:text="🟢 Rảnh hoàn toàn"
+                    android:textColor="#16A34A"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Dòng 2: Tiêu đề slot / Tên môn / Trạng thái trống -->
+            <TextView
+                android:id="@+id/tvSlotTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="[HUTECH] Thực hành lập trình Web (Lớp 23DTHC3)"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <!-- Dòng 3: Chi tiết địa điểm / Cơ sở / Tiết học -->
+            <TextView
+                android:id="@+id/tvSlotSubtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="📍 Phòng E1-04.06/1 (Thu Duc Campus) | Tiết 2 - 6"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+
+            <!-- Dòng 4: Gợi ý hành động / Cảnh báo di chuyển / Nút chèn lịch -->
+            <LinearLayout
+                android:id="@+id/layoutSlotSuggestion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="6dp">
+
+                <TextView
+                    android:id="@+id/tvSlotSuggestion"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="└─ Gợi ý: Ăn trưa, nghỉ ngơi (Không nhận lịch họp dài)"
+                    android:textColor="@color/text_tertiary"
+                    android:textSize="11.5sp"
+                    android:textStyle="italic" />
+
+                <TextView
+                    android:id="@+id/btnQuickAddSlot"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#2563EB"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp"
+                    android:text="+ Chèn lịch"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

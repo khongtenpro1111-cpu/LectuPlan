@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="12dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/border_default"
+    app:cardBackgroundColor="@color/surface_card">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Tiêu đề hộp thoại -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="📖 GIỚI THIỆU CHI TIẾT LECTUPLAN"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="@color/tab_header_title" />
+
+            <ImageButton
+                android:id="@+id/btnCloseAppIntroTop"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Đóng"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                app:tint="@color/nav_item_unselected_tint" />
+        </LinearLayout>
+
+        <!-- Vùng cuộn thông tin giới thiệu chi tiết -->
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="420dp"
+            android:fillViewport="true"
+            android:scrollbars="vertical"
+            android:layout_marginBottom="14dp">
+
+            <LinearLayout
+                android:id="@+id/layoutIntroContentContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="2dp"
+                android:paddingEnd="6dp">
+
+                <!-- Badge Chào mừng -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_search_input"
+                    android:padding="12dp"
+                    android:text="🎓 Trợ lý số chuyên nghiệp dành riêng cho Giảng viên."
+                    android:textColor="@color/accent_blue"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="14dp" />
+
+                <!-- Mục 1: Tổng quan -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="1. 🌟 Tổng quan về Ứng dụng"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="5dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="LectuPlan được xây dựng nhằm giải quyết triệt để các khó khăn trong việc quản lý lịch dạy phức tạp, thay đổi liên tục, thư mời giảng rải rác và quên lịch họp của giảng viên. Giao diện Material 3 hiện đại, hỗ trợ chuyển đổi linh hoạt chế độ Sáng / Tối."
+                    android:textSize="14sp"
+                    android:textColor="@color/text_secondary"
+                    android:lineSpacingExtra="5dp"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Mục 2: Quản lý TKB -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="2. 📅 Quản lý Thời khóa biểu &amp; Lịch giảng"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="5dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• Lịch trình trực quan theo Ngày, Tuần, Tháng.\n• Thêm, sửa, xóa lịch dạy, lịch họp, công tác dễ dàng.\n• Chọn nhiều lịch để thao tác hàng loạt (Sửa / Xóa nhanh).\n• Tìm kiếm khung thời gian trống (Smart Slot Finder) để sắp xếp lịch hẹn thông minh."
+                    android:textSize="14sp"
+                    android:textColor="@color/text_secondary"
+                    android:lineSpacingExtra="5dp"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Mục 3: Trích xuất file tự động -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="3. 📄 Trích xuất Tự động từ Thư mời giảng &amp; File"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="5dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• Nhập file Thư mời giảng, PDF, Word, Excel hoặc Hình ảnh.\n• Tự động bóc tách thông tin môn học, phòng học, thời gian, tiết học.\n• Hỗ trợ xử lý chữ viết tay hoặc văn bản đánh máy chính xác cao.\n• Xem lịch sử tệp đã nhập và quản lý nội dung bóc tách."
+                    android:textSize="14sp"
+                    android:textColor="@color/text_secondary"
+                    android:lineSpacingExtra="5dp"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Mục 4: Báo thức & Nhắc lịch -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="4. ⏰ Báo thức &amp; Nhắc lịch thông minh"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="5dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• Tùy chỉnh giờ báo thức hàng ngày.\n• Chế độ thông minh 'Chỉ báo chuông khi có lịch dạy' giúp giảng viên nghỉ ngơi trọn vẹn vào các ngày không có lịch.\n• Kiểm tra thử chuông báo ngay lập tức."
+                    android:textSize="14sp"
+                    android:textColor="@color/text_secondary"
+                    android:lineSpacingExtra="5dp"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Mục 5: Thống kê & Báo cáo -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="5. 📊 Thống kê Trực quan &amp; Dự toán Thu nhập"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="5dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• Biểu đồ tổng kết số tiết dạy, số buổi theo tuần / tháng / học kỳ.\n• Thống kê &amp; Dự toán thu nhập thỉnh giảng tự động theo từng đơn vị trường.\n• Cho phép tùy chỉnh đơn giá thù lao/tiết chính xác theo hợp đồng riêng.\n• Xem chi tiết drill-down từng mục giảng dạy."
+                    android:textSize="14sp"
+                    android:textColor="@color/text_secondary"
+                    android:lineSpacingExtra="5dp"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Mục 6: Tự động dọn dẹp -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="6. 🗑️ Tự động Dọn dẹp &amp; Tối ưu Dung lượng"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="5dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• Thiết lập thời hạn lưu trữ dữ liệu cũ (30 ngày, 3 tháng, 6 tháng, 1 năm).\n• Tự động dọn dẹp lịch cũ và file quá hạn để giải phóng bộ nhớ ứng dụng."
+                    android:textSize="14sp"
+                    android:textColor="@color/text_secondary"
+                    android:lineSpacingExtra="5dp"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Mục 7: Bộ 5 Tính năng Cao cấp mới -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="7. ✨ Bộ 5 Tính năng Sáng tạo &amp; Tự động hóa Mới"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#D97706"
+                    android:layout_marginBottom="5dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• ✨ Trợ lý AI Đề xuất Lịch Dạy Bù / Dạy Thay (Offline): Tự động tính toán, chấm điểm ưu tiên khe trống (trùng trường, tối ưu di chuyển) và tạo tin nhắn gửi sinh viên.\n• 🤖 Tự động Không Làm Phiền (DND) &amp; Check-in GPS: Tự động tắt chuông điện thoại khi bước vào ca học và mở lại khi tan ca. Lưu minh chứng tọa độ GPS khi tới trường.\n• 💰 Quản lý &amp; Dự toán Thu nhập Thỉnh giảng: Tự động nhân số tiết dạy với đơn giá từng trường. Cho phép cài đặt đơn giá riêng theo hợp đồng và thêm/xóa trường linh hoạt.\n• 🖼️ Chia sẻ Thiệp ảnh Office Hours: Tự động xuất hình ảnh vuông 1080x1080 chuyên nghiệp chứa lịch tiếp sinh viên để gửi qua Zalo/Facebook.\n• 🎙️ Ghi chú sau Buổi học bằng Giọng nói: Chuyển đổi giọng nói Tiếng Việt thành văn bản để lưu dặn dò ngay khi tan ca dạy."
+                    android:textSize="14sp"
+                    android:textColor="@color/text_secondary"
+                    android:lineSpacingExtra="5dp"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Mục 8: Thông tin kỹ thuật & tác giả -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="8. ℹ️ Thông tin Kỹ thuật &amp; Tác giả"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="5dp" />
+
+                <TextView
+                    android:id="@+id/tvAppIntroTechnicalInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• Phiên bản: v1.1.0 (Stable)\n• Tác giả / Phát triển: TKyl\n• Yêu cầu thiết bị: Android 8.0 trở lên (API 26+)\n• Nền tảng: Android (Java / Kotlin, Material Design 3)\n• Môn học: Lập trình Di động (LTDD)\n• Trường: Đại học Nguyễn Tất Thành (NTTU)"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_secondary"
+                    android:lineSpacingExtra="5dp"
+                    android:layout_marginBottom="10dp" />
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <!-- Nút Đóng / Hiểu rõ -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCloseAppIntroBottom"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="✅ Đã hiểu &amp; Trải nghiệm ngay"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#2563EB"
+            android:textSize="14.5sp"
+            android:textStyle="bold"
+            app:cornerRadius="14dp" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

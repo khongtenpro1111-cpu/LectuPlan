@@ -6,8 +6,9 @@
     android:layout_height="wrap_content"
     app:cardCornerRadius="20dp"
     app:cardElevation="8dp"
-    app:strokeWidth="0dp"
-    app:cardBackgroundColor="#FFFFFF">
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/border_default"
+    app:cardBackgroundColor="@color/surface_card">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -31,7 +32,7 @@
                 android:text="🔍 XEM NỘI DUNG &amp; PHÂN TÍCH FILE"
                 android:textSize="15sp"
                 android:textStyle="bold"
-                android:textColor="#1E3A8A" />
+                android:textColor="@color/tab_header_title" />
 
             <ImageButton
                 android:id="@+id/btnCloseAnalysisTop"
@@ -40,7 +41,7 @@
                 android:background="?android:attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Đóng"
                 android:src="@android:drawable/ic_menu_close_clear_cancel"
-                app:tint="#64748B" />
+                app:tint="@color/nav_item_unselected_tint" />
         </LinearLayout>
 
         <!-- Vùng cuộn toàn bộ thông tin + Hình ảnh trang PDF/Ảnh + Văn bản bóc tách đầy đủ không bị che -->
@@ -61,22 +62,22 @@
                     android:id="@+id/tvFileAnalysisBadge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="#EDE9FE"
+                    android:background="@drawable/bg_search_input"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="5dp"
                     android:text="✍️ PHÁT HIỆN TÀI LIỆU CÓ CHỮ GHI TAY"
-                    android:textColor="#6D28D9"
+                    android:textColor="@color/accent_purple"
                     android:textSize="11.5sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="8dp" />
 
-                <!-- Thông tin phân tích chi tiết -->
+                <!-- Thông tin meta file: Loại file, Tên, Số mục trích xuất -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="@drawable/bg_search_input"
                     android:orientation="vertical"
-                    android:background="#F8FAFC"
-                    android:padding="10dp"
+                    android:padding="12dp"
                     android:layout_marginBottom="10dp">
 
                     <TextView
@@ -84,7 +85,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="• Tên file: ...\n• Định dạng: ..."
-                        android:textColor="#334155"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp"
                         android:lineSpacingExtra="3dp" />
                 </LinearLayout>
@@ -102,7 +103,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="📋 TOÀN BỘ NỘI DUNG CHI TIẾT TRONG FILE:"
-                    android:textColor="#0F172A"
+                    android:textColor="@color/text_primary"
                     android:textSize="12.5sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="6dp" />
@@ -110,14 +111,14 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="#F1F5F9"
+                    android:background="@drawable/bg_search_input"
                     android:padding="12dp">
 
                     <TextView
                         android:id="@+id/tvFileAnalysisContent"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColor="#0F172A"
+                        android:textColor="@color/text_primary"
                         android:textSize="13sp"
                         android:textIsSelectable="true"
                         android:lineSpacingExtra="4dp" />
@@ -169,8 +170,8 @@
             android:minHeight="42dp"
             android:layout_marginTop="6dp"
             android:text="✅ Đóng cửa sổ"
-            android:textColor="#334155"
-            android:backgroundTint="#E2E8F0"
+            android:textColor="@color/text_primary"
+            android:backgroundTint="@color/surface_card_secondary"
             android:textSize="12.5sp"
             android:textStyle="bold"
             app:cornerRadius="10dp" />

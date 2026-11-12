@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="8dp"
+    app:strokeWidth="1.5dp"
+    app:strokeColor="#EF4444"
+    app:cardBackgroundColor="@color/surface_card">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Header: Biểu tượng cảnh báo + Tiêu đề từ chối -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🚫"
+                android:textSize="26sp"
+                android:layout_marginEnd="10dp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvRejectTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="TỪ CHỐI NHẬP TÀI LIỆU"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#EF4444" />
+
+                <TextView
+                    android:id="@+id/tvRejectFileName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tệp: CV_UngVien.pdf"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:ellipsize="middle"
+                    android:singleLine="true" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Khung lý do từ chối cụ thể -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_search_input"
+            android:padding="12dp"
+            android:layout_marginBottom="14dp">
+
+            <TextView
+                android:id="@+id/tvRejectReason"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Tệp tin được nhận diện là CV / Hồ sơ cá nhân. Ứng dụng không cho phép nhập loại tệp này vào lịch trình."
+                android:textSize="13sp"
+                android:textColor="@color/tab_header_title"
+                android:lineSpacingExtra="3dp" />
+        </LinearLayout>
+
+        <!-- Bảng tiêu chuẩn phân loại tài liệu -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="QUY CHUẨN 4 PHÂN LOẠI LỊCH CHÍNH:"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="6dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_search_input"
+            android:padding="10dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="✅ 👨‍🏫 Lịch dạy/học: Thư mời dạy, TKB, lịch giảng dạy"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="✅ 🏛️ Lịch sự kiện: Thông báo trường gửi, lịch tuần, hội nghị"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="✅ ⚡ Lịch phát sinh: Dạy bù, đổi ca, coi thi, chấm thi"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="✅ 📝 Lịch nhập thủ công(khác): Thêm trực tiếp trong app"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="6dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/border_default"
+                android:layout_marginBottom="6dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="❌ TỪ CHỐI TUYỆT ĐỐI: CV, Sơ yếu lý lịch, hồ sơ xin việc, bảng điểm, bằng cấp hoặc tài liệu không phải lịch trình."
+                android:textSize="11.5sp"
+                android:textColor="#EF4444"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Nút ĐÃ HIỂU -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRejectUnderstand"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:text="ĐÃ HIỂU"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:cornerRadius="12dp"
+            app:backgroundTint="#EF4444" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
+

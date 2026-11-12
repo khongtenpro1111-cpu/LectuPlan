@@ -8,8 +8,8 @@
     app:cardCornerRadius="14dp"
     app:cardElevation="1dp"
     app:strokeWidth="1dp"
-    app:strokeColor="#CBD5E1"
-    app:cardBackgroundColor="#F8FAFC"
+    app:strokeColor="@color/border_default"
+    app:cardBackgroundColor="@color/surface_card"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground">
@@ -48,7 +48,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="BaoCao_LectuPlan_20261026.xlsx"
-                    android:textColor="#0F172A"
+                    android:textColor="@color/text_primary"
                     android:textSize="13.5sp"
                     android:textStyle="bold"
                     android:lineSpacingExtra="2dp" />
@@ -72,9 +72,18 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="🕒 26/10/2026 16:49"
-                    android:textColor="#64748B"
+                    android:textColor="@color/text_secondary"
                     android:textSize="11sp" />
             </LinearLayout>
+
+            <ImageView
+                android:id="@+id/ivSelectHistory"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_marginStart="4dp"
+                android:src="@drawable/ic_check_box_unchecked"
+                android:contentDescription="Tích chọn"
+                android:visibility="gone" />
 
             <ImageButton
                 android:id="@+id/btnDeleteHistory"
@@ -89,6 +98,7 @@
 
         <!-- Tầng 2: Thanh nút hành động (Xem nội dung trực tiếp / Mở bằng app ngoài / Tải file về máy) -->
         <LinearLayout
+            android:id="@+id/layoutHistoryActions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"

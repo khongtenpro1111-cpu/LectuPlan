@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="22dp"
+    app:cardElevation="8dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/border_default"
+    app:cardBackgroundColor="@color/surface_card">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="18dp">
+
+        <!-- Tiêu đề Header & Nút Đóng -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvTimelineDayTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📅 THỨ NĂM, 14/05/2026"
+                    android:textSize="15.5sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary" />
+
+                <TextView
+                    android:id="@+id/tvTimelineStatsSummary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="(Tổng: 2 ca dạy - 1 sự kiện | Trống: 4 giờ 40 phút)"
+                    android:textSize="12sp"
+                    android:textColor="@color/accent_green"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/btnCloseTimelineDialog"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Đóng"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                app:tint="@color/nav_item_unselected_tint" />
+        </LinearLayout>
+
+        <!-- Thanh điều hướng ngày: [< Ngày trước] [Hôm nay] [Ngày sau >] -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp">
+
+            <Button
+                android:id="@+id/btnTimelinePrevDay"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:text="◀ Ngày trước"
+                android:textSize="11sp"
+                android:textColor="@color/text_secondary"
+                android:backgroundTint="@color/surface_card_secondary"
+                app:cornerRadius="8dp" />
+
+            <Button
+                android:id="@+id/btnTimelineToday"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:layout_marginHorizontal="6dp"
+                android:text="Hôm nay"
+                android:textSize="11sp"
+                android:textColor="@color/accent_blue"
+                android:backgroundTint="@color/surface_card_secondary"
+                android:textStyle="bold"
+                app:cornerRadius="8dp" />
+
+            <Button
+                android:id="@+id/btnTimelineNextDay"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:text="Ngày sau ▶"
+                android:textSize="11sp"
+                android:textColor="@color/text_secondary"
+                android:backgroundTint="@color/surface_card_secondary"
+                app:cornerRadius="8dp" />
+        </LinearLayout>
+
+        <!-- Thước đo Dòng chảy Thời gian (Continuous Timeline Stream) -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvTimelineStream"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:scrollbars="vertical" />
+
+        <!-- Nút thao tác nhanh dưới đáy -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="12dp">
+
+            <Button
+                android:id="@+id/btnOpenSmartFinderFromTimeline"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:minHeight="48dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:text="🔍 Tìm khe\nnhét lịch"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#2563EB"
+                android:textSize="13.5sp"
+                android:textStyle="bold"
+                app:cornerRadius="10dp" />
+
+            <Button
+                android:id="@+id/btnAddNewEventFromTimeline"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:minHeight="48dp"
+                android:layout_weight="1"
+                android:text="+ Thêm\nviệc mới"
+                android:textColor="@color/accent_green"
+                android:backgroundTint="@color/surface_card_secondary"
+                android:textSize="13.5sp"
+                android:textStyle="bold"
+                app:cornerRadius="10dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

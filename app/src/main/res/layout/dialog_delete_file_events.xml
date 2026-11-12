@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="8dp"
+    app:strokeWidth="1.5dp"
+    app:strokeColor="#EF4444"
+    app:cardBackgroundColor="@color/surface_card">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Tiêu đề hộp thoại -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🗑️"
+                android:textSize="26sp"
+                android:layout_marginEnd="10dp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvDeleteDialogTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="XÓA TỆP VÀ NỘI DUNG ĐÃ NHẬP"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#EF4444" />
+
+                <TextView
+                    android:id="@+id/tvDeleteFileName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tệp: CV_Js_Trung_Kien_EN (1).pdf"
+                    android:textSize="12.5sp"
+                    android:textColor="@color/text_secondary"
+                    android:ellipsize="middle"
+                    android:singleLine="true" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Khung thông báo số sự kiện liên quan -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_search_input"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/tvDeleteEventCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="⚠️ Phát hiện có 24 buổi / lịch trình trong ứng dụng được nhập từ tệp này.\n\nBạn có muốn xóa sạch toàn bộ nội dung của tệp này khỏi ứng dụng không?"
+                android:textSize="13sp"
+                android:textColor="@color/tab_header_title"
+                android:lineSpacingExtra="3dp" />
+        </LinearLayout>
+
+        <!-- Nút hành động 1: Xóa tệp & Toàn bộ nội dung sự kiện -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDeleteFileAndEvents"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:paddingVertical="10dp"
+            android:paddingHorizontal="14dp"
+            android:text="🔴 Xóa tệp &amp; toàn bộ lịch trình đã nhập"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            app:cornerRadius="12dp"
+            app:backgroundTint="#DC2626"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Nút hành động 2: Chỉ xóa nhật ký lịch sử -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDeleteHistoryOnly"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="44dp"
+            android:paddingVertical="8dp"
+            android:paddingHorizontal="14dp"
+            android:text="📄 Chỉ xóa nhật ký lịch sử (Giữ lại lịch)"
+            android:textColor="@color/text_primary"
+            android:textSize="12.5sp"
+            app:cornerRadius="12dp"
+            app:backgroundTint="@color/border_default"
+            android:layout_marginBottom="6dp" />
+
+        <!-- Nút Hủy -->
+        <TextView
+            android:id="@+id/btnCancelDeleteFile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="38dp"
+            android:paddingVertical="8dp"
+            android:gravity="center"
+            android:text="Hủy bỏ"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:focusable="true" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
+

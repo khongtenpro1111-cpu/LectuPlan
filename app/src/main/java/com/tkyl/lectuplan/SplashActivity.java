@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -17,7 +18,14 @@ import androidx.core.view.WindowInsetsControllerCompat;
 public class SplashActivity extends AppCompatActivity {
 
     @Override
+    public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
+        KeyboardUtils.handleTouchHideKeyboard(this, ev);
+        return super.dispatchTouchEvent(ev);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
@@ -69,6 +77,11 @@ public class SplashActivity extends AppCompatActivity {
         }
 
         // 3. Animation cho Chân trang (Hiện dần)
+        TextView tvSplashVersion = findViewById(R.id.tvSplashVersion);
+        if (tvSplashVersion != null) {
+            tvSplashVersion.setText("Phiên bản v" + VersionCheckHelper.getCurrentVersionName(this));
+        }
+
         if (layoutFooter != null) {
             layoutFooter.setAlpha(0f);
             layoutFooter.animate()

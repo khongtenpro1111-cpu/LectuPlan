@@ -10,23 +10,28 @@ android {
         applicationId = "com.tkyl.lectuplan"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            optimization {
-                enable = true
-                packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
-            }
+            isMinifyEnabled = false
         }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+    }
+}
+
+androidComponents {
+    onVariants { variant ->
+        variant.outputs.forEach { output ->
+            output.outputFileName.set("LectuPlan.apk")
+        }
     }
 }
 
@@ -52,4 +57,5 @@ dependencies {
 
     // 4. Thư viện đọc văn bản gốc chuẩn Unicode Tiếng Việt từ file PDF (PDFBox-Android)
     implementation("com.tom-roush:pdfbox-android:2.0.27.0")
+    testImplementation("org.apache.pdfbox:pdfbox:2.0.27")
 }

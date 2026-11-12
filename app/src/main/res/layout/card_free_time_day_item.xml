@@ -4,34 +4,35 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="4dp"
-    app:cardCornerRadius="14dp"
-    app:cardElevation="1dp"
+    android:layout_marginVertical="6dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
     app:strokeWidth="1dp"
-    app:strokeColor="#CBD5E1"
-    app:cardBackgroundColor="#FFFFFF">
+    app:strokeColor="@color/border_default"
+    app:cardBackgroundColor="@color/surface_card">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:padding="14dp">
 
-        <!-- Dòng trên: Thứ & Ngày -->
+        <!-- Dòng trên: Thứ, Ngày & Badge Trạng thái -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp">
 
             <TextView
                 android:id="@+id/tvFreeDayTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Thứ Hai (26/10/2026)"
-                android:textColor="#0F172A"
-                android:textSize="14sp"
+                android:text="Thứ Năm (12/11/2026)"
+                android:textColor="@color/text_primary"
+                android:textSize="14.5sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -47,16 +48,62 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Dòng dưới: Chi tiết khoảng thời gian trống & lịch bận -->
-        <TextView
-            android:id="@+id/tvFreeTimeDetail"
+        <!-- Khung Buổi Sáng -->
+        <LinearLayout
+            android:id="@+id/layoutMorningBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="💡 Sáng (07:00 - 11:30): TRỐNG • Chiều (13:00 - 17:00): TRỐNG"
-            android:textColor="#334155"
-            android:textSize="12sp"
-            android:lineSpacingExtra="2dp" />
+            android:orientation="vertical"
+            android:background="@drawable/bg_search_input"
+            android:padding="10dp"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="☀️ BUỔI SÁNG (07:00 - 11:30)"
+                android:textColor="@color/text_primary"
+                android:textSize="11.5sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tvMorningDetail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🟢 Trống cả buổi sáng (07:00 - 11:30)"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:lineSpacingExtra="3dp" />
+        </LinearLayout>
+
+        <!-- Khung Buổi Chiều -->
+        <LinearLayout
+            android:id="@+id/layoutAfternoonBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_search_input"
+            android:padding="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⛅ BUỔI CHIỀU (13:00 - 17:00)"
+                android:textColor="@color/text_primary"
+                android:textSize="11.5sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tvAfternoonDetail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🟢 Trống cả buổi chiều (13:00 - 17:00)"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:lineSpacingExtra="3dp" />
+        </LinearLayout>
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

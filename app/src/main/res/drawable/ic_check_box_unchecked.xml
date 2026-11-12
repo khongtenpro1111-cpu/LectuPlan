@@ -1,0 +1,13 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Khung viền ô chọn chưa tích, nét rõ ràng -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#94A3B8"
+        android:strokeWidth="1.8"
+        android:pathData="M18,3.9H6C4.84,3.9 3.9,4.84 3.9,6v12c0,1.16 0.94,2.1 2.1,2.1h12c1.16,0 2.1,-0.94 2.1,-2.1V6C20.1,4.84 19.16,3.9 18,3.9z" />
+</vector>
+

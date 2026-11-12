@@ -74,6 +74,9 @@ public class CustomCalendarAdapter extends RecyclerView.Adapter<CustomCalendarAd
         holder.tvDayNumber.setText(String.valueOf(cell.dayNumber));
 
         boolean isSelected = cell.dateIso != null && cell.dateIso.equals(selectedDateIso);
+        android.content.Context ctx = holder.itemView.getContext();
+        boolean isNight = (ctx.getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK)
+                == android.content.res.Configuration.UI_MODE_NIGHT_YES;
 
         if (isSelected) {
             holder.tvDayNumber.setBackgroundResource(R.drawable.bg_calendar_selected_day);
@@ -81,16 +84,16 @@ public class CustomCalendarAdapter extends RecyclerView.Adapter<CustomCalendarAd
             holder.tvDayNumber.setTypeface(null, Typeface.BOLD);
         } else if (cell.isToday) {
             holder.tvDayNumber.setBackground(null);
-            holder.tvDayNumber.setTextColor(Color.parseColor("#7C3AED"));
+            holder.tvDayNumber.setTextColor(isNight ? Color.parseColor("#C4B5FD") : Color.parseColor("#7C3AED"));
             holder.tvDayNumber.setTypeface(null, Typeface.BOLD);
         } else if (cell.isCurrentMonth) {
             holder.tvDayNumber.setBackground(null);
-            holder.tvDayNumber.setTextColor(Color.parseColor("#1E293B"));
+            holder.tvDayNumber.setTextColor(isNight ? Color.parseColor("#F8FAFC") : Color.parseColor("#1E293B"));
             holder.tvDayNumber.setTypeface(null, Typeface.NORMAL);
         } else {
-            // Ngày của tháng trước / tháng sau (mờ đi)
+            // Ngày của tháng trước / tháng sau (mờ đi nhưng vẫn rõ chữ)
             holder.tvDayNumber.setBackground(null);
-            holder.tvDayNumber.setTextColor(Color.parseColor("#CBD5E1"));
+            holder.tvDayNumber.setTextColor(isNight ? Color.parseColor("#94A3B8") : Color.parseColor("#CBD5E1"));
             holder.tvDayNumber.setTypeface(null, Typeface.NORMAL);
         }
 

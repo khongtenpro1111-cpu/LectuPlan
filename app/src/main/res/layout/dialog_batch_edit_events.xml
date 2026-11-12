@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="6dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/border_default"
+    app:cardBackgroundColor="@color/surface_card">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- Tiêu đề Dialog -->
+            <TextView
+                android:id="@+id/tvBatchDialogHeaderTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="✏️ CHỈNH SỬA HÀNG LOẠT"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="@color/tab_header_title" />
+
+            <TextView
+                android:id="@+id/tvBatchDialogSubtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Chỉ nhập các mục muốn đổi đồng loạt. Mục nào để trống sẽ giữ nguyên dữ liệu gốc của từng lịch."
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="14dp" />
+
+            <!-- Ô 1: Tiêu đề / Tên môn mới -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tên môn học / Tiêu đề mới"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/edtBatchTitle"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_search_input"
+                android:hint="Để trống nếu giữ nguyên tiêu đề"
+                android:inputType="textCapSentences"
+                android:paddingHorizontal="14dp"
+                android:textSize="13sp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_tertiary"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Ô 2: Tiết học mới -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tiết học mới"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/edtBatchPeriod"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_search_input"
+                android:hint="Ví dụ: 2-6 hoặc 7-11 (để trống nếu giữ nguyên)"
+                android:inputType="text"
+                android:paddingHorizontal="14dp"
+                android:textSize="13sp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_tertiary"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Ô 3: Khung giờ học mới -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Khung giờ học mới"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/edtBatchTime"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_search_input"
+                android:hint="Ví dụ: 07:30 - 11:35 (để trống nếu giữ nguyên)"
+                android:inputType="text"
+                android:paddingHorizontal="14dp"
+                android:textSize="13sp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_tertiary"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Ô 4: Phòng học mới -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Phòng học mới"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/edtBatchRoom"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_search_input"
+                android:hint="Ví dụ: E1-04.06/1 (để trống nếu giữ nguyên)"
+                android:inputType="textCapCharacters"
+                android:paddingHorizontal="14dp"
+                android:textSize="13sp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_tertiary"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Ô 5: Tổ chức / Cơ sở mới -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tổ chức / Cơ sở mới"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/edtBatchOrganizer"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_search_input"
+                android:hint="Để trống nếu giữ nguyên đơn vị tổ chức"
+                android:inputType="textCapSentences"
+                android:paddingHorizontal="14dp"
+                android:textSize="13sp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_tertiary"
+                android:layout_marginBottom="18dp" />
+
+            <!-- Hai nút hành động Lưu & Hủy -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnCancelBatchEdit"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:text="Hủy"
+                    android:textColor="@color/text_secondary"
+                    android:backgroundTint="@color/surface_card_secondary"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="10dp"
+                    android:layout_marginEnd="8dp" />
+
+                <Button
+                    android:id="@+id/btnSaveBatchEdit"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1.5"
+                    android:text="💾 Lưu đồng loạt"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#2563EB"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="10dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</com.google.android.material.card.MaterialCardView>
+

@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="12dp"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="12dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/border_default"
+    app:cardBackgroundColor="@color/surface_card">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="18dp">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="🔔 TRUNG TÂM THÔNG BÁO"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="@color/tab_header_title" />
+
+            <ImageButton
+                android:id="@+id/btnCloseNotifCenterTop"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Đóng"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                app:tint="@color/nav_item_unselected_tint" />
+        </LinearLayout>
+
+        <!-- Thao tác nhanh -->
+        <LinearLayout
+            android:id="@+id/layoutNotifTopActions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp">
+
+            <TextView
+                android:id="@+id/btnMarkAllRead"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_search_input"
+                android:gravity="center"
+                android:text="✅ Đã đọc tất cả"
+                android:textColor="#2563EB"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginEnd="6dp" />
+
+            <TextView
+                android:id="@+id/btnEnableNotifMultiSelect"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_search_input"
+                android:gravity="center"
+                android:text="☑️ Chọn nhiều"
+                android:textColor="@color/accent_purple"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <!-- Thanh Thao Tác Chọn Nhiều (Multi-Select Bar) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/layoutNotifMultiSelectBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_marginBottom="10dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="#FEF2F2"
+            app:strokeColor="#FCA5A5"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="8dp">
+
+                <TextView
+                    android:id="@+id/tvNotifSelectedCount"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Đã chọn: 0"
+                    android:textColor="#991B1B"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:paddingStart="6dp" />
+
+                <Button
+                    android:id="@+id/btnNotifSelectAll"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:text="Tất cả"
+                    android:textSize="11sp"
+                    android:backgroundTint="#EF4444"
+                    android:textColor="#FFFFFF"
+                    app:cornerRadius="6dp"
+                    android:layout_marginEnd="4dp" />
+
+                <Button
+                    android:id="@+id/btnNotifBatchDelete"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:text="🔴 Xóa"
+                    android:textSize="11sp"
+                    android:backgroundTint="#DC2626"
+                    android:textColor="#FFFFFF"
+                    app:cornerRadius="6dp"
+                    android:layout_marginEnd="4dp" />
+
+                <Button
+                    android:id="@+id/btnNotifCancelMultiSelect"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:text="Hủy"
+                    android:textSize="11sp"
+                    android:backgroundTint="#64748B"
+                    android:textColor="#FFFFFF"
+                    app:cornerRadius="6dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Danh sách Thông báo -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvNotifications"
+            android:layout_width="match_parent"
+            android:layout_height="360dp"
+            android:scrollbars="vertical"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:id="@+id/tvNotifEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:gravity="center"
+            android:text="🔔 Chưa có thông báo nào."
+            android:textColor="@color/text_tertiary"
+            android:textSize="14sp"
+            android:visibility="gone" />
+
+        <!-- Nút Xóa Toàn Bộ -->
+        <Button
+            android:id="@+id/btnClearAllNotifs"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:text="🧹 Xóa sạch toàn bộ thông báo"
+            android:textColor="#DC2626"
+            android:backgroundTint="#FEE2E2"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            style="?attr/materialButtonOutlinedStyle"
+            app:strokeColor="#FCA5A5"
+            app:strokeWidth="1dp"
+            app:cornerRadius="12dp" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

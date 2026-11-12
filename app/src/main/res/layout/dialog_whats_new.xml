@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="12dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/border_default"
+    app:cardBackgroundColor="@color/surface_card">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Banner Chào mừng Phiên bản Mới -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="12dp"
+            android:background="@drawable/bg_chip_selected"
+            android:layout_marginBottom="14dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🎉 CẬP NHẬT THÀNH CÔNG!"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvWhatsNewVersion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Phiên bản v1.1.0"
+                android:textColor="#E0E7FF"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🌟 BỘ 5 TÍNH NĂNG MỚI ĐÃ ĐƯỢC TÍCH HỢP:"
+            android:textColor="@color/accent_purple"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="10dp" />
+
+        <!-- Vùng cuộn thông tin tính năng mới -->
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="280dp"
+            android:fillViewport="true"
+            android:scrollbars="vertical"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="1. ✨ AI Đề xuất Lịch Dạy bù Offline: Tự động chấm điểm chọn slot trống tối ưu di chuyển và soạn sẵn tin nhắn gửi Zalo cho sinh viên."
+                    android:textSize="13.5sp"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="10dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="2. 🤖 Tự động Không Làm Phiền (DND) &amp; Check-in GPS: Tự động im lặng điện thoại khi bước vào ca học và lưu minh chứng vị trí GPS."
+                    android:textSize="13.5sp"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="10dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="3. 💰 Dự toán Thu nhập Thỉnh giảng: Cấu hình đơn giá riêng từng trường (100.000đ/tiết), tự động nhân số tiết dạy thực tế."
+                    android:textSize="13.5sp"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="10dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="4. 🖼️ Chia sẻ Thiệp ảnh Office Hours: Render ảnh vuông 1080x1080 thời khóa biểu đẹp mắt gửi cho lớp học."
+                    android:textSize="13.5sp"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="10dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="5. 🎙️ Ghi chú sau Buổi học bằng Giọng nói: Chuyển đổi giọng nói Tiếng Việt thành chữ để lưu dặn dò ngay khi tan ca."
+                    android:textSize="13.5sp"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="10dp" />
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnWhatsNewClose"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="🚀 Khám phá &amp; Trải nghiệm ngay"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#2563EB"
+            android:textSize="14.5sp"
+            android:textStyle="bold"
+            app:cornerRadius="14dp" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

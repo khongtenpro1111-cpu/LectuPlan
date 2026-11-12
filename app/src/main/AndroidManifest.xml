@@ -2,9 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Quyền hiển thị thông báo và đặt lịch báo thức 6h00 sáng -->
+    <!-- Quyền hiển thị thông báo, đặt lịch báo thức, nhận sự kiện khởi động máy và rung phản hồi -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- Quyền truy cập Không làm phiền (DND) và Định vị -->
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -31,10 +38,20 @@
             android:name=".MainActivity"
             android:exported="false" />
 
-        <!-- Đăng ký bộ phát chuông báo 6h00 sáng -->
+        <!-- Đăng ký bộ phát chuông báo thức tự động -->
         <receiver
             android:name=".AlarmReceiver"
-            android:exported="false" />
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Đăng ký bộ xử lý Tự động Không Làm Phiền (Auto DND) -->
+        <receiver android:name=".AutoDndReceiver" android:exported="false" />
 
         <!-- FileProvider cho phép mở trực tiếp file Excel -->
         <provider

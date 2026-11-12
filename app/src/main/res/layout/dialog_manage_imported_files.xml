@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="8dp"
+    app:strokeWidth="1.5dp"
+    app:strokeColor="@color/border_default"
+    app:cardBackgroundColor="@color/surface_card">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="18dp">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="🗂️ QUẢN LÝ DỮ LIỆU TỆP ĐÃ NHẬP"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@color/tab_header_title" />
+
+            <ImageButton
+                android:id="@+id/btnCloseManageFiles"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Đóng"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                app:tint="@color/nav_item_unselected_tint" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Danh sách các tệp hiện đang có lịch trình trong ứng dụng. Bạn có thể xóa sạch mọi nội dung đã nhập từ bất kỳ tệp nào."
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="12dp"
+            android:lineSpacingExtra="2dp" />
+
+        <!-- Danh sách file cuộn -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="340dp"
+            android:layout_marginBottom="12dp">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvManageFilesList"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:nestedScrollingEnabled="true" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/tvEmptyManageFiles"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="☕ Hiện không có tệp nào có dữ liệu trong ứng dụng."
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp"
+            android:gravity="center"
+            android:padding="20dp"
+            android:visibility="gone" />
+
+        <!-- Nút xóa sạch toàn bộ nội dung của tất cả file -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDeleteAllFilesAndEvents"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="46dp"
+            android:paddingVertical="10dp"
+            android:paddingHorizontal="14dp"
+            android:text="🔴 Xóa toàn bộ nội dung tất cả tệp"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            app:cornerRadius="12dp"
+            app:backgroundTint="#DC2626" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
+

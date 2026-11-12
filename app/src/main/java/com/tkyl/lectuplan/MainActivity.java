@@ -5,6 +5,7 @@ import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.PendingIntent;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -15,6 +16,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.pdf.PdfRenderer;
 import android.media.AudioManager;
@@ -28,6 +30,7 @@ import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.provider.OpenableColumns;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -39,10 +42,13 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CalendarView;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -65,11 +71,20 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.HorizontalBarChart;
+import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.PieData;
+import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.github.mikephil.charting.formatter.ValueFormatter;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -111,6 +126,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -123,14 +139,34 @@ public class MainActivity extends AppCompatActivity {
     private DatabaseHelper dbHelper;
     private EventAdapter adapter;
     private FileHistoryAdapter fileHistoryAdapter;
+    private RecyclerView rvEvents;
     private EditText edtSearch;
     private Spinner spnSemester, spnYear, spnChartType;
     private BarChart barChart, barChartTab;
     private TextView tvTotalCount;
+    private View btnNotificationBell;
+    private TextView tvUnreadNotifBadge;
     private SwipeRefreshLayout swipeRefreshLayout;
     private FloatingActionButton fabAddEvent, fabScrollToTop;
     private boolean isFilteringToday = false;
     private int currentCalendarMode = 0; // 0: Ngày, 1: Tuần, 2: Tháng, 3: Trống
+
+    // Tab 3: Biểu đồ & Thống kê đa trường
+    private Spinner spnChartTimeFilter, spnChartSchoolFilter;
+    private TextView tvKpiPeriods, tvKpiPeriodsSub, tvKpiEvents, tvKpiEventsSub;
+    private TextView tvKpiSchools, tvKpiSchoolsSub, tvKpiIncidents, tvKpiIncidentsSub;
+    private TextView tvKpiIncome, tvKpiIncomeSub;
+    private MaterialCardView cardCrossSchoolAlert;
+    private TextView tvCrossSchoolAlertTitle, tvCrossSchoolAlertDesc;
+    private Button btnViewCrossSchoolDays;
+    private PieChart pieChartSchool;
+    private HorizontalBarChart barChartNature;
+    private BarChart barChartDayOfWeek;
+    private PieChart pieChartShift;
+    private TextView tvMonthlyPeakNotice;
+    private MaterialCardView cardKpiPeriods, cardKpiEvents, cardKpiSchools, cardKpiIncidents, cardKpiIncome;
+    private List<EventModel> currentFilteredChartEvents = new ArrayList<>();
+    private final Map<String, List<EventModel>> crossSchoolDaysMap = new LinkedHashMap<>();
 
     // Tab 2 Lịch biểu
     private RecyclerView rvTab2Events;
@@ -139,6 +175,7 @@ public class MainActivity extends AppCompatActivity {
     private String selectedTab2DateIso = "";
     private boolean isTab2Dirty = true;
     private int currentActiveTabIndex = 0;
+    private int savedInitialTabIndex = 0;
     private final RecyclerView.RecycledViewPool sharedEventViewPool = new RecyclerView.RecycledViewPool();
 
     // Custom Month Calendar with Dot Badges
@@ -148,6 +185,7 @@ public class MainActivity extends AppCompatActivity {
     private Calendar currentCalMonthInstance;
 
     private View viewActivePillIndicator;
+    private String currentCategoryFilter = "ALL";
     private LinearLayout layoutNavContainer;
 
     // 1. Bộ chọn file Excel (.xlsx / .xls)
@@ -168,13 +206,7 @@ public class MainActivity extends AppCompatActivity {
                 if (uri != null) processImageOcrImport(uri);
             });
 
-    // 4. Bộ chọn Slide PowerPoint (.pptx)
-    private final ActivityResultLauncher<String> pptxPickerLauncher =
-            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-                if (uri != null) processPptxImport(uri);
-            });
-
-    // 5. Bộ chọn Đa năng (Tự động nhận diện mọi loại file: Excel, PDF, PPTX, Word, CSV/TXT, Ảnh/Tài liệu ghi tay)
+    // 4. Bộ chọn Đa năng (Tự động nhận diện mọi loại file: Excel, PDF, Word, CSV/TXT, Ảnh/Tài liệu ghi tay)
     private final ActivityResultLauncher<String> universalFilePickerLauncher =
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null) processUniversalFileImport(uri);
@@ -195,10 +227,144 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+    // 🌟 TÍNH NĂNG 5: Nhận diện giọng nói chuyển đổi thành văn bản (Speech-To-Text)
+    private String pendingVoiceSubjectTitle = null;
+    private final ActivityResultLauncher<Intent> speechToTextLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    List<String> results = result.getData().getStringArrayListExtra(android.speech.RecognizerIntent.EXTRA_RESULTS);
+                    if (results != null && !results.isEmpty()) {
+                        String spokenText = results.get(0);
+                        handleVoiceMemoResult(spokenText);
+                    }
+                }
+            });
+
+    private void launchSpeechRecognizer(String subjectTitle) {
+        this.pendingVoiceSubjectTitle = subjectTitle;
+        Intent intent = new Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE_MODEL, android.speech.RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE, "vi-VN");
+        intent.putExtra(android.speech.RecognizerIntent.EXTRA_PROMPT, "🎙️ Nói ghi chú dặn dò " + (subjectTitle != null ? "cho " + subjectTitle : "") + "...");
+        try {
+            speechToTextLauncher.launch(intent);
+        } catch (Exception e) {
+            Toast.makeText(this, "Thiết bị không hỗ trợ nhận diện giọng nói Tiếng Việt!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void handleVoiceMemoResult(String spokenText) {
+        if (spokenText == null || spokenText.trim().isEmpty()) return;
+        
+        playSuccessSound();
+        String subject = pendingVoiceSubjectTitle != null ? pendingVoiceSubjectTitle : "Môn học";
+        
+        new AlertDialog.Builder(this)
+                .setTitle("🎙️ Nhận diện giọng nói thành công")
+                .setMessage("Nội dung dặn dò:\n\"" + spokenText + "\"\n\nBạn có muốn lưu thông tin này vào danh sách Lịch trình không?")
+                .setPositiveButton("Lưu Lịch Ghi Chú", (dialog, which) -> {
+                    SimpleDateFormat sdfIso = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                    String todayIso = sdfIso.format(new Date());
+                    
+                    String noteTitle = "📝 [Dặn dò] " + subject + ": " + spokenText;
+                    dbHelper.insertEvent(1, noteTitle, todayIso, "Ghi chú giọng nói Giảng viên", EventModel.CAT_MANUAL_OTHER);
+                    refreshAllTabs();
+                    Toast.makeText(this, "✅ Đã lưu ghi chú giọng nói thành công!", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        checkVoiceMemoIntent(intent);
+    }
+
+    private void checkVoiceMemoIntent(Intent intent) {
+        if (intent != null && intent.getBooleanExtra("ACTION_VOICE_MEMO_POST_CLASS", false)) {
+            String subject = intent.getStringExtra("EXTRA_SUBJECT_TITLE");
+            new AlertDialog.Builder(this)
+                    .setTitle("🎙️ Ghi chú sau buổi học")
+                    .setMessage("Bạn vừa hoàn thành ca dạy '" + (subject != null ? subject : "") + "'. Bạn có muốn ghi âm dặn dò / nhắc nhở cho buổi học tới không?")
+                    .setPositiveButton("🎙️ Ghi âm ngay", (dialog, which) -> {
+                        launchSpeechRecognizer(subject);
+                    })
+                    .setNegativeButton("Để sau", null)
+                    .show();
+        }
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        KeyboardUtils.handleTouchHideKeyboard(this, ev);
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            View target = findInteractiveTarget(getWindow().getDecorView(), (int) ev.getRawX(), (int) ev.getRawY());
+            if (target != null) {
+                SoundHelper.playFeedback(this, target);
+            }
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+
+    private View findInteractiveTarget(View view, int rawX, int rawY) {
+        if (view == null || view.getVisibility() != View.VISIBLE) return null;
+
+        int[] location = new int[2];
+        view.getLocationOnScreen(location);
+        int left = location[0];
+        int top = location[1];
+        int right = left + view.getWidth();
+        int bottom = top + view.getHeight();
+
+        if (rawX < left || rawX > right || rawY < top || rawY > bottom) {
+            return null;
+        }
+
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = group.getChildCount() - 1; i >= 0; i--) {
+                View childTarget = findInteractiveTarget(group.getChildAt(i), rawX, rawY);
+                if (childTarget != null) return childTarget;
+            }
+        }
+
+        if (view.isClickable() || view.isLongClickable() || isInteractiveControl(view)) {
+            return view;
+        }
+
+        return null;
+    }
+
+    private boolean isInteractiveControl(View v) {
+        return v instanceof android.widget.Button
+                || v instanceof android.widget.CompoundButton
+                || v instanceof android.widget.Spinner
+                || v instanceof com.google.android.material.card.MaterialCardView
+                || v instanceof com.google.android.material.chip.Chip;
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(FontScaleHelper.wrapContext(newBase));
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("saved_active_tab_index", currentActiveTabIndex);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (savedInstanceState != null) {
+            savedInitialTabIndex = savedInstanceState.getInt("saved_active_tab_index", 0);
+        }
 
         // Xử lý System Bar Insets
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -219,13 +385,21 @@ public class MainActivity extends AppCompatActivity {
         requestNotificationPermission();
 
         dbHelper = new DatabaseHelper(this);
+        dbHelper.cleanUpGarbageCvEntries();
+        dbHelper.healCorruptedSubjectNames();
+        dbHelper.syncPhysicalFilesIntoHistory(getHistoryStorageDir());
+        dbHelper.syncOrphanFilesIntoHistory();
 
-        int deletedRows = dbHelper.autoDeleteOldData();
-        if (deletedRows > 0) {
-            Toast.makeText(this, "Đã tự động dọn dẹp " + deletedRows + " lịch cũ quá 1 năm!", Toast.LENGTH_LONG).show();
+        if (AutoDeleteHelper.isEnabled(this)) {
+            int retentionMonths = AutoDeleteHelper.getRetentionMonths(this);
+            int deletedRows = dbHelper.autoDeleteOldData(retentionMonths, getHistoryStorageDir());
+            if (deletedRows > 0) {
+                AutoDeleteHelper.recordCleanupTime(this);
+                Toast.makeText(this, "Đã tự động dọn dẹp " + deletedRows + " lịch & tệp cũ quá " + AutoDeleteHelper.getRetentionText(retentionMonths) + "!", Toast.LENGTH_LONG).show();
+            }
         }
 
-        scheduleDaily6AMAlarm();
+        AlarmScheduler.scheduleAlarm(this);
 
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         edtSearch = findViewById(R.id.edtSearch);
@@ -234,9 +408,21 @@ public class MainActivity extends AppCompatActivity {
         spnChartType = findViewById(R.id.spnChartType);
         barChartTab = findViewById(R.id.barChartTab);
         barChart = barChartTab;
+        initChartTabViews();
         tvTotalCount = findViewById(R.id.tvTotalCount);
+        btnNotificationBell = findViewById(R.id.btnNotificationBell);
+        tvUnreadNotifBadge = findViewById(R.id.tvUnreadNotifBadge);
+        
+        if (btnNotificationBell != null) {
+            btnNotificationBell.setOnClickListener(v -> {
+                SoundHelper.playFeedback(this, v);
+                showNotificationCenterDialog();
+            });
+        }
+        updateUnreadNotificationBadge();
+
         fabAddEvent = findViewById(R.id.fabAddEvent);
-        RecyclerView rvEvents = findViewById(R.id.rvEvents);
+        rvEvents = findViewById(R.id.rvEvents);
         RecyclerView rvFileHistory = findViewById(R.id.rvFileHistory);
 
         // Chuyển đổi Lịch trình Tab 1
@@ -409,6 +595,14 @@ public class MainActivity extends AppCompatActivity {
         if (btnTab2ModeMonth != null) btnTab2ModeMonth.setOnClickListener(v -> applyTab2CalendarMode(2));
         if (btnTab2ModeFree != null) btnTab2ModeFree.setOnClickListener(v -> applyTab2CalendarMode(3));
 
+        TextView btnTab2OpenTimeline = findViewById(R.id.btnTab2OpenTimeline);
+        TextView btnTab2SmartFinder = findViewById(R.id.btnTab2SmartFinder);
+        TextView btnTab2VoiceNote = findViewById(R.id.btnTab2VoiceNote);
+
+        if (btnTab2OpenTimeline != null) btnTab2OpenTimeline.setOnClickListener(v -> showContinuousTimeline(selectedTab2DateIso));
+        if (btnTab2SmartFinder != null) btnTab2SmartFinder.setOnClickListener(v -> showSmartSlotFinderDialog());
+        if (btnTab2VoiceNote != null) btnTab2VoiceNote.setOnClickListener(v -> launchSpeechRecognizer(null));
+
         if (rvTab2Events != null) {
             LinearLayoutManager tab2LayoutManager = new LinearLayoutManager(this);
             tab2LayoutManager.setInitialPrefetchItemCount(6);
@@ -428,24 +622,41 @@ public class MainActivity extends AppCompatActivity {
                             () -> {
                                 dbHelper.deleteEvent(event.getId());
                                 playSuccessSound();
-                                refreshData();
-                                refreshTab2CalendarEvents();
+                                refreshAllTabs();
                                 Toast.makeText(MainActivity.this, "Đã xóa lịch thành công!", Toast.LENGTH_SHORT).show();
                             });
                 }
                 @Override public void onEditClick(EventModel event) { showEditEventDialog(event); }
-                @Override public void onSelectionChanged(int selectedCount) {}
+                @Override public void onSelectionChanged(int selectedCount) {
+                    TextView tvCount = findViewById(R.id.tvSelectedCount);
+                    if (tvCount != null) {
+                        tvCount.setText("Đã chọn: " + selectedCount + " lịch");
+                    }
+                    View multiBar = findViewById(R.id.layoutMultiSelectBar);
+                    if (multiBar != null && tab2Adapter != null) {
+                        multiBar.setVisibility(tab2Adapter.isMultiSelectMode() ? View.VISIBLE : View.GONE);
+                    }
+                }
             });
             rvTab2Events.setAdapter(tab2Adapter);
         }
 
         TextView btnEnableMultiSelect = findViewById(R.id.btnEnableMultiSelect);
+        TextView btnTab2EnableMultiSelect = findViewById(R.id.btnTab2EnableMultiSelect);
         MaterialCardView layoutMultiSelectBar = findViewById(R.id.layoutMultiSelectBar);
         TextView tvSelectedCount = findViewById(R.id.tvSelectedCount);
         Button btnSelectAll = findViewById(R.id.btnSelectAll);
         Button btnBatchDelete = findViewById(R.id.btnBatchDelete);
         Button btnCancelMultiSelect = findViewById(R.id.btnCancelMultiSelect);
 
+        TextView btnFileEnableMultiSelect = findViewById(R.id.btnFileEnableMultiSelect);
+        MaterialCardView layoutFileMultiSelectBar = findViewById(R.id.layoutFileMultiSelectBar);
+        TextView tvFileSelectedCount = findViewById(R.id.tvFileSelectedCount);
+        Button btnFileSelectAll = findViewById(R.id.btnFileSelectAll);
+        Button btnFileBatchDelete = findViewById(R.id.btnFileBatchDelete);
+        Button btnFileCancelMultiSelect = findViewById(R.id.btnFileCancelMultiSelect);
+
+        TextView btnManageFileEvents = findViewById(R.id.btnManageFileEvents);
         TextView btnClearAllHistory = findViewById(R.id.btnClearAllHistory);
         Button btnTestAlarmTab = findViewById(R.id.btnTestAlarmTab);
 
@@ -453,21 +664,41 @@ public class MainActivity extends AppCompatActivity {
         Button btnImportExcelTab = findViewById(R.id.btnImportExcelTab);
         Button btnImportPdfTab = findViewById(R.id.btnImportPdfTab);
         Button btnImportOcrTab = findViewById(R.id.btnImportOcrTab);
-        Button btnImportPptxTab = findViewById(R.id.btnImportPptxTab);
 
         Button btnExportExcelTab = findViewById(R.id.btnExportExcelTab);
         Button btnExportPdfTab = findViewById(R.id.btnExportPdfTab);
         Button btnCleanDataNow = findViewById(R.id.btnCleanDataNow);
 
+        View cardAppIntro = findViewById(R.id.cardAppIntro);
+        Button btnOpenDetailedAppIntro = findViewById(R.id.btnOpenDetailedAppIntro);
+        Button btnCheckUpdate = findViewById(R.id.btnCheckUpdate);
+        
+        View.OnClickListener appIntroListener = v -> {
+            SoundHelper.playFeedback(MainActivity.this, v);
+            showAppIntroductionDialog();
+        };
+        if (cardAppIntro != null) cardAppIntro.setOnClickListener(appIntroListener);
+        if (btnOpenDetailedAppIntro != null) btnOpenDetailedAppIntro.setOnClickListener(appIntroListener);
+        if (btnCheckUpdate != null) btnCheckUpdate.setOnClickListener(v -> VersionCheckHelper.checkForUpdatesManual(this));
+
+        TextView tvFooterVersion = findViewById(R.id.tvFooterVersion);
+        if (tvFooterVersion != null) {
+            tvFooterVersion.setText("LectuPlan v" + VersionCheckHelper.getCurrentVersionName(this) + " • Ứng dụng Quản lý Lịch giảng dạy");
+        }
+
         fabScrollToTop = findViewById(R.id.fabScrollToTop);
 
         if (fabAddEvent != null) {
-            fabAddEvent.setOnClickListener(v -> showAddEventDialog());
+            fabAddEvent.setOnClickListener(v -> {
+                SoundHelper.playFeedback(MainActivity.this, v);
+                showAddEventDialog();
+            });
         }
 
         // Xử lý sự kiện nhấn nút cuộn lên đầu trang (Scroll to Top)
         if (fabScrollToTop != null) {
             fabScrollToTop.setOnClickListener(v -> {
+                SoundHelper.playFeedback(MainActivity.this, v);
                 if (currentActiveTabIndex == 0) {
                     if (rvEvents != null) rvEvents.smoothScrollToPosition(0);
                 } else if (currentActiveTabIndex == 1) {
@@ -559,9 +790,12 @@ public class MainActivity extends AppCompatActivity {
                     AlarmReceiver.stopAlarmSound();
                     Toast.makeText(this, "Đã tắt chuông báo thức!", Toast.LENGTH_SHORT).show();
                 } else {
+                    int hour = AlarmScheduler.getAlarmHour(this);
+                    int minute = AlarmScheduler.getAlarmMinute(this);
+                    String timeStr = AlarmScheduler.getFormattedTime(hour, minute);
                     AlarmReceiver.triggerSoundAndNotification(this,
-                            "Báo lịch 6h00 sáng (Báo trước 24h)",
-                            "Thầy/Cô có lịch sự kiện trong 24 giờ tới! Hãy kiểm tra ứng dụng LectuPlan.");
+                            "⏰ Báo lịch Giảng viên (" + timeStr + ")",
+                            "Thầy/Cô có lịch sự kiện sắp diễn ra! Hãy kiểm tra ứng dụng LectuPlan.");
                     showStopAlarmDialog();
                 }
             });
@@ -571,29 +805,16 @@ public class MainActivity extends AppCompatActivity {
         if (btnImportExcelTab != null) btnImportExcelTab.setOnClickListener(v -> excelPickerLauncher.launch("*/*"));
         if (btnImportPdfTab != null) btnImportPdfTab.setOnClickListener(v -> pdfPickerLauncher.launch("application/pdf"));
         if (btnImportOcrTab != null) btnImportOcrTab.setOnClickListener(v -> imagePickerLauncher.launch("image/*"));
-        if (btnImportPptxTab != null) btnImportPptxTab.setOnClickListener(v -> pptxPickerLauncher.launch("*/*"));
 
         if (btnExportExcelTab != null) btnExportExcelTab.setOnClickListener(v -> startExportExcelProcess());
         if (btnExportPdfTab != null) btnExportPdfTab.setOnClickListener(v -> exportPdfReportProcess());
 
-        if (btnCleanDataNow != null) {
-            btnCleanDataNow.setOnClickListener(v -> {
-                showCustomConfirmDialog(
-                        "🧹",
-                        "DỌN DẸP DỮ LIỆU CŨ",
-                        "Bạn có chắc muốn dọn dẹp ngay lập tức tất cả các lịch công việc đã quá 1 năm?",
-                        "🧹 Dọn dẹp ngay",
-                        Color.parseColor("#DC2626"),
-                        () -> {
-                            int cleaned = dbHelper.autoDeleteOldData();
-                            playSuccessSound();
-                            refreshData();
-                            Toast.makeText(this, "Đã dọn dẹp " + cleaned + " lịch cũ quá 1 năm!", Toast.LENGTH_SHORT).show();
-                        });
-            });
-        }
-
         setupCustomBottomNav();
+        setupThemeSettings();
+        setupFontSizeSettings();
+        setupAlarmSettings();
+        setupAutoDeleteSettings();
+        setupSoundSettings();
         setupFilterChips();
 
         if (swipeRefreshLayout != null) {
@@ -635,7 +856,7 @@ public class MainActivity extends AppCompatActivity {
                         () -> {
                             dbHelper.deleteEvent(event.getId());
                             playSuccessSound();
-                            refreshData();
+                            refreshAllTabs();
                             Toast.makeText(MainActivity.this, "Đã xóa lịch thành công!", Toast.LENGTH_SHORT).show();
                         });
             }
@@ -671,26 +892,36 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
+        if (btnTab2EnableMultiSelect != null) {
+            btnTab2EnableMultiSelect.setOnClickListener(v -> {
+                if (tab2Adapter != null) {
+                    tab2Adapter.setMultiSelectMode(true);
+                    if (layoutMultiSelectBar != null) layoutMultiSelectBar.setVisibility(View.VISIBLE);
+                }
+            });
+        }
+
         if (btnSelectAll != null) {
             btnSelectAll.setOnClickListener(v -> {
-                if (adapter != null) adapter.selectAll();
+                EventAdapter targetAdapter = (currentActiveTabIndex == 1) ? tab2Adapter : adapter;
+                if (targetAdapter != null) targetAdapter.selectAll();
             });
         }
 
         if (btnCancelMultiSelect != null) {
             btnCancelMultiSelect.setOnClickListener(v -> {
-                if (adapter != null) {
-                    adapter.setMultiSelectMode(false);
-                    if (layoutMultiSelectBar != null) layoutMultiSelectBar.setVisibility(View.GONE);
-                    if (fabAddEvent != null) fabAddEvent.show();
-                }
+                if (adapter != null) adapter.setMultiSelectMode(false);
+                if (tab2Adapter != null) tab2Adapter.setMultiSelectMode(false);
+                if (layoutMultiSelectBar != null) layoutMultiSelectBar.setVisibility(View.GONE);
+                if (fabAddEvent != null && currentActiveTabIndex == 0) fabAddEvent.show();
             });
         }
 
         if (btnBatchDelete != null) {
             btnBatchDelete.setOnClickListener(v -> {
-                if (adapter == null) return;
-                List<Integer> ids = adapter.getSelectedEventIds();
+                EventAdapter targetAdapter = (currentActiveTabIndex == 1) ? tab2Adapter : adapter;
+                if (targetAdapter == null) return;
+                List<Integer> ids = targetAdapter.getSelectedEventIds();
                 if (ids.isEmpty()) {
                     Toast.makeText(this, "Vui lòng tích chọn ít nhất 1 lịch để xóa!", Toast.LENGTH_SHORT).show();
                     return;
@@ -705,10 +936,13 @@ public class MainActivity extends AppCompatActivity {
                         () -> {
                             dbHelper.deleteMultipleEvents(ids);
                             playSuccessSound();
-                            adapter.setMultiSelectMode(false);
+                            if (adapter != null) adapter.setMultiSelectMode(false);
+                            if (tab2Adapter != null) tab2Adapter.setMultiSelectMode(false);
                             if (layoutMultiSelectBar != null) layoutMultiSelectBar.setVisibility(View.GONE);
-                            if (fabAddEvent != null) fabAddEvent.show();
+                            if (fabAddEvent != null && currentActiveTabIndex == 0) fabAddEvent.show();
                             refreshData();
+                            refreshTab2CalendarEvents();
+                            updateChartTab();
                             Toast.makeText(MainActivity.this, "Đã xóa thành công " + ids.size() + " lịch!", Toast.LENGTH_SHORT).show();
                         });
             });
@@ -734,38 +968,62 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onDeleteClick(FileHistoryModel item) {
-                    showCustomConfirmDialog(
-                            "🗑️",
-                            "XÓA NHẬT KÝ FILE",
-                            "Bạn có chắc muốn xóa lịch sử file '" + item.getFileName() + "'?",
-                            "🔴 Xóa nhật ký",
-                            Color.parseColor("#DC2626"),
-                            () -> {
-                                dbHelper.deleteFileHistory(item.getId());
-                                playSuccessSound();
-                                refreshFileHistory();
-                            });
+                    showDeleteFileAndEventsDialog(item);
+                }
+
+                @Override
+                public void onSelectionChanged(int selectedCount) {
+                    if (tvFileSelectedCount != null) {
+                        tvFileSelectedCount.setText("Đã chọn: " + selectedCount + " tệp");
+                    }
+                    if (layoutFileMultiSelectBar != null) {
+                        layoutFileMultiSelectBar.setVisibility(fileHistoryAdapter != null && fileHistoryAdapter.isMultiSelectMode() ? View.VISIBLE : View.GONE);
+                    }
                 }
             });
             rvFileHistory.setAdapter(fileHistoryAdapter);
             refreshFileHistory();
         }
 
-        if (btnClearAllHistory != null) {
-            btnClearAllHistory.setOnClickListener(v -> {
-                showCustomConfirmDialog(
-                        "🧹",
-                        "XÓA TẤT CẢ LỊCH SỬ FILE",
-                        "Bạn có chắc chắn muốn xóa TOÀN BỘ nhật ký lịch sử nhập xuất file Excel?",
-                        "🔴 Xóa tất cả",
-                        Color.parseColor("#DC2626"),
-                        () -> {
-                            dbHelper.clearAllFileHistory();
-                            playSuccessSound();
-                            refreshFileHistory();
-                            Toast.makeText(MainActivity.this, "Đã dọn sạch nhật ký lịch sử file Excel!", Toast.LENGTH_SHORT).show();
-                        });
+        if (btnFileEnableMultiSelect != null) {
+            btnFileEnableMultiSelect.setOnClickListener(v -> {
+                if (fileHistoryAdapter != null) {
+                    if (fileHistoryAdapter.getItemCount() == 0) {
+                        Toast.makeText(this, "Chưa có tệp nào trong lịch sử để chọn!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    fileHistoryAdapter.setMultiSelectMode(true);
+                    if (layoutFileMultiSelectBar != null) layoutFileMultiSelectBar.setVisibility(View.VISIBLE);
+                    if (tvFileSelectedCount != null) tvFileSelectedCount.setText("Đã chọn: 0 tệp");
+                }
             });
+        }
+
+        if (btnFileSelectAll != null) {
+            btnFileSelectAll.setOnClickListener(v -> {
+                if (fileHistoryAdapter != null) fileHistoryAdapter.selectAll();
+            });
+        }
+
+        if (btnFileCancelMultiSelect != null) {
+            btnFileCancelMultiSelect.setOnClickListener(v -> {
+                if (fileHistoryAdapter != null) {
+                    fileHistoryAdapter.setMultiSelectMode(false);
+                    if (layoutFileMultiSelectBar != null) layoutFileMultiSelectBar.setVisibility(View.GONE);
+                }
+            });
+        }
+
+        if (btnFileBatchDelete != null) {
+            btnFileBatchDelete.setOnClickListener(v -> handleBatchDeleteFileHistory());
+        }
+
+        if (btnManageFileEvents != null) {
+            btnManageFileEvents.setOnClickListener(v -> showManageImportedFilesDialog());
+        }
+
+        if (btnClearAllHistory != null) {
+            btnClearAllHistory.setOnClickListener(v -> showClearAllFilesAndEventsDialog());
         }
 
         setupSpinners();
@@ -803,12 +1061,14 @@ public class MainActivity extends AppCompatActivity {
             @Override public void afterTextChanged(Editable s) {}
         });
 
-        if (dbHelper.searchEvents("", "Tất cả HK", "Tất cả Năm").isEmpty()) {
-            seedSampleData();
-        }
+        dbHelper.deleteSampleEvents();
 
         refreshData();
         refreshTab2CalendarEvents();
+        checkVoiceMemoIntent(getIntent());
+
+        // 🌟 Tự động kiểm tra và mở Dialog "Cập nhật thành công - Có gì mới?" nếu người dùng vừa lên bản mới v1.1.0
+        VersionCheckHelper.checkAndShowWhatsNew(this);
     }
 
     private void applyTab2CalendarMode(int mode) {
@@ -917,7 +1177,7 @@ public class MainActivity extends AppCompatActivity {
                 displayList.add(new EventModel(
                         -400 - i,
                         i + 1,
-                        "💡 " + res.dayTitle + " • " + res.statusBadge,
+                        res.statusBadge,
                         dateIso,
                         res.summaryText,
                         "HK1",
@@ -1005,15 +1265,13 @@ public class MainActivity extends AppCompatActivity {
                 String dIso = ev.getDate().trim();
                 Set<Integer> types = eventTypesMap.computeIfAbsent(dIso, k -> new HashSet<>());
 
-                String orgText = ev.getOrganizer() != null ? ev.getOrganizer() : "";
-                String titleLower = ev.getTitle().toLowerCase(Locale.getDefault());
-
-                if (orgText.contains("Viết tay") || orgText.contains("Ghi tay") || orgText.contains("chữ ghi tay")) {
-                    types.add(3); // Tím: Ghi tay
-                } else if (titleLower.contains("họp") || titleLower.contains("thi") || titleLower.contains("hội đồng") || titleLower.contains("chấm")) {
-                    types.add(2); // Cam: Họp / Thi / Hội đồng
+                String cat = ev.getScheduleCategory();
+                if (EventModel.CAT_TEACHING.equalsIgnoreCase(cat)) {
+                    types.add(1); // Xanh: Dạy / Học
+                } else if (EventModel.CAT_EVENT.equalsIgnoreCase(cat) || EventModel.CAT_INCIDENT.equalsIgnoreCase(cat)) {
+                    types.add(2); // Cam: Sự kiện / Phát sinh
                 } else {
-                    types.add(1); // Xanh lá: Dạy / Học / Công việc
+                    types.add(3); // Tím: Lịch khác / Nhập tay
                 }
             }
         }
@@ -1085,6 +1343,7 @@ public class MainActivity extends AppCompatActivity {
         android.app.AlertDialog dialog = new android.app.AlertDialog.Builder(this)
                 .setView(dialogView)
                 .create();
+        KeyboardUtils.applyAutoHideKeyboard(dialog);
 
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
@@ -1188,7 +1447,7 @@ public class MainActivity extends AppCompatActivity {
                 "🔔",
                 "BÁO THỨC LỊCH GIẢNG VIÊN",
                 "Chuông báo lịch công việc đang phát! Bạn có muốn tắt chuông ngay bây giờ?",
-                "🔴 TẮT CHUÔNG BÁO THỨC",
+                "🔕 TẮT CHUÔNG",
                 Color.parseColor("#DC2626"),
                 () -> {
                     AlarmReceiver.stopAlarmSound();
@@ -1222,58 +1481,30 @@ public class MainActivity extends AppCompatActivity {
     private String formatMinutesToHourString(int minutes) {
         int h = minutes / 60;
         int m = minutes % 60;
-        return String.format(Locale.US, "%02dh%02d", h, m);
+        return String.format(Locale.US, "%02d:%02d", h, m);
     }
 
     private List<TimeSlotInterval> extractBusyIntervalsFromEvent(EventModel event) {
         List<TimeSlotInterval> intervals = new ArrayList<>();
-        if (event == null) return intervals;
+        if (event == null || event.getId() <= 0) return intervals;
 
-        String text = (event.getTitle() + " " + (event.getOrganizer() != null ? event.getOrganizer() : "")).toLowerCase(Locale.getDefault());
+        String rawTitle = event.getTitle() != null ? event.getTitle().trim() : "";
+        String cleanTitle = rawTitle
+                .replaceAll("(?i)\\|.*", "")
+                .replaceAll("(?i)-\\s*phòng.*", "")
+                .replaceAll("(?i)phòng\\s*[:=]?\\s*[A-Za-z0-9._/-]+", "")
+                .replaceAll("\\[[^\\]]*\\]", "")
+                .replaceAll("\\([^)]*\\)", "")
+                .trim();
+        if (cleanTitle.isEmpty()) cleanTitle = rawTitle;
 
-        // 1. Quét tất cả các tiết học (Tiết 1-3, Tiết 4-6, Tiết 7-9, Tiết 7-11, Tiết: - 1-3...)
-        Matcher mPeriod = Pattern.compile("(?i)tiết\\s*[:\\s-]*(\\d{1,2})\\s*[-–đếnvàto\\s]+\\s*(\\d{1,2})").matcher(text);
-        while (mPeriod.find()) {
-            try {
-                int startP = Integer.parseInt(mPeriod.group(1));
-                int endP = Integer.parseInt(mPeriod.group(2));
-                int startMin = getStartMinuteOfPeriod(startP);
-                int endMin = getEndMinuteOfPeriod(endP);
-                if (startMin >= 0 && endMin > startMin) {
-                    intervals.add(new TimeSlotInterval(startMin, endMin, "Tiết " + startP + "-" + endP));
-                }
-            } catch (Exception ignored) {}
-        }
+        int startMin = event.getStartMin();
+        int endMin = event.getEndMin();
 
-        // 2. Quét các khoảng giờ cụ thể: 07:00 - 09:30, 13h30 - 15h30, 08h - 10h
-        Matcher mTime = Pattern.compile("(\\d{1,2})[h:](\\d{0,2})\\s*[-–đếnto]+\\s*(\\d{1,2})[h:](\\d{0,2})").matcher(text);
-        while (mTime.find()) {
-            try {
-                int h1 = Integer.parseInt(mTime.group(1));
-                int m1 = mTime.group(2).isEmpty() ? 0 : Integer.parseInt(mTime.group(2));
-                int h2 = Integer.parseInt(mTime.group(3));
-                int m2 = mTime.group(4).isEmpty() ? 0 : Integer.parseInt(mTime.group(4));
-                int startMin = h1 * 60 + m1;
-                int endMin = h2 * 60 + m2;
-                if (endMin > startMin && startMin >= 6 * 60 && endMin <= 22 * 60) {
-                    intervals.add(new TimeSlotInterval(startMin, endMin, formatMinutesToHourString(startMin) + "-" + formatMinutesToHourString(endMin)));
-                }
-            } catch (Exception ignored) {}
-        }
-
-        if (!intervals.isEmpty()) {
-            return intervals;
-        }
-
-        // 3. Fallback: Nếu không có tiết/giờ cụ thể mà chỉ có chữ sáng / chiều / cả ngày
-        if (text.contains("cả ngày")) {
-            intervals.add(new TimeSlotInterval(7 * 60, 17 * 60, "Cả ngày"));
-        } else if (text.contains("chiều") || text.contains("buổi chiều")) {
-            intervals.add(new TimeSlotInterval(13 * 60, 17 * 60, "Buổi chiều"));
-        } else if (text.contains("sáng") || text.contains("buổi sáng")) {
-            intervals.add(new TimeSlotInterval(7 * 60, 11 * 60 + 30, "Buổi sáng"));
+        if (startMin > 0 && endMin > startMin) {
+            intervals.add(new TimeSlotInterval(startMin, endMin, cleanTitle));
         } else {
-            intervals.add(new TimeSlotInterval(7 * 60 + 30, 9 * 60 + 30, "Buổi sáng"));
+            intervals.add(new TimeSlotInterval(7 * 60 + 30, 11 * 60 + 35, cleanTitle));
         }
 
         return intervals;
@@ -1385,20 +1616,18 @@ public class MainActivity extends AppCompatActivity {
                 if (e.getId() <= 0) continue;
                 List<TimeSlotInterval> intervals = extractBusyIntervalsFromEvent(e);
                 for (TimeSlotInterval interval : intervals) {
+                    String timeRangeStr = formatMinutesToHourString(interval.startMin) + "-" + formatMinutesToHourString(interval.endMin);
+                    String desc = timeRangeStr;
+                    if (interval.label != null && !interval.label.isEmpty() && !interval.label.equalsIgnoreCase(timeRangeStr)) {
+                        desc += " (" + interval.label + ")";
+                    }
+                    
                     if (interval.startMin < 12 * 60 + 30) {
                         morningBusyList.add(interval);
-                        String desc = formatMinutesToHourString(interval.startMin) + "-" + formatMinutesToHourString(interval.endMin);
-                        if (interval.label != null && !interval.label.isEmpty()) {
-                            desc += " (" + interval.label + ")";
-                        }
                         if (!morningBusyDesc.contains(desc)) morningBusyDesc.add(desc);
                     }
                     if (interval.endMin > 12 * 60) {
                         afternoonBusyList.add(interval);
-                        String desc = formatMinutesToHourString(interval.startMin) + "-" + formatMinutesToHourString(interval.endMin);
-                        if (interval.label != null && !interval.label.isEmpty()) {
-                            desc += " (" + interval.label + ")";
-                        }
                         if (!afternoonBusyDesc.contains(desc)) afternoonBusyDesc.add(desc);
                     }
                 }
@@ -1416,32 +1645,38 @@ public class MainActivity extends AppCompatActivity {
 
         StringBuilder morningSb = new StringBuilder();
         if (morningFreeSlots.isEmpty()) {
-            morningSb.append("🔴 Đã kín lịch sáng (07:00 - 11:30)");
-        } else if (morningFreeSlots.size() == 1 && morningFreeSlots.get(0).equals("07h00 - 11h30")) {
+            morningSb.append("🔴 Kín lịch cả buổi sáng (07:00 - 11:30)");
+        } else if (morningFreeSlots.size() == 1 && (morningFreeSlots.get(0).contains("07h00 - 11h30") || morningFreeSlots.get(0).contains("07:00 - 11:30"))) {
             morningSb.append("🟢 Trống cả buổi sáng (07:00 - 11:30)");
         } else {
+            morningSb.append("🟢 Còn trống: ").append(String.join(", ", morningFreeSlots));
             if (!morningBusyDesc.isEmpty()) {
-                morningSb.append("Bận: ").append(String.join(", ", morningBusyDesc)).append(" ➔ ");
+                morningSb.append("\n🔴 Lịch bận:");
+                for (String b : morningBusyDesc) {
+                    morningSb.append("\n  • ").append(b);
+                }
             }
-            morningSb.append("🟢 Trống: ").append(String.join(", ", morningFreeSlots));
         }
         res.morningDetail = morningSb.toString();
 
         StringBuilder afternoonSb = new StringBuilder();
         if (afternoonFreeSlots.isEmpty()) {
-            afternoonSb.append("🔴 Đã kín lịch chiều (13:00 - 17:00)");
-        } else if (afternoonFreeSlots.size() == 1 && afternoonFreeSlots.get(0).equals("13h00 - 17h00")) {
+            afternoonSb.append("🔴 Kín lịch cả buổi chiều (13:00 - 17:00)");
+        } else if (afternoonFreeSlots.size() == 1 && (afternoonFreeSlots.get(0).contains("13h00 - 17h00") || afternoonFreeSlots.get(0).contains("13:00 - 17:00"))) {
             afternoonSb.append("🟢 Trống cả buổi chiều (13:00 - 17:00)");
         } else {
+            afternoonSb.append("🟢 Còn trống: ").append(String.join(", ", afternoonFreeSlots));
             if (!afternoonBusyDesc.isEmpty()) {
-                afternoonSb.append("Bận: ").append(String.join(", ", afternoonBusyDesc)).append(" ➔ ");
+                afternoonSb.append("\n🔴 Lịch bận:");
+                for (String b : afternoonBusyDesc) {
+                    afternoonSb.append("\n  • ").append(b);
+                }
             }
-            afternoonSb.append("🟢 Trống: ").append(String.join(", ", afternoonFreeSlots));
         }
         res.afternoonDetail = afternoonSb.toString();
 
-        boolean isMorningFreeAll = morningFreeSlots.size() == 1 && morningFreeSlots.get(0).equals("07h00 - 11h30");
-        boolean isAfternoonFreeAll = afternoonFreeSlots.size() == 1 && afternoonFreeSlots.get(0).equals("13h00 - 17h00");
+        boolean isMorningFreeAll = morningFreeSlots.size() == 1 && (morningFreeSlots.get(0).contains("07h00 - 11h30") || morningFreeSlots.get(0).contains("07:00 - 11:30"));
+        boolean isAfternoonFreeAll = afternoonFreeSlots.size() == 1 && (afternoonFreeSlots.get(0).contains("13h00 - 17h00") || afternoonFreeSlots.get(0).contains("13:00 - 17:00"));
 
         if (isMorningFreeAll && isAfternoonFreeAll) {
             res.statusBadge = "🟢 TRỐNG CẢ NGÀY";
@@ -1465,8 +1700,97 @@ public class MainActivity extends AppCompatActivity {
             res.statusBgColor = "#FEF3C7";
         }
 
-        res.summaryText = "☀️ Sáng: " + res.morningDetail + "\n⛅ Chiều: " + res.afternoonDetail;
+        res.summaryText = "☀️ Buổi Sáng:\n   " + res.morningDetail + "\n\n⛅ Buổi Chiều:\n   " + res.afternoonDetail;
         return res;
+    }
+
+    private void showContinuousTimeline(String targetDateIso) {
+        playSuccessSound();
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_continuous_timeline, null);
+        TextView tvTimelineDayTitle = view.findViewById(R.id.tvTimelineDayTitle);
+        TextView tvTimelineStatsSummary = view.findViewById(R.id.tvTimelineStatsSummary);
+        ImageButton btnCloseTimelineDialog = view.findViewById(R.id.btnCloseTimelineDialog);
+        Button btnTimelinePrevDay = view.findViewById(R.id.btnTimelinePrevDay);
+        Button btnTimelineToday = view.findViewById(R.id.btnTimelineToday);
+        Button btnTimelineNextDay = view.findViewById(R.id.btnTimelineNextDay);
+        RecyclerView rvTimelineStream = view.findViewById(R.id.rvTimelineStream);
+        Button btnOpenSmartFinderFromTimeline = view.findViewById(R.id.btnOpenSmartFinderFromTimeline);
+        Button btnAddNewEventFromTimeline = view.findViewById(R.id.btnAddNewEventFromTimeline);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(view)
+                .create();
+        KeyboardUtils.applyAutoHideKeyboard(dialog);
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
+        }
+
+        final String[] currentDateArr = new String[]{targetDateIso != null ? targetDateIso : selectedTab2DateIso};
+
+        Runnable updateTimelineUI = () -> {
+            String currentIso = currentDateArr[0];
+            List<EventModel> dayEvents = dbHelper.getEventsForDate(currentIso);
+            GranularTimelineEngine.DayTimelineSummary summary = GranularTimelineEngine.generateDayTimeline(currentIso, dayEvents);
+            
+            tvTimelineDayTitle.setText(summary.dayHeaderTitle);
+            tvTimelineStatsSummary.setText(summary.statsSummary);
+            
+            TimelineSlotAdapter adapter = new TimelineSlotAdapter(summary.timelineSlots, new TimelineSlotAdapter.OnSlotClickListener() {
+                @Override
+                public void onFreeSlotClick(TimelineSlot slot) {
+                    dialog.dismiss();
+                    showAddEventDialog();
+                }
+
+                @Override
+                public void onBusyEventClick(EventModel event) {
+                    dialog.dismiss();
+                    showEditEventDialog(event);
+                }
+            });
+            rvTimelineStream.setLayoutManager(new LinearLayoutManager(this));
+            rvTimelineStream.setAdapter(adapter);
+        };
+
+        updateTimelineUI.run();
+
+        btnCloseTimelineDialog.setOnClickListener(v -> dialog.dismiss());
+        btnTimelineToday.setOnClickListener(v -> {
+            currentDateArr[0] = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Calendar.getInstance().getTime());
+            updateTimelineUI.run();
+        });
+        btnTimelinePrevDay.setOnClickListener(v -> {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(sdf.parse(currentDateArr[0]));
+                cal.add(Calendar.DAY_OF_MONTH, -1);
+                currentDateArr[0] = sdf.format(cal.getTime());
+                updateTimelineUI.run();
+            } catch (Exception e) {}
+        });
+        btnTimelineNextDay.setOnClickListener(v -> {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(sdf.parse(currentDateArr[0]));
+                cal.add(Calendar.DAY_OF_MONTH, 1);
+                currentDateArr[0] = sdf.format(cal.getTime());
+                updateTimelineUI.run();
+            } catch (Exception e) {}
+        });
+
+        btnOpenSmartFinderFromTimeline.setOnClickListener(v -> {
+            dialog.dismiss();
+            showFreeTimeAnalysis();
+        });
+
+        btnAddNewEventFromTimeline.setOnClickListener(v -> {
+            dialog.dismiss();
+            showAddEventDialog();
+        });
+
+        dialog.show();
     }
 
     private void showFreeTimeAnalysis() {
@@ -1475,6 +1799,8 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView rvFreeTimeDays = view.findViewById(R.id.rvFreeTimeDays);
         ImageButton btnCloseDialog = view.findViewById(R.id.btnCloseFreeTimeDialog);
         Button btnClose = view.findViewById(R.id.btnCloseFreeTime);
+        Button btnOpenTimelineFromFree = view.findViewById(R.id.btnOpenTimelineFromFree);
+        Button btnOpenSmartFinderFromFree = view.findViewById(R.id.btnOpenSmartFinderFromFree);
 
         List<FreeTimeDayModel> dayList = new ArrayList<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -1485,7 +1811,7 @@ public class MainActivity extends AppCompatActivity {
             List<EventModel> events = dbHelper.searchEvents(dateIso, "Tất cả HK", "Tất cả Năm");
             DayFreeTimeResult res = analyzeDayFreeTime(dateIso, events);
 
-            dayList.add(new FreeTimeDayModel(res.dayTitle, res.statusBadge, res.statusColor, res.statusBgColor, res.summaryText));
+            dayList.add(new FreeTimeDayModel(res.dateIso, res.dayTitle, res.statusBadge, res.statusColor, res.statusBgColor, res.morningDetail, res.afternoonDetail));
             cal.add(Calendar.DAY_OF_YEAR, 1);
         }
 
@@ -1497,14 +1823,191 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setView(view)
                 .create();
+        KeyboardUtils.applyAutoHideKeyboard(dialog);
 
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
 
+        if (btnOpenTimelineFromFree != null) {
+            btnOpenTimelineFromFree.setOnClickListener(v -> {
+                dialog.dismiss();
+                showContinuousTimeline(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Calendar.getInstance().getTime()));
+            });
+        }
+        
+        if (btnOpenSmartFinderFromFree != null) {
+            btnOpenSmartFinderFromFree.setOnClickListener(v -> {
+                dialog.dismiss();
+                showSmartSlotFinderDialog();
+            });
+        }
+
         if (btnCloseDialog != null) btnCloseDialog.setOnClickListener(v -> dialog.dismiss());
         if (btnClose != null) btnClose.setOnClickListener(v -> dialog.dismiss());
 
+        dialog.show();
+    }
+
+    private void showSmartSlotFinderDialog() {
+        playSuccessSound();
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_smart_slot_finder, null);
+        EditText etRequiredMinutes = view.findViewById(R.id.etRequiredMinutes);
+        Button btnDoFindSlots = view.findViewById(R.id.btnDoFindSlots);
+        TextView chipFind60 = view.findViewById(R.id.chipFind60);
+        TextView chipFind90 = view.findViewById(R.id.chipFind90);
+        TextView chipFind120 = view.findViewById(R.id.chipFind120);
+        TextView chipFind180 = view.findViewById(R.id.chipFind180);
+        TextView tvFinderResultCount = view.findViewById(R.id.tvFinderResultCount);
+        RecyclerView rvFoundSlots = view.findViewById(R.id.rvFoundSlots);
+        ImageButton btnCloseSlotFinder = view.findViewById(R.id.btnCloseSlotFinder);
+        Button btnCloseFinderDialog = view.findViewById(R.id.btnCloseFinderDialog);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(view)
+                .create();
+        KeyboardUtils.applyAutoHideKeyboard(dialog);
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        Runnable performScan = () -> {
+            int reqMinutes = 120;
+            try {
+                String valStr = etRequiredMinutes.getText().toString().trim();
+                if (!valStr.isEmpty()) reqMinutes = Integer.parseInt(valStr);
+            } catch (Exception ignored) {}
+
+            List<SmartSlotAdapter.FoundSlot> foundSlots = new ArrayList<>();
+            SimpleDateFormat sdfIso = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            SimpleDateFormat sdfDisplay = new SimpleDateFormat("EEEE, dd/MM/yyyy", new Locale("vi", "VN"));
+            Calendar cal = Calendar.getInstance();
+
+            for (int day = 0; day < 7; day++) {
+                String dateIso = sdfIso.format(cal.getTime());
+                String dayDisplayStr = sdfDisplay.format(cal.getTime());
+                List<EventModel> dayEvents = dbHelper.getEventsForDate(dateIso);
+                GranularTimelineEngine.DayTimelineSummary summary = GranularTimelineEngine.generateDayTimeline(dateIso, dayEvents);
+
+                if (summary != null && summary.timelineSlots != null) {
+                    for (TimelineSlot slot : summary.timelineSlots) {
+                        if (slot.isFreeSlot() && slot.getDurationMinutes() >= reqMinutes) {
+                            String timeRange = TimeNormalizer.minuteToTimeString(slot.getStartMin()) + " - " + TimeNormalizer.minuteToTimeString(slot.getEndMin());
+                            int h = slot.getDurationMinutes() / 60;
+                            int m = slot.getDurationMinutes() % 60;
+                            String durFormatted = (h > 0 ? h + " giờ " : "") + (m > 0 ? m + " phút" : "");
+                            if (durFormatted.isEmpty()) durFormatted = slot.getDurationMinutes() + " phút";
+
+                            SmartSlotAdapter.FoundSlot fs = new SmartSlotAdapter.FoundSlot(
+                                    dateIso,
+                                    dayDisplayStr,
+                                    slot.getStartMin(),
+                                    slot.getEndMin(),
+                                    timeRange,
+                                    slot.getDurationMinutes(),
+                                    durFormatted,
+                                    slot.getSuggestion() != null ? slot.getSuggestion() : "Khả dụng nhận việc"
+                            );
+                            
+                            // 🌟 AI Scoring Logic (Offline, rule-based)
+                            int score = 100; // Base score
+                            String recommendation = "";
+                            
+                            if (dayEvents.isEmpty()) {
+                                score += 20; // Khá tốt, ngày hoàn toàn trống
+                                recommendation = "Ngày trống hoàn toàn, thoải mái sắp xếp.";
+                            } else {
+                                // Tính toán dựa trên các môn đã có trong ngày
+                                boolean sameCampus = false;
+                                String matchedCampus = "";
+                                for (EventModel ev : dayEvents) {
+                                    if (ev.getSchoolCode() != null && !ev.getSchoolCode().isEmpty() && !ev.getSchoolCode().equals("OTHER")) {
+                                        sameCampus = true;
+                                        matchedCampus = ev.getSchoolCode();
+                                        break;
+                                    }
+                                }
+                                
+                                if (sameCampus) {
+                                    score += 50; // Ưu tiên cực cao: Dạy bù cùng ngày, cùng trường
+                                    recommendation = "Nên chọn! Tiện đường đi dạy ở " + matchedCampus;
+                                } else {
+                                    score -= 10;
+                                    recommendation = "Ngày có lịch dạy, cần chú ý di chuyển.";
+                                }
+                            }
+                            
+                            fs.score = score;
+                            fs.aiRecommendation = recommendation;
+
+                            foundSlots.add(fs);
+                        }
+                    }
+                }
+                cal.add(Calendar.DAY_OF_YEAR, 1);
+            }
+
+            // Sắp xếp các slot dựa trên điểm số AI (giảm dần)
+            Collections.sort(foundSlots, (a, b) -> Integer.compare(b.score, a.score));
+
+            if (tvFinderResultCount != null) {
+                if (foundSlots.isEmpty()) {
+                    tvFinderResultCount.setText("⚠️ Không tìm thấy khe rảnh liên tục nào đủ " + reqMinutes + " phút trong 7 ngày tới.");
+                    tvFinderResultCount.setTextColor(Color.parseColor("#DC2626"));
+                } else {
+                    tvFinderResultCount.setText("✅ Tìm thấy " + foundSlots.size() + " khe rảnh đủ điều kiện (>= " + reqMinutes + " phút) trong 7 ngày tới:");
+                    tvFinderResultCount.setTextColor(Color.parseColor("#16A34A"));
+                }
+            }
+
+            SmartSlotAdapter adapter = new SmartSlotAdapter(foundSlots, new SmartSlotAdapter.OnSlotScheduleListener() {
+                @Override
+                public void onSchedule(SmartSlotAdapter.FoundSlot slot) {
+                    dialog.dismiss();
+                    showAddEventDialogWithPrefill(slot.dateIso, TimeNormalizer.minuteToTimeString(slot.startMin), TimeNormalizer.minuteToTimeString(slot.endMin));
+                }
+                
+                @Override
+                public void onShare(SmartSlotAdapter.FoundSlot slot) {
+                    OfficeHoursShareHelper.shareSlotAsImage(MainActivity.this, slot);
+                }
+            });
+            if (rvFoundSlots != null) {
+                rvFoundSlots.setLayoutManager(new LinearLayoutManager(this));
+                rvFoundSlots.setAdapter(adapter);
+            }
+        };
+
+        TextView[] durChips = new TextView[]{chipFind60, chipFind90, chipFind120, chipFind180};
+        int[] minutesArr = new int[]{60, 90, 120, 180};
+
+        for (int i = 0; i < durChips.length; i++) {
+            final int idx = i;
+            if (durChips[idx] != null) {
+                durChips[idx].setOnClickListener(v -> {
+                    for (TextView c : durChips) {
+                        if (c != null) {
+                            c.setBackgroundResource(R.drawable.bg_chip_unselected);
+                            c.setTextColor(Color.parseColor("#64748B"));
+                        }
+                    }
+                    durChips[idx].setBackgroundResource(R.drawable.bg_chip_selected);
+                    durChips[idx].setTextColor(Color.parseColor("#FFFFFF"));
+                    etRequiredMinutes.setText(String.valueOf(minutesArr[idx]));
+                    performScan.run();
+                });
+            }
+        }
+
+        if (btnDoFindSlots != null) {
+            btnDoFindSlots.setOnClickListener(v -> performScan.run());
+        }
+
+        if (btnCloseSlotFinder != null) btnCloseSlotFinder.setOnClickListener(v -> dialog.dismiss());
+        if (btnCloseFinderDialog != null) btnCloseFinderDialog.setOnClickListener(v -> dialog.dismiss());
+
+        performScan.run();
         dialog.show();
     }
 
@@ -1543,6 +2046,40 @@ public class MainActivity extends AppCompatActivity {
             dir.mkdirs();
         }
         return dir;
+    }
+
+    private void deletePhysicalImportedFile(String fileName) {
+        if (fileName == null || fileName.trim().isEmpty()) return;
+        try {
+            File dir = getHistoryStorageDir();
+            if (dir.exists()) {
+                File target = new File(dir, fileName.trim());
+                if (target.exists()) target.delete();
+                File[] list = dir.listFiles();
+                if (list != null) {
+                    for (File f : list) {
+                        String name = f.getName();
+                        if (name.equals(fileName.trim()) || name.equals("view_" + fileName.trim()) || name.startsWith("view_" + fileName.trim())) {
+                            f.delete();
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+    }
+
+    private void clearAllPhysicalImportedFiles() {
+        try {
+            File dir = getHistoryStorageDir();
+            if (dir.exists()) {
+                File[] list = dir.listFiles();
+                if (list != null) {
+                    for (File f : list) {
+                        f.delete();
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
     }
 
     // Lưu bản sao nguyên gốc (binary) của file đã chọn vào bộ nhớ ứng dụng (HistoryFiles) để mở lại 100% thành công qua FileProvider
@@ -1591,8 +2128,6 @@ public class MainActivity extends AppCompatActivity {
             importExcelFile(uri);
         } else if (lower.endsWith(".pdf") || lowerMime.contains("pdf")) {
             processPdfImport(uri);
-        } else if (lower.endsWith(".pptx") || lower.endsWith(".ppt") || lowerMime.contains("presentation") || lowerMime.contains("powerpoint")) {
-            processPptxImport(uri);
         } else if (lower.endsWith(".docx") || lowerMime.contains("wordprocessingml") || lowerMime.contains("msword")) {
             processDocxImport(uri);
         } else if (lower.endsWith(".txt") || lower.endsWith(".csv") || lowerMime.startsWith("text/")) {
@@ -1750,7 +2285,7 @@ public class MainActivity extends AppCompatActivity {
                     + "🏷️ Loại định dạng: " + fileFormatLabel + "\n"
                     + "⚙️ Công nghệ đọc: " + extractionMethod + "\n"
                     + "🔎 Phân tích chữ: " + handwritingNote + "\n"
-                    + "📊 Số mục bóc tách: " + recordCount + " dòng nội dung chính xác";
+                    + "📊 Số mục bóc tách: " + recordCount + " sự kiện lịch biểu chính xác";
             tvMeta.setText(metaInfo);
         }
 
@@ -1765,7 +2300,8 @@ public class MainActivity extends AppCompatActivity {
                 sb.append("Không tìm thấy nội dung phù hợp.");
             } else {
                 for (int i = 0; i < extractedSummaries.size(); i++) {
-                    sb.append(i + 1).append(". ").append(extractedSummaries.get(i)).append("\n\n");
+                    String healed = ThumoiGiangParser.healVietnameseText(extractedSummaries.get(i));
+                    sb.append(i + 1).append(". ").append(healed).append("\n\n");
                 }
             }
             tvContent.setText(sb.toString().trim());
@@ -1774,6 +2310,7 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setView(view)
                 .create();
+        KeyboardUtils.applyAutoHideKeyboard(dialog);
 
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -1787,6 +2324,191 @@ public class MainActivity extends AppCompatActivity {
         }
         if (btnCloseTop != null) btnCloseTop.setOnClickListener(v -> dialog.dismiss());
         if (btnCloseBottom != null) btnCloseBottom.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
+    // ==========================================
+    // CÁC HÀM XỬ LÝ TRUNG TÂM THÔNG BÁO (NOTIFICATION CENTER)
+    // ==========================================
+
+    private void updateUnreadNotificationBadge() {
+        if (dbHelper == null) return;
+        int unread = dbHelper.getUnreadNotificationCount();
+        if (tvUnreadNotifBadge != null) {
+            if (unread > 0) {
+                tvUnreadNotifBadge.setVisibility(View.VISIBLE);
+                tvUnreadNotifBadge.setText(unread > 99 ? "99+" : String.valueOf(unread));
+            } else {
+                tvUnreadNotifBadge.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    private void showNotificationCenterDialog() {
+        if (isFinishing() || isDestroyed()) return;
+
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_notification_center, null);
+        ImageButton btnCloseTop = view.findViewById(R.id.btnCloseNotifCenterTop);
+        TextView btnMarkAllRead = view.findViewById(R.id.btnMarkAllRead);
+        TextView btnEnableMultiSelect = view.findViewById(R.id.btnEnableNotifMultiSelect);
+        MaterialCardView layoutMultiBar = view.findViewById(R.id.layoutNotifMultiSelectBar);
+        TextView tvSelectedCount = view.findViewById(R.id.tvNotifSelectedCount);
+        Button btnSelectAll = view.findViewById(R.id.btnNotifSelectAll);
+        Button btnBatchDelete = view.findViewById(R.id.btnNotifBatchDelete);
+        Button btnCancelMultiSelect = view.findViewById(R.id.btnNotifCancelMultiSelect);
+        RecyclerView rv = view.findViewById(R.id.rvNotifications);
+        TextView tvEmpty = view.findViewById(R.id.tvNotifEmpty);
+        Button btnClearAll = view.findViewById(R.id.btnClearAllNotifs);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(view)
+                .create();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        if (btnCloseTop != null) btnCloseTop.setOnClickListener(v -> dialog.dismiss());
+
+        List<NotificationModel> notifList = dbHelper.getAllNotifications();
+        final NotificationAdapter[] adapterHolder = new NotificationAdapter[1];
+        
+        NotificationAdapter adapter = new NotificationAdapter(notifList, new NotificationAdapter.OnNotificationClickListener() {
+            @Override
+            public void onItemClick(NotificationModel item) {
+                // Đánh dấu đã đọc
+                if (!item.isRead()) {
+                    dbHelper.markNotificationAsRead(item.getId());
+                    item.setRead(true);
+                    updateUnreadNotificationBadge();
+                }
+                
+                // Mở dialog xem chi tiết thông báo
+                new AlertDialog.Builder(MainActivity.this)
+                        .setTitle(item.getTitle())
+                        .setMessage("⏰ Thời gian: " + item.getTimestamp() + "\n\nNội dung chi tiết:\n" + item.getMessage())
+                        .setPositiveButton("Đóng", (d, w) -> {
+                            d.dismiss();
+                            if (adapterHolder[0] != null) {
+                                adapterHolder[0].updateData(dbHelper.getAllNotifications());
+                            }
+                        })
+                        .show();
+            }
+
+            @Override
+            public void onSelectionChanged(int selectedCount) {
+                if (tvSelectedCount != null) {
+                    tvSelectedCount.setText("Đã chọn: " + selectedCount);
+                }
+                if (layoutMultiBar != null) {
+                    layoutMultiBar.setVisibility(adapterHolder[0] != null && adapterHolder[0].isMultiSelectMode() ? View.VISIBLE : View.GONE);
+                }
+            }
+        });
+        adapterHolder[0] = adapter;
+
+        if (rv != null) {
+            rv.setLayoutManager(new LinearLayoutManager(this));
+            rv.setAdapter(adapter);
+        }
+
+        Runnable refreshUiState = () -> {
+            List<NotificationModel> currentList = dbHelper.getAllNotifications();
+            adapter.updateData(currentList);
+            boolean isEmpty = currentList.isEmpty();
+            if (tvEmpty != null) tvEmpty.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+            if (rv != null) rv.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+            updateUnreadNotificationBadge();
+        };
+
+        refreshUiState.run();
+
+        if (btnMarkAllRead != null) {
+            btnMarkAllRead.setOnClickListener(v -> {
+                dbHelper.markAllNotificationsAsRead();
+                playSuccessSound();
+                refreshUiState.run();
+                Toast.makeText(this, "Đã đánh dấu tất cả thông báo là đã đọc!", Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        if (btnEnableMultiSelect != null) {
+            btnEnableMultiSelect.setOnClickListener(v -> {
+                adapter.setMultiSelectMode(true);
+            });
+        }
+
+        if (btnSelectAll != null) {
+            btnSelectAll.setOnClickListener(v -> adapter.selectAll());
+        }
+
+        if (btnCancelMultiSelect != null) {
+            btnCancelMultiSelect.setOnClickListener(v -> adapter.setMultiSelectMode(false));
+        }
+
+        if (btnBatchDelete != null) {
+            btnBatchDelete.setOnClickListener(v -> {
+                Set<Integer> ids = adapter.getSelectedIds();
+                if (ids.isEmpty()) {
+                    Toast.makeText(this, "Vui lòng chọn ít nhất 1 thông báo để xóa!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                dbHelper.deleteMultipleNotifications(new ArrayList<>(ids));
+                playSuccessSound();
+                adapter.setMultiSelectMode(false);
+                refreshUiState.run();
+                Toast.makeText(this, "Đã xóa " + ids.size() + " thông báo cũ!", Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        if (btnClearAll != null) {
+            btnClearAll.setOnClickListener(v -> {
+                showCustomConfirmDialog(
+                        "🧹",
+                        "XÓA TẤT CẢ THÔNG BÁO",
+                        "Bạn có chắc chắn muốn xóa toàn bộ lịch sử thông báo không?",
+                        "🔴 Xóa tất cả",
+                        Color.parseColor("#DC2626"),
+                        () -> {
+                            dbHelper.clearAllNotifications();
+                            playSuccessSound();
+                            refreshUiState.run();
+                            Toast.makeText(this, "Đã xóa toàn bộ thông báo!", Toast.LENGTH_SHORT).show();
+                        });
+            });
+        }
+
+        dialog.show();
+    }
+
+    private void showAppIntroductionDialog() {
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_app_introduction, null);
+        ImageButton btnCloseTop = view.findViewById(R.id.btnCloseAppIntroTop);
+        Button btnCloseBottom = view.findViewById(R.id.btnCloseAppIntroBottom);
+        TextView tvTechInfo = view.findViewById(R.id.tvAppIntroTechnicalInfo);
+
+        if (tvTechInfo != null) {
+            tvTechInfo.setText("• Phiên bản: v" + VersionCheckHelper.getCurrentVersionName(this) + " (Stable)\n• Tác giả / Phát triển: TKyl\n• Yêu cầu thiết bị: Android 8.0 trở lên (API 26+)\n• Nền tảng: Android (Java / Kotlin, Material Design 3)\n• Môn học: Lập trình Di động (LTDD)\n• Trường: Đại học Nguyễn Tất Thành (NTTU)");
+        }
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(view)
+                .create();
+
+        KeyboardUtils.applyAutoHideKeyboard(dialog);
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        View.OnClickListener dismissListener = v -> {
+            SoundHelper.playFeedback(this, v);
+            dialog.dismiss();
+        };
+
+        if (btnCloseTop != null) btnCloseTop.setOnClickListener(dismissListener);
+        if (btnCloseBottom != null) btnCloseBottom.setOnClickListener(dismissListener);
 
         dialog.show();
     }
@@ -1878,19 +2600,48 @@ public class MainActivity extends AppCompatActivity {
             // Cách 1 (Ưu tiên số 1): Dùng PDFBox-Android trích xuất trực tiếp lớp văn bản Unicode Tiếng Việt gốc trong PDF
             try {
                 PDFBoxResourceLoader.init(getApplicationContext());
-                try (InputStream is = getContentResolver().openInputStream(uri)) {
-                    if (is != null) {
-                        PDDocument document = PDDocument.load(is);
+                File localCopy = resolveHistoryFile(fileName);
+                if (localCopy != null && localCopy.exists() && localCopy.length() > 0) {
+                    try (PDDocument document = PDDocument.load(localCopy)) {
                         PDFTextStripper stripper = new PDFTextStripper();
-                        stripper.setSortByPosition(true);
+                        stripper.setSortByPosition(false);
                         String text = stripper.getText(document);
-                        document.close();
+                        if (text == null || text.trim().isEmpty()) {
+                            stripper.setSortByPosition(true);
+                            text = stripper.getText(document);
+                        }
                         if (text != null && !text.trim().isEmpty()) {
                             extractedBuilder.append(text.trim()).append("\n");
                         }
                     }
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+                android.util.Log.e("LectuPlan", "PDFBox load local file error: " + e.getMessage(), e);
+            }
+
+            if (extractedBuilder.toString().trim().isEmpty()) {
+                try {
+                    PDFBoxResourceLoader.init(getApplicationContext());
+                    try (InputStream is = getContentResolver().openInputStream(uri)) {
+                        if (is != null) {
+                            PDDocument document = PDDocument.load(is);
+                            PDFTextStripper stripper = new PDFTextStripper();
+                            stripper.setSortByPosition(false);
+                            String text = stripper.getText(document);
+                            if (text == null || text.trim().isEmpty()) {
+                                stripper.setSortByPosition(true);
+                                text = stripper.getText(document);
+                            }
+                            document.close();
+                            if (text != null && !text.trim().isEmpty()) {
+                                extractedBuilder.append(text.trim()).append("\n");
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    android.util.Log.e("LectuPlan", "PDFBox stream error: " + e.getMessage(), e);
+                }
+            }
 
             // Cách 2 (Dành cho PDF bản scan ảnh chụp hoặc biểu mẫu ghi tay không có lớp text): Dùng PdfRenderer dựng ảnh 3x + ML Kit OCR + Hậu xử lý chữ viết tay Tiếng Việt
             if (extractedBuilder.toString().trim().isEmpty()) {
@@ -1956,7 +2707,7 @@ public class MainActivity extends AppCompatActivity {
         s = s.replaceAll("(?i)\\b[Bb]h(\\d{2})", "8h$1");
         s = s.replaceAll("(\\d{1,2}h\\d{2})\\s*-\\s*(\\d{1,2}h\\d{2})", "$1 - $2");
 
-        // 2. Sửa các cụm từ Tiếng Việt và chữ viết tay trên đường chấm bị ML Kit OCR nhận sai
+        // 2. Sửa các cụm từ Tiếng Việt phổ biến bị OCR nhận diện nhầm
         String[][] replacements = new String[][]{
                 {"(?i)\\bBU[ỐỔỖO]I\\s+SANG\\b", "BUỔI SÁNG"},
                 {"(?i)\\bBU[ỐỔỖO]I\\s+CHI[ỀỂỄE]U\\b", "BUỔI CHIỀU"},
@@ -1965,86 +2716,300 @@ public class MainActivity extends AppCompatActivity {
                 {"(?i)\\bNgay\\s+phat\\b", "Ngày phát"},
                 {"(?i)\\bNgay\\s+nha[i]?n\\b", "Ngày nhận"},
                 {"(?i)\\bS[ốổ]\\s+h[ồổ]\\s+s[ơo][i]?\\b", "Số hồ sơ"},
-                {"(?i)B[ẢA]N\\s+TH[ÔO]NG\\s+TIN\\s+C[ÁA]\\s+NH[ÂẨA]N(\\s*-\\s*PH[ẢA]N)?", "BẢN THÔNG TIN CÁ NHÂN"},
-                {"(?i)\\(M[ẫẩ]u\\s+h[ồổ]\\s+s[ơo]+\\s+ch[ỉi]\\s+c[óo]\\s+gi[áa]\\s+tr[ịi]\\s+do\\s+văn\\s+phòng\\s+cấp\\.\\s*Không\\s+nhận\\s+b[ảa][n]?\\s+sao\\)?", "(Mẫu hồ sơ chỉ có giá trị do văn phòng cấp. Không nhận bản sao)"},
-                {"(?i)NG[ƯU][ỜƠ]I\\s+NH[ẬÂA]N\\s+H[ỌO]C\\s+B[ỔÔO]NG", "NGƯỜI NHẬN HỌC BỔNG"},
-                {"(?i)H[ọo]\\s+v[àa]\\s+t[êôe]n\\s*\\([^)]*\\)\\s*[:;]?\\s*[A-Z.\\s]+(-\\s*T[êe]n\\s+Th[áa]nh\\s*:?\\s*[A-Za-z0-9.\\s]+)?", "Họ và tên (chữ in hoa): NGUYỄN TRUNG KIÊN - Tên Thánh: Giuse"},
-                {"(?i)N[ăa]m\\s+sinh\\s*:?\\s*[0-9A-Za-z./\\s]+N[ơo][i]?\\s+sinh\\s*:?\\s*[^\\n]+", "Năm sinh: 10/04/2006 - Nơi sinh: Quảng Ngãi - Giới tính: Nam"},
-                {"(?i)D[âa]n\\s+t[ộo]c\\s*[.:]*\\s*[^\\n]+", "Dân tộc: Kinh - Tôn giáo: Công giáo"},
-                {"(?i)Đ[ịj]a\\s+ch[ỉi]\\s+th[ưứ][ờờ]ng\\s+tr[úu]\\s*:?\\s*[^\\n]+", "Địa chỉ thường trú: Xóm Tây Thành, xã Quỹ Nhất, tỉnh Ninh Bình"},
-                {"(?i)Thu[ộo]c\\s+Gi[áa]o\\s+x[ứúÚ]\\s*-\\s*Gi[áa]o\\s+ph[ậâ]n\\s*:?\\s*[^\\n]+", "Thuộc Giáo xứ - Giáo phận: Giáo xứ Chỉ Thiện - Giáo phận Bùi Chu"},
-                {"(?i)Đ[ịj]a\\s+ch[ỉi]\\s+li[êe]n\\s+l[ạa]c\\s*-\\s*Đ[ịi][ệe]n\\s+tho[ạa]i[^\\n]+", "Địa chỉ liên lạc - Điện thoại: 0386151841"},
-                {"(?i)Đ[ịj]a\\s+ch[ỉi]\\s+th[ưu]\\s+đ[ịi][ệe]n\\s+t[ửừ]\\s*\\([^)]*\\)\\s*:?\\s*[^\\n]+", "Địa chỉ thư điện tử (Email Address): khongtenpro1111@gmail.com"},
-                {"(?i)L[àa]\\s+sinh\\s+vi[êe]n\\s+c[ủu]a\\s+Tr[ưứu][ờờ]ng\\s*:?\\s*[^\\n]+", "Là sinh viên của Trường: Đại học Nguyễn Tất Thành - Khoa: Công nghệ thông tin - Năm thứ: 2"},
-                {"(?i)N[ăa]m\\s+nh[ậa]p\\s+h[ọo]c\\s*:?\\s*2024[^\\n]*", "Năm nhập học: 2024 - Thời gian đào tạo: 3.5 năm"},
-                {"(?i)K[ếe]t\\s+qu[ảa]\\s+h[ọo]c\\s+v[ấa]n\\s*\\([^)]*\\)\\s*:?\\s*[^\\n]+", "Kết quả học vấn (gần đây nhất): 7.94"},
-                {"(?i)C[óo]\\s+vay\\s+T[íi]n\\s+d[ụu]ng\\s+h[ọo]c\\s+đ[ưứ][ờờ]ng[^\\n]+", "Có vay Tín dụng học đường để trang trải chi phí học tập không: Không"},
-                {"(?i)Hi[ệe]n\\s+nay,\\s+c[óo]\\s+nh[ậa]n\\s+h[ọo]c\\s+b[ổồ]ng[^\\n]+", "Hiện nay, có nhận học bổng hoặc hỗ trợ đặc biệt nào khác không? Không"},
-                {"(?i)Chi\\s+ph[íi]\\s+b[ìi]nh\\s+qu[âa]n\\s+m[ộo]t\\s+n[ăa]m\\s+h[ọo]c[^\\n]+", "Chi phí bình quân một năm học (học phí, ăn ở, sách vở,...): 13.000.000đ"},
-                {"(?i)C[óo]\\s+tham\\s+gia\\s+sinh\\s+h[ọo]at\\s+c[áa]c\\s+nh[óo]m[^\\n]+", "Có tham gia sinh hoạt các nhóm (ca đoàn, giáo lý viên, Công tác xã hội...): Không"},
-                {"(?i)L[ưu]u\\s+[ýy]\\s*:\\s*đ[ểể]\\s+nh[ậa]n\\s+đ[ưự][ợơ]c\\s+h[ọo]c\\s+b[ổồ]ng\\s+n[àa]y[^\\n]+", "Lưu ý: Để nhận được học bổng này, cam kết không nhận học bổng khác"},
-                {"(?i)H[ọo]\\s+v[àa]\\s+t[êe]n\\s+Cha\\s*[.:]*\\s*[^\\n]+", "Họ và tên Cha: Nguyễn Văn Duẩn - Năm sinh: 15/03/1984"},
-                {"(?i)H[ọo]\\s+v[àa]\\s+t[êe]n\\s+M[ẹe]\\s*[.:]*\\s*[^\\n]+", "Họ và tên Mẹ: Trần Thị Thúy - Năm sinh: 01/01/1981"},
-                {"(?i)Ngh[ềễể]\\s+nghi[ệộ]p\\s*[.:]*\\s*[^\\n]+", "Nghề nghiệp: Công nhân"},
-                {"(?i)Thu\\s+nh[ậa]p\\s+b[ìi]nh\\s+qu[âa]n\\s*/?\\s*th[áa]ng\\s+c[ủu]a\\s+gia\\s+đ[ìi]nh\\s*:?\\s*[^\\n]+", "Thu nhập bình quân/tháng của gia đình: 9.500.000đ/tháng"},
-                {"(?i)X[áa]c\\s+nh[ậa]n\\s+c[ủu]a\\s+Linh\\s+m[ụu]c\\s+Ch[áa]nh\\s+x[ứú][^\\n]*", "Xác nhận của Linh mục Chánh xứ (Ngày 19/10/2025)"},
-                {"(?i).*vui\\s+l[òo]ng\\s+cho\\s+Ban\\s+Đi[ềể]u\\s+H[àa]nh[^\\n]*", "Xin Quý Cha vui lòng cho Ban Điều Hành địa chỉ và số điện thoại để liên lạc khi cần thiết"},
-                {"(?i).*đi[ềể]u\\s+h[àa]nh\\s+d[ịi]a\\s+ch[ỉi][^\\n]*", "Xin Quý Cha vui lòng cho Ban Điều Hành địa chỉ và số điện thoại để liên lạc khi cần thiết"},
-                {"(?i)\\b2044\\s*-\\s*Hoc\\s+sinl\\b", "Nguyễn Trần Hoài Thương (2011) - Học sinh (9/12)"},
-                {"(?i)\\b2007\\b.*", "Nguyễn Thị Thanh Thảo (2007) - Sinh viên năm 1"}
+                {"(?i)\\bTh[ờơ]i\\s+kho[áa]\\s+bi[ểe]u\\b", "Thời khóa biểu"},
+                {"(?i)\\bTh[ưu]\\s+m[ờo]i\\s+gi[ảa]ng\\b", "Thư mời giảng"},
+                {"(?i)\\bL[ịi]ch\\s+gi[ảa]ng\\b", "Lịch giảng"},
+                {"(?i)\\bPh[òo]ng\\s+h[ọo]c\\b", "Phòng học"},
+                {"(?i)\\bThực[\\s|/]+h[àa][\\s|/]+h[\\s|/]+lập[\\s|/]+r[ìi][\\s|/]+h[\\s|/]+Web\\b", "Thực hành lập trình Web"},
+                {"(?i)\\bThực[\\s|/]+h[a-zà-ỹA-ZÀ-Ỹ\\s|/]{1,10}[\\s|/]+lập[\\s|/]+[a-zà-ỹA-ZÀ-Ỹ\\s|/]{1,10}[\\s|/]+Web\\b", "Thực hành lập trình Web"},
+                {"(?i)\\bThực[\\s|/]+h[àa][\\s|/]+h\\b", "Thực hành"},
+                {"(?i)\\blập[\\s|/]+r[ìi][\\s|/]+h\\b", "lập trình"},
+                {"(?i)\\blập[\\s|/]+tr[ìi][\\s|/]+h\\b", "lập trình"},
+                {"(?i)\\br[ìi][\\s|/]+h[\\s|/]+Web\\b", "trình Web"},
+                {"(?i)\\bchương[\\s|/]+r[ìi][\\s|/]+h\\b", "chương trình"},
+                {"(?i)\\bquá[\\s|/]+r[ìi][\\s|/]+h\\b", "quá trình"},
+                {"(?i)\\bh[àa][\\s|/]+h\\b", "hành"}
         };
 
         for (String[] pair : replacements) {
             s = s.replaceAll(pair[0], pair[1]);
         }
 
+        s = ThumoiGiangParser.healVietnameseText(s);
+
         // 3. Dọn dẹp các chuỗi chấm "......." dài trên biểu mẫu in sẵn
         s = s.replaceAll("\\.{2,}", " ");
         return s;
     }
 
-    private void processPptxImport(Uri uri) {
-        try {
-            String fileName = resolveFileName(uri, "PowerPoint", ".pptx");
-            copyUriToDownloads(uri, fileName);
 
-            InputStream is = getContentResolver().openInputStream(uri);
-            if (is == null) return;
-            java.util.zip.ZipInputStream zis = new java.util.zip.ZipInputStream(is);
-            java.util.zip.ZipEntry entry;
-            StringBuilder sb = new StringBuilder();
 
-            while ((entry = zis.getNextEntry()) != null) {
-                if (entry.getName().startsWith("ppt/slides/slide") && entry.getName().endsWith(".xml")) {
-                    byte[] buffer = new byte[4096];
-                    int len;
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    while ((len = zis.read(buffer)) > 0) {
-                        baos.write(buffer, 0, len);
-                    }
-                    String slideXml = baos.toString(StandardCharsets.UTF_8.name());
-                    // Ngắt dòng theo đúng từng dòng bảng (</a:tr>) và từng đoạn văn (</a:p>), cách ô (</a:tc>)
-                    String structured = slideXml
-                            .replaceAll("</a:tc>", " | ")
-                            .replaceAll("</a:tr>", "\n")
-                            .replaceAll("</a:p>", "\n")
-                            .replaceAll("<a:br\\s*/?>", "\n")
-                            .replaceAll("<[^>]+>", "")
-                            .replace("&amp;", "&")
-                            .replace("&lt;", "<")
-                            .replace("&gt;", ">")
-                            .replace("&quot;", "\"");
-                    sb.append(structured).append("\n");
-                }
-            }
-            zis.close();
-            is.close();
+    public static class FileValidationResult {
+        public final boolean isValid;
+        public final String detectedType; // Lịch dạy/học, Lịch sự kiện, Lịch phát sinh, Lịch nhập thủ công(khác)
+        public final String rejectReason;
 
-            String cleanedPptx = normalizeVietnameseOcrText(sb.toString());
-            parseAndInsertTextSchedule(cleanedPptx, fileName, "📽️ Slide PowerPoint (.pptx)", "Giải nén cấu trúc Slide XML (Bảng & Textbox)", false);
-        } catch (Exception e) {
-            Toast.makeText(this, "Lỗi đọc slide PowerPoint: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        public FileValidationResult(boolean isValid, String detectedType, String rejectReason) {
+            this.isValid = isValid;
+            this.detectedType = detectedType;
+            this.rejectReason = rejectReason;
         }
+
+        public static FileValidationResult valid(String detectedType) {
+            return new FileValidationResult(true, detectedType, null);
+        }
+
+        public static FileValidationResult reject(String reason) {
+            return new FileValidationResult(false, null, reason);
+        }
+    }
+
+    public static FileValidationResult validateScheduleDocument(String fullText, String fileName) {
+        if (fullText == null || fullText.trim().isEmpty()) {
+            return FileValidationResult.reject("Tệp tin rỗng hoặc không trích xuất được nội dung văn bản.");
+        }
+
+        String lowerText = fullText.toLowerCase(Locale.getDefault());
+        String lowerFileName = (fileName != null ? fileName : "").toLowerCase(Locale.getDefault());
+
+        // 1. KIỂM DUYỆT TỪ CHỐI CV / HỒ SƠ CÁ NHÂN / SƠ YẾU LÝ LỊCH / BẢN THÔNG TIN
+        boolean hasCvFileName = lowerFileName.contains("cv") 
+                || lowerFileName.contains("curriculum") 
+                || lowerFileName.contains("resume") 
+                || lowerFileName.contains("so yeu ly lich") 
+                || lowerFileName.contains("sơ yếu lý lịch") 
+                || lowerFileName.contains("ly lich") 
+                || lowerFileName.contains("lý lịch") 
+                || lowerFileName.contains("don xin viec")
+                || lowerFileName.contains("đơn xin việc");
+
+        int cvKeywordsCount = 0;
+        String[] strongCvKeywords = {
+                "curriculum vitae", "sơ yếu lý lịch", "lý lịch khoa học", "bản thông tin cá nhân",
+                "hồ sơ cá nhân", "hồ sơ xin việc", "thông tin ứng viên", "người nhận học bổng",
+                "kinh nghiệm làm việc", "mục tiêu nghề nghiệp", "kết quả học vấn", "quá trình đào tạo",
+                "người tham chiếu", "kỹ năng chuyên môn", "kỹ năng mềm", "tình trạng hôn nhân",
+                "họ và tên cha", "họ và tên mẹ", "hộ khẩu thường trú", "địa chỉ thường trú",
+                "chứng minh nhân dân", "căn cước công dân", "nguyện vọng bản thân"
+        };
+        for (String kw : strongCvKeywords) {
+            if (lowerText.contains(kw)) {
+                cvKeywordsCount++;
+            }
+        }
+
+        if (hasCvFileName || cvKeywordsCount >= 2 || 
+            (cvKeywordsCount >= 1 && (lowerText.contains("dân tộc") || lowerText.contains("tôn giáo") || lowerText.contains("quê quán") || lowerText.contains("nơi sinh")))) {
+            return FileValidationResult.reject(
+                    "Tệp tin được nhận diện là Hồ sơ cá nhân / Sơ yếu lý lịch / CV (" + (fileName != null ? fileName : "Tệp đã chọn") + ").\n\n" +
+                    "Ứng dụng LectuPlan từ chối nhập loại tài liệu này. Ứng dụng chỉ tiếp nhận các tài liệu lịch trình: Thư mời dạy, Thời khóa biểu, Lịch sự kiện trường, hoặc Lịch phát sinh (dạy bù, coi thi, chấm thi).");
+        }
+
+        // 2. KIỂM TRA TÍN HIỆU LỊCH BIỂU (SCHEDULE SIGNALS)
+        boolean hasTeachingSignal = lowerText.contains("thư mời giảng") 
+                || lowerText.contains("thư mời dạy") 
+                || lowerText.contains("giấy báo giảng") 
+                || lowerText.contains("thời khóa biểu") 
+                || lowerText.contains("thoi khoa bieu") 
+                || lowerText.contains("tkb") 
+                || lowerText.contains("lịch giảng dạy") 
+                || lowerText.contains("kế hoạch giảng dạy")
+                || lowerText.contains("lịch học")
+                || lowerText.contains("lịch trực tuyến")
+                || lowerText.contains("tiết bđ") 
+                || lowerText.contains("tiết bắt đầu") 
+                || lowerText.contains("số tiết")
+                || lowerText.contains("mã học phần") 
+                || lowerText.contains("mã môn") 
+                || lowerText.contains("mã mh")
+                || lowerText.contains("tổ th") 
+                || lowerText.contains("nhóm lớp")
+                || lowerText.matches("(?s).*\\btiết\\s*[:=\\s-]*\\d+.*");
+
+        boolean hasIncidentSignal = lowerText.contains("dạy bù") 
+                || lowerText.contains("học bù") 
+                || lowerText.contains("đổi ca") 
+                || lowerText.contains("tăng tiết") 
+                || lowerText.contains("dời lịch") 
+                || lowerText.contains("dời phòng") 
+                || lowerText.contains("coi thi") 
+                || lowerText.contains("chấm thi") 
+                || lowerText.contains("khảo thí") 
+                || lowerText.contains("hội đồng thi") 
+                || lowerText.contains("bảo vệ đồ án") 
+                || lowerText.contains("khóa luận") 
+                || lowerText.contains("vấn đáp")
+                || lowerText.contains("phân công coi thi") 
+                || lowerText.contains("lịch thi");
+
+        boolean hasEventSignal = lowerText.contains("lịch công tác") 
+                || lowerText.contains("lịch tuần") 
+                || lowerText.contains("kế hoạch tuần") 
+                || lowerText.contains("thông báo số") 
+                || lowerText.contains("thông báo về việc") 
+                || lowerText.contains("lịch làm việc") 
+                || lowerText.contains("hội nghị") 
+                || lowerText.contains("hội thảo") 
+                || lowerText.contains("khai giảng") 
+                || lowerText.contains("tốt nghiệp") 
+                || lowerText.contains("bế giảng") 
+                || lowerText.contains("đại hội") 
+                || lowerText.contains("kỷ niệm") 
+                || lowerText.contains("tập huấn") 
+                || lowerText.contains("sinh hoạt chuyên môn") 
+                || lowerText.contains("giao ban") 
+                || lowerText.contains("họp khoa") 
+                || lowerText.contains("họp bộ môn") 
+                || (lowerText.contains("chủ trì") && lowerText.contains("địa điểm"));
+
+        boolean hasDate = lowerText.matches("(?s).*\\b(\\d{1,2}[/.-]\\d{1,2}[/.-]\\d{4})\\b.*")
+                || lowerText.matches("(?s).*\\b(\\d{4}[/.-]\\d{1,2}[/.-]\\d{1,2})\\b.*")
+                || lowerText.matches("(?s).*\\b(thứ\\s+(hai|ba|tư|năm|sáu|bảy)|chủ\\s+nhật)\\b.*")
+                || lowerText.matches("(?s).*\\b(thứ\\s+[2-7]|th\\s+[2-7]|cn)\\b.*")
+                || lowerText.matches("(?s).*\\b(\\d{1,2}[/.-]\\d{1,2})\\b.*");
+
+        if (!hasTeachingSignal && !hasIncidentSignal && !hasEventSignal && !hasDate) {
+            return FileValidationResult.reject(
+                    "Tệp tin không chứa thông tin lịch biểu, thư mời dạy hoặc sự kiện hợp lệ.\n\n" +
+                    "Ứng dụng LectuPlan chỉ hỗ trợ nhập:\n" +
+                    "• Lịch dạy/học: Thư mời dạy, thời khóa biểu, lịch giảng dạy\n" +
+                    "• Lịch sự kiện: Thông báo trường gửi, lịch tuần, hội nghị, khai giảng\n" +
+                    "• Lịch phát sinh: Dạy bù, học bù, đổi ca, lịch coi/chấm thi\n" +
+                    "• Lịch nhập thủ công(khác)");
+        }
+
+        if (hasIncidentSignal) {
+            return FileValidationResult.valid(EventModel.CAT_INCIDENT);
+        } else if (hasTeachingSignal) {
+            return FileValidationResult.valid(EventModel.CAT_TEACHING);
+        } else if (hasEventSignal) {
+            return FileValidationResult.valid(EventModel.CAT_EVENT);
+        } else {
+            return FileValidationResult.valid(EventModel.CAT_MANUAL_OTHER);
+        }
+    }
+
+    private void showFileRejectedDialog(String fileName, String reason) {
+        if (isFinishing() || isDestroyed()) return;
+
+        runOnUiThread(() -> {
+            try {
+                View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_file_rejected, null);
+                TextView tvRejectFileName = dialogView.findViewById(R.id.tvRejectFileName);
+                TextView tvRejectReason = dialogView.findViewById(R.id.tvRejectReason);
+                Button btnRejectUnderstand = dialogView.findViewById(R.id.btnRejectUnderstand);
+
+                if (tvRejectFileName != null) {
+                    tvRejectFileName.setText("Tệp: " + (fileName != null ? fileName : "Tệp đã chọn"));
+                }
+                if (tvRejectReason != null && reason != null && !reason.trim().isEmpty()) {
+                    tvRejectReason.setText(reason);
+                }
+
+                AlertDialog dialog = new AlertDialog.Builder(this)
+                        .setView(dialogView)
+                        .setCancelable(true)
+                        .create();
+                KeyboardUtils.applyAutoHideKeyboard(dialog);
+
+                if (dialog.getWindow() != null) {
+                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                }
+
+                if (btnRejectUnderstand != null) {
+                    btnRejectUnderstand.setOnClickListener(v -> dialog.dismiss());
+                }
+
+                dialog.show();
+            } catch (Exception e) {
+                Toast.makeText(this, "TỪ CHỐI TÀI LIỆU: " + reason, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    public enum DocumentType {
+        TEACHING_SCHEDULE,
+        CV_OR_PROFILE,
+        WORK_OR_MEETING,
+        GENERAL_NOTE
+    }
+
+    public static DocumentType detectDocumentType(String fullText) {
+        if (fullText == null || fullText.isEmpty()) return DocumentType.GENERAL_NOTE;
+        String lower = fullText.toLowerCase(Locale.getDefault());
+
+        int cvScore = 0;
+        if (lower.contains("curriculum vitae") || lower.contains("sơ yếu lý lịch") || lower.contains("lý lịch khoa học")
+                || lower.contains("bản thông tin cá nhân") || lower.contains("hồ sơ cá nhân") || lower.contains("hồ sơ xin việc")
+                || lower.contains("thông tin ứng viên") || lower.contains("người nhận học bổng")) {
+            cvScore += 5;
+        }
+        if (lower.contains("kinh nghiệm làm việc") || lower.contains("work experience")) cvScore += 2;
+        if (lower.contains("mục tiêu nghề nghiệp") || lower.contains("career objective")) cvScore += 2;
+        if (lower.contains("quá trình đào tạo") || lower.contains("kết quả học vấn")) cvScore += 2;
+        if (lower.contains("dân tộc") && (lower.contains("tôn giáo") || lower.contains("nơi sinh") || lower.contains("quê quán"))) cvScore += 3;
+        if (lower.contains("họ và tên") && (lower.contains("năm sinh") || lower.contains("ngày sinh") || lower.contains("giới tính"))) cvScore += 3;
+        if (lower.contains("địa chỉ thường trú") || lower.contains("hộ khẩu thường trú")) cvScore += 2;
+
+        int teachingScore = 0;
+        if (lower.contains("thư mời giảng") || lower.contains("thoi khoa bieu") || lower.contains("thời khóa biểu")
+                || lower.contains("lịch giảng dạy") || lower.contains("kế hoạch giảng dạy")
+                || lower.contains("lịch học") || lower.contains("lịch dạy")) {
+            teachingScore += 5;
+        }
+        if (lower.contains("tiết bđ") || lower.contains("tiết bắt đầu") || lower.contains("số tiết")) teachingScore += 3;
+        if (lower.contains("tổ th") || lower.contains("nhóm/tổ") || lower.contains("nhóm lớp")) teachingScore += 3;
+        if (lower.contains("mã mh") || lower.contains("mã môn") || lower.contains("mã học phần")) teachingScore += 3;
+        if (lower.contains("sĩ số") || lower.contains("tín chỉ") || lower.contains("đợt học")) teachingScore += 2;
+        if (lower.matches("(?s).*\\btiết\\s*[:=\\s-]*\\d+\\s*[-–đếnto]+\\s*\\d+\\b.*")) teachingScore += 4;
+        if (lower.contains("giảng viên:") || lower.contains("giảng viên :") || lower.contains("gv:")) teachingScore += 3;
+        if (lower.matches("(?s).*\\bphòng\\s*[:=]?\\s*[a-z0-9_./-]+.*") && (lower.contains("tiết") || lower.contains("lịch"))) teachingScore += 3;
+
+        int workScore = 0;
+        if (lower.contains("lịch công tác") || lower.contains("kế hoạch công tác") || lower.contains("lịch làm việc")
+                || lower.contains("lịch tuần") || lower.contains("thông báo họp")) {
+            workScore += 4;
+        }
+        if (lower.contains("chủ trì") || lower.contains("thành phần") || lower.contains("nội dung công tác")) workScore += 3;
+
+        if (cvScore >= 4 && cvScore > teachingScore) return DocumentType.CV_OR_PROFILE;
+        if (teachingScore >= 3) return DocumentType.TEACHING_SCHEDULE;
+        if (workScore >= 3) return DocumentType.WORK_OR_MEETING;
+        if (cvScore >= 3) return DocumentType.CV_OR_PROFILE;
+        return DocumentType.GENERAL_NOTE;
+    }
+
+    private static boolean isStaticBiographicalLine(String line) {
+        if (line == null) return true;
+        String lower = line.toLowerCase(Locale.getDefault()).trim();
+        if (lower.length() < 3) return true;
+
+        String[] bioKeywords = new String[]{
+                "họ và tên", "họ tên", "tên thánh", "năm sinh", "ngày sinh", "nơi sinh",
+                "giới tính", "dân tộc", "tôn giáo", "quốc tịch", "địa chỉ", "quê quán",
+                "thường trú", "tạm trú", "hộ khẩu", "số điện thoại", "điện thoại", "sđt",
+                "email", "địa chỉ thư điện tử", "chỗ ở", "cmnd", "cccd", "số căn cước",
+                "họ và tên cha", "họ và tên mẹ", "cha:", "mẹ:", "nghề nghiệp", "thu nhập",
+                "chi phí", "học bổng", "người nhận học bổng", "xác nhận", "ký tên", "chữ ký",
+                "linh mục", "giáo xứ", "giáo phận", "ban điều hành", "người nhận", "bản thông tin",
+                "sơ yếu lý lịch", "curriculum vitae", "tình trạng hôn nhân", "người tham chiếu",
+                "sở thích", "mục tiêu nghề nghiệp", "kỹ năng", "tin học", "ngoại ngữ",
+                "cam kết", "lưu ý", "mẫu hồ sơ", "kết quả học vấn", "có vay tín dụng",
+                "hiện nay, có nhận", "có tham gia sinh hoạt", "xin quý cha", "điều hành địa chỉ",
+                "là sinh viên của trường", "năm nhập học", "thời gian đào tạo", "chi phí bình quân"
+        };
+
+        for (String kw : bioKeywords) {
+            if (lower.startsWith(kw) || lower.contains(kw + ":") || lower.contains(kw + " :")) {
+                return true;
+            }
+        }
+
+        if (lower.matches("(?i)^(họ\\s+và\\s+tên|ngày\\s+sinh|năm\\s+sinh|nơi\\s+sinh|giới\\s+tính|dân\\s+tộc|tôn\\s+giáo|địa\\s+chỉ).*")) {
+            return true;
+        }
+
+        return false;
     }
 
     private void parseAndInsertTextSchedule(String fullText, String fileName, String fileFormatLabel, String extractionMethod, boolean isHandwritten) {
@@ -2053,17 +3018,117 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        String[] lines = fullText.split("\\r?\\n");
+        FileValidationResult valResult = validateScheduleDocument(fullText, fileName);
+        if (!valResult.isValid) {
+            showFileRejectedDialog(fileName, valResult.rejectReason);
+            return;
+        }
+
+        DocumentType docType = detectDocumentType(fullText);
+
+        String activeFormatLabel = fileFormatLabel;
+        String activeExtractionMethod = extractionMethod;
+        String defaultSourceOrganizer;
+
+        if (EventModel.CAT_TEACHING.equals(valResult.detectedType) || docType == DocumentType.TEACHING_SCHEDULE) {
+            activeFormatLabel = isHandwritten
+                    ? "✍️ Lịch dạy viết tay (" + getFileExtensionLabel(fileName).toUpperCase(Locale.getDefault()) + ")"
+                    : "👨‍🏫 Thời khóa biểu / Thư mời giảng (" + getFileExtensionLabel(fileName).toUpperCase(Locale.getDefault()) + ")";
+            activeExtractionMethod = "Bóc tách môn học, lớp, phòng & số tiết chuẩn hóa";
+            defaultSourceOrganizer = isHandwritten
+                    ? "✍️ " + EventModel.CAT_TEACHING + " • " + fileName
+                    : "👨‍🏫 " + EventModel.CAT_TEACHING + " • " + fileName;
+        } else if (EventModel.CAT_INCIDENT.equals(valResult.detectedType)) {
+            activeFormatLabel = "⚡ Lịch phát sinh (" + getFileExtensionLabel(fileName).toUpperCase(Locale.getDefault()) + ")";
+            activeExtractionMethod = "Bóc tách lịch dạy bù, đổi ca, coi/chấm thi & hội đồng";
+            defaultSourceOrganizer = "⚡ " + EventModel.CAT_INCIDENT + " • " + fileName;
+        } else if (EventModel.CAT_EVENT.equals(valResult.detectedType) || docType == DocumentType.WORK_OR_MEETING) {
+            activeFormatLabel = "🏛️ Lịch sự kiện (" + getFileExtensionLabel(fileName).toUpperCase(Locale.getDefault()) + ")";
+            activeExtractionMethod = "Bóc tách thông báo trường, hội nghị, khai giảng & sự vụ";
+            defaultSourceOrganizer = "🏛️ " + EventModel.CAT_EVENT + " • " + fileName;
+        } else {
+            defaultSourceOrganizer = isHandwritten
+                    ? "✍️ Ghi tay • " + fileFormatLabel + " (" + fileName + ")"
+                    : fileFormatLabel + " • " + fileName;
+        }
+
         int count = 0;
         int stt = 1;
         SimpleDateFormat sdfVn = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         String currentDateStr = sdfVn.format(new Date());
         List<String> extractedSummaries = new ArrayList<>();
 
-        String defaultSourceOrganizer = isHandwritten
-                ? "✍️ Ghi tay • " + fileFormatLabel + " (" + fileName + ")"
-                : fileFormatLabel + " • " + fileName;
+        // 1. Thư mời giảng có cấu trúc thời khóa biểu đại học chuyên sâu (kỳ học nhiều tuần)
+        if (docType == DocumentType.TEACHING_SCHEDULE) {
+            try {
+                ThumoiGiangParser.ParseResult pResult = ThumoiGiangParser.parseInvitationDocument(fullText);
+                if (pResult != null && !pResult.generatedEvents.isEmpty()) {
+                    android.database.sqlite.SQLiteDatabase writableDb = dbHelper.getWritableDatabase();
+                    writableDb.beginTransaction();
+                    try {
+                        for (ThumoiGiangParser.GeneratedClassEvent gEv : pResult.generatedEvents) {
+                            String orgWithFile = (gEv.organizer != null ? gEv.organizer : "");
+                            if (fileName != null && !fileName.trim().isEmpty() && !orgWithFile.contains(fileName.trim())) {
+                                orgWithFile = orgWithFile + " • " + fileName.trim();
+                            }
+                            String healedTitle = ThumoiGiangParser.healVietnameseText(gEv.title);
+                            dbHelper.insertEvent(stt++, healedTitle, gEv.dateIso, orgWithFile);
+                            extractedSummaries.add("[" + gEv.dateIso + "] " + healedTitle);
+                            count++;
+                        }
+                        dbHelper.normalizeSttNumbers();
+                        writableDb.setTransactionSuccessful();
+                    } finally {
+                        writableDb.endTransaction();
+                    }
 
+                    String historyBadgeType = "LỊCH DẠY (" + getFileExtensionLabel(fileName).toUpperCase(Locale.getDefault()) + ")";
+                    dbHelper.addFileHistory(fileName, historyBadgeType, count);
+                    refreshFileHistory();
+                    playSuccessSound();
+                    refreshData();
+                    refreshTab2CalendarEvents();
+                    showFileAnalysisReportDialog(fileName, activeFormatLabel, "Bóc tách Thư mời giảng (Tự động rải lịch từng tuần & kiểm tra ngày lễ)", isHandwritten, count, extractedSummaries);
+                    return;
+                }
+            } catch (Exception ignored) {}
+        }
+
+        // 2. Bóc tách thông minh đa năng (UniversalScheduleParser): Dành cho Ảnh chụp lịch học OCR (theo ngày/tuần), thẻ môn học điện tử
+        try {
+            List<UniversalScheduleParser.ParsedScheduleEvent> parsedEvents = UniversalScheduleParser.parseDocument(fullText, fileName);
+            if (parsedEvents != null && !parsedEvents.isEmpty()) {
+                android.database.sqlite.SQLiteDatabase writableDb = dbHelper.getWritableDatabase();
+                writableDb.beginTransaction();
+                try {
+                    for (UniversalScheduleParser.ParsedScheduleEvent pEv : parsedEvents) {
+                        String healedTitle = ThumoiGiangParser.healVietnameseText(pEv.title);
+                        dbHelper.insertEvent(stt++, healedTitle, pEv.dateIso, pEv.organizer);
+                        extractedSummaries.add("[" + pEv.dateIso + "] " + healedTitle);
+                        count++;
+                    }
+                    dbHelper.normalizeSttNumbers();
+                    writableDb.setTransactionSuccessful();
+                } finally {
+                    writableDb.endTransaction();
+                }
+
+                String historyBadgeType = isHandwritten
+                        ? "LỊCH BIỂU (VIẾT TAY • " + getFileExtensionLabel(fileName).toUpperCase(Locale.getDefault()) + ")"
+                        : "LỊCH BIỂU (" + getFileExtensionLabel(fileName).toUpperCase(Locale.getDefault()) + ")";
+                dbHelper.addFileHistory(fileName, historyBadgeType, count);
+                refreshFileHistory();
+                playSuccessSound();
+                refreshData();
+                refreshTab2CalendarEvents();
+                showFileAnalysisReportDialog(fileName, activeFormatLabel, "Bóc tách Thẻ Lịch học & Thời khóa biểu chuẩn xác 100% (Khử hoàn toàn nhiễu giao diện)", isHandwritten, count, extractedSummaries);
+                return;
+            }
+        } catch (Exception e) {
+            android.util.Log.e("LectuPlan", "Lỗi UniversalScheduleParser: " + e.getMessage(), e);
+        }
+
+        String[] lines = fullText.split("\\r?\\n");
         android.database.sqlite.SQLiteDatabase writableDb = dbHelper.getWritableDatabase();
         writableDb.beginTransaction();
         try {
@@ -2071,13 +3136,34 @@ public class MainActivity extends AppCompatActivity {
                 String lineTrim = line.replaceAll("\\s+", " ").trim();
                 if (lineTrim.isEmpty() || lineTrim.length() < 4) continue;
 
+                // Bỏ qua tuyệt đối các dòng rác status bar, nút bấm giao diện, menu và văn bản hành chính trường học
+                if (UniversalScheduleParser.isNoiseLine(lineTrim) || UniversalScheduleParser.isInstitutionalBoilerplate(lineTrim)) {
+                    continue;
+                }
+
+                // Bỏ qua các nhãn huy hiệu (VD: • Lịch học, Lịch trực tuyến) đứng riêng lẻ
+                if (UniversalScheduleParser.extractCategoryBadge(lineTrim) != null) {
+                    continue;
+                }
+
+                // Bỏ qua các dòng chỉ chứa nhãn thuộc tính gãy dòng
+                String lowerOnly = lineTrim.toLowerCase(Locale.getDefault());
+                if (lowerOnly.startsWith("tiết:") || lowerOnly.startsWith("phòng:") || lowerOnly.startsWith("giảng viên:") || lowerOnly.startsWith("gv:")) {
+                    continue;
+                }
+
+                // Nếu là CV/hồ sơ cá nhân: Bỏ qua tuyệt đối các dòng chứa thông tin cá nhân tĩnh
+                if (docType == DocumentType.CV_OR_PROFILE && isStaticBiographicalLine(lineTrim)) {
+                    continue;
+                }
+
                 String foundDate = extractDateString(lineTrim);
                 if (!foundDate.isEmpty()) {
                     currentDateStr = foundDate;
                 }
 
                 String lower = lineTrim.toLowerCase(Locale.getDefault());
-                // Chỉ bỏ qua các dòng tiêu đề bảng hoặc tiêu đề quốc hiệu/báo cáo hệ thống
+                // Bỏ qua các dòng tiêu đề bảng hoặc tiêu đề báo cáo
                 if (lower.equals("stt")
                         || (lower.contains("stt") && (lower.contains("tên sự kiện") || lower.contains("ngày tổ chức") || lower.contains("nội dung") || lower.contains("đơn vị")))
                         || lower.startsWith("báo cáo lịch giảng dạy")
@@ -2126,8 +3212,8 @@ public class MainActivity extends AppCompatActivity {
                             if (validParts.size() >= 2) {
                                 String lastPart = validParts.get(validParts.size() - 1);
                                 if (lastPart.toLowerCase(Locale.getDefault()).matches(".*(khoa|phòng|ban|bộ môn|trường|trung tâm|hội đồng|giảng viên|gv|ts\\.|ths\\.).*")
-                                        && lastPart.length() <= 45) {
-                                    organizer = lastPart + " (" + fileFormatLabel + ")";
+                                        && lastPart.length() <= 45 && docType != DocumentType.CV_OR_PROFILE) {
+                                    organizer = lastPart + " (" + activeFormatLabel + ")";
                                     if (validParts.size() > 2) {
                                         cleanedLine = String.join(" - ", validParts.subList(0, validParts.size() - 1));
                                     }
@@ -2153,6 +3239,20 @@ public class MainActivity extends AppCompatActivity {
                     if (cleanedLine.matches("(?i)^(PH[ẢA]N|LINH MỤC|GIA ĐÌNH:?|Ký tên|Sinh Hoạt\\)?|\\\\?Sinh Hoat\\)?|adithang.*|với gia đình.*|sự hỗ trợ đặc biệt.*)$")) {
                         continue;
                     }
+
+                    // Kiểm tra xem dòng này có đặc trưng sự kiện lịch biểu hay không (có khung giờ/tiết, phòng học, ngày tháng hoặc từ khóa sự vụ)
+                    boolean hasPipe = lineTrim.contains("|");
+                    boolean hasEventSignals = hasPipe
+                            || !foundDate.isEmpty()
+                            || UniversalScheduleParser.extractPeriodRange(lineTrim) != null
+                            || UniversalScheduleParser.extractTimeRange(lineTrim) != null
+                            || UniversalScheduleParser.extractRoom(lineTrim) != null
+                            || cleanedLine.toLowerCase(Locale.getDefault()).matches(".*\\b(?:họp|báo cáo|tập huấn|khai mạc|bế mạc|hội đồng|chấm thi|coi thi|thi kết thúc|dạy bù|sinh hoạt|học phần|chuyên đề|môn học)\\b.*");
+
+                    if (!hasEventSignals) {
+                        continue;
+                    }
+
                     String title = cleanedLine;
                     dbHelper.insertEvent(stt++, title, currentDateStr, organizer);
                     extractedSummaries.add("[" + currentDateStr + "] " + title);
@@ -2165,6 +3265,10 @@ public class MainActivity extends AppCompatActivity {
             writableDb.endTransaction();
         }
 
+        if (count == 0 && docType == DocumentType.CV_OR_PROFILE) {
+            extractedSummaries.add("ℹ️ Tài liệu được nhận diện là Hồ sơ/CV cá nhân. Ứng dụng đã bảo vệ lịch biểu bằng cách không tự động tạo lịch dạy hay gán tiết từ các thông tin lý lịch cá nhân tĩnh.");
+        }
+
         String historyBadgeType = isHandwritten ? "NHẬP FILE (VIẾT TAY • " + getFileExtensionLabel(fileName).toUpperCase(Locale.getDefault()) + ")"
                 : "NHẬP FILE (" + getFileExtensionLabel(fileName).toUpperCase(Locale.getDefault()) + ")";
         dbHelper.addFileHistory(fileName, historyBadgeType, count);
@@ -2173,7 +3277,7 @@ public class MainActivity extends AppCompatActivity {
         refreshData();
         refreshTab2CalendarEvents();
 
-        showFileAnalysisReportDialog(fileName, fileFormatLabel, extractionMethod, isHandwritten, count, extractedSummaries);
+        showFileAnalysisReportDialog(fileName, activeFormatLabel, activeExtractionMethod, isHandwritten, count, extractedSummaries);
     }
 
     // Tự động tách dòng văn bản dài theo độ rộng cột để in PDF đầy đủ 100% nội dung (không bao giờ cắt "..." )
@@ -2237,25 +3341,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawPdfTableHeader(android.graphics.Canvas canvas, android.graphics.Paint paint, int topY) {
-        paint.setColor(Color.parseColor("#2563EB"));
+        paint.setColor(Color.parseColor("#1E3A8A"));
         paint.setStyle(android.graphics.Paint.Style.FILL);
         canvas.drawRect(30, topY, 565, topY + 26, paint);
 
         paint.setColor(Color.WHITE);
         paint.setTextSize(9.5f);
         paint.setFakeBoldText(true);
-        canvas.drawText("STT", 36, topY + 17, paint);
-        canvas.drawText("Ngày / Tuần", 68, topY + 17, paint);
-        canvas.drawText("Tên sự kiện / Nội dung chi tiết đầy đủ", 148, topY + 17, paint);
-        canvas.drawText("Đơn vị / Nguồn tài liệu", 415, topY + 17, paint);
+        canvas.drawText("STT", 34, topY + 17, paint);
+        canvas.drawText("Ngày & Giờ", 62, topY + 17, paint);
+        canvas.drawText("Nội dung công việc & Địa điểm", 134, topY + 17, paint);
+        canvas.drawText("Phân loại", 344, topY + 17, paint);
+        canvas.drawText("Đơn vị & Tuần học", 429, topY + 17, paint);
     }
 
     private void exportPdfReportProcess() {
         try {
             List<EventModel> list = dbHelper.searchEvents("", "Tất cả HK", "Tất cả Năm");
             if (list == null || list.isEmpty()) {
-                seedSampleData();
-                list = dbHelper.searchEvents("", "Tất cả HK", "Tất cả Năm");
+                Toast.makeText(this, "Không có lịch biểu nào để xuất báo cáo PDF!", Toast.LENGTH_SHORT).show();
+                return;
             }
 
             android.graphics.pdf.PdfDocument pdfDoc = new android.graphics.pdf.PdfDocument();
@@ -2289,11 +3394,12 @@ public class MainActivity extends AppCompatActivity {
             SimpleDateFormat sdfInput = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             SimpleDateFormat sdfOutput = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
-            // Độ rộng thực tế cho từng cột trên khổ A4 (595pt):
-            // Cột STT: 30..64 (34pt) | Cột Ngày: 64..144 (80pt) | Cột Nội dung: 144..410 (266pt) | Cột Đơn vị/Nguồn: 410..565 (155pt)
-            float dateMaxWidth = 72f;
-            float titleMaxWidth = 256f;
-            float orgMaxWidth = 145f;
+            // Khổ A4 (595pt x 842pt), lề 30pt..565pt (rộng 535pt)
+            // Cột STT: 30..58 (28pt) | Cột Ngày & Giờ: 58..130 (72pt) | Cột Nội dung: 130..340 (210pt) | Cột Phân loại: 340..425 (85pt) | Cột Đơn vị: 425..565 (140pt)
+            float dateMaxWidth = 66f;
+            float titleMaxWidth = 202f;
+            float catMaxWidth = 78f;
+            float orgMaxWidth = 132f;
             int lineHeight = 13;
 
             for (int i = 0; i < list.size(); i++) {
@@ -2307,16 +3413,38 @@ public class MainActivity extends AppCompatActivity {
                     Date d = sdfInput.parse(dateStr);
                     if (d != null) dateStr = sdfOutput.format(d);
                 } catch (Exception ignored) {}
-                String dateWithWeek = dateStr + "\n(Tuần " + e.getWeek() + " • " + e.getSemester() + ")";
 
-                List<String> dateLines = wrapPdfTextToLines(dateWithWeek, paint, dateMaxWidth);
-                List<String> titleLines = wrapPdfTextToLines(e.getTitle(), paint, titleMaxWidth);
-                List<String> orgLines = wrapPdfTextToLines(e.getOrganizer(), paint, orgMaxWidth);
+                String timeStr = (e.getStartTime() != null && !e.getStartTime().isEmpty())
+                        ? (e.getStartTime() + " - " + e.getEndTime()) : "";
+                String dateText = dateStr + (timeStr.isEmpty() ? "" : "\n" + timeStr);
 
-                int maxLines = Math.max(dateLines.size(), Math.max(titleLines.size(), orgLines.size()));
-                int rowHeight = Math.max(24, maxLines * lineHeight + 10);
+                String titleText = e.getTitle() != null ? e.getTitle() : "";
+                String roomInfo = "";
+                if (e.getRoom() != null && !e.getRoom().trim().isEmpty()) {
+                    roomInfo += "Phòng " + e.getRoom().trim();
+                }
+                if (e.getCampus() != null && !e.getCampus().trim().isEmpty()) {
+                    if (!roomInfo.isEmpty()) roomInfo += " • ";
+                    roomInfo += e.getCampus().trim();
+                }
+                if (!roomInfo.isEmpty()) {
+                    titleText += "\n(" + roomInfo + ")";
+                }
 
-                // Nếu vượt quá chiều cao trang A4 thì sang trang mới để không bao giờ mất mục nào
+                String catText = e.getScheduleCategory();
+
+                String orgText = (e.getOrganizer() != null ? e.getOrganizer() : "")
+                        + "\n(Tuần " + e.getWeek() + " • Năm " + e.getYear() + ")";
+
+                List<String> dateLines = wrapPdfTextToLines(dateText, paint, dateMaxWidth);
+                List<String> titleLines = wrapPdfTextToLines(titleText, paint, titleMaxWidth);
+                List<String> catLines = wrapPdfTextToLines(catText, paint, catMaxWidth);
+                List<String> orgLines = wrapPdfTextToLines(orgText, paint, orgMaxWidth);
+
+                int maxLines = Math.max(dateLines.size(), Math.max(titleLines.size(), Math.max(catLines.size(), orgLines.size())));
+                int rowHeight = Math.max(26, maxLines * lineHeight + 10);
+
+                // Nếu vượt quá chiều cao trang A4 thì sang trang mới
                 if (y + rowHeight > 780) {
                     paint.setColor(Color.parseColor("#64748B"));
                     paint.setTextSize(8.5f);
@@ -2349,30 +3477,36 @@ public class MainActivity extends AppCompatActivity {
                 paint.setStyle(android.graphics.Paint.Style.STROKE);
                 paint.setStrokeWidth(0.6f);
                 canvas.drawRect(30, y, 565, y + rowHeight, paint);
-                canvas.drawLine(64, y, 64, y + rowHeight, paint);
-                canvas.drawLine(144, y, 144, y + rowHeight, paint);
-                canvas.drawLine(410, y, 410, y + rowHeight, paint);
+                canvas.drawLine(58, y, 58, y + rowHeight, paint);
+                canvas.drawLine(130, y, 130, y + rowHeight, paint);
+                canvas.drawLine(340, y, 340, y + rowHeight, paint);
+                canvas.drawLine(425, y, 425, y + rowHeight, paint);
 
-                // In nội dung từng cột đầy đủ 100% các dòng
+                // In nội dung từng cột
                 paint.setStyle(android.graphics.Paint.Style.FILL);
                 paint.setColor(Color.parseColor("#0F172A"));
                 paint.setTextSize(9f);
                 paint.setFakeBoldText(true);
-                canvas.drawText(String.valueOf(i + 1), 36, y + 15, paint);
+                canvas.drawText(String.valueOf(i + 1), 34, y + 15, paint);
 
                 paint.setFakeBoldText(false);
                 for (int l = 0; l < dateLines.size(); l++) {
-                    canvas.drawText(dateLines.get(l), 68, y + 15 + (l * lineHeight), paint);
+                    canvas.drawText(dateLines.get(l), 62, y + 15 + (l * lineHeight), paint);
                 }
 
                 paint.setColor(Color.parseColor("#0F172A"));
                 for (int l = 0; l < titleLines.size(); l++) {
-                    canvas.drawText(titleLines.get(l), 148, y + 15 + (l * lineHeight), paint);
+                    canvas.drawText(titleLines.get(l), 134, y + 15 + (l * lineHeight), paint);
+                }
+
+                paint.setColor(Color.parseColor("#2563EB"));
+                for (int l = 0; l < catLines.size(); l++) {
+                    canvas.drawText(catLines.get(l), 344, y + 15 + (l * lineHeight), paint);
                 }
 
                 paint.setColor(Color.parseColor("#334155"));
                 for (int l = 0; l < orgLines.size(); l++) {
-                    canvas.drawText(orgLines.get(l), 415, y + 15 + (l * lineHeight), paint);
+                    canvas.drawText(orgLines.get(l), 429, y + 15 + (l * lineHeight), paint);
                 }
 
                 y += rowHeight;
@@ -2409,7 +3543,6 @@ public class MainActivity extends AppCompatActivity {
             pdfDoc.finishPage(page);
 
             String fileName = "BaoCao_LectuPlan_" + new SimpleDateFormat("yyyyMMdd_HHmm", Locale.getDefault()).format(new Date()) + ".pdf";
-            // Lưu vào cả HistoryFiles của app (để mở trực tiếp) và thư mục Download công khai
             File appPdfFile = new File(getHistoryStorageDir(), fileName);
             try (FileOutputStream fosApp = new FileOutputStream(appPdfFile)) {
                 pdfDoc.writeTo(fosApp);
@@ -2463,6 +3596,7 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setView(view)
                 .create();
+        KeyboardUtils.applyAutoHideKeyboard(dialog);
 
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -2484,12 +3618,470 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    private void handleBatchDeleteFileHistory() {
+        if (fileHistoryAdapter == null) return;
+        List<FileHistoryModel> selectedFiles = fileHistoryAdapter.getSelectedItems();
+        if (selectedFiles.isEmpty()) {
+            Toast.makeText(this, "Vui lòng tích chọn ít nhất 1 tệp để xóa!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        int totalEvents = 0;
+        for (FileHistoryModel file : selectedFiles) {
+            if (file.getFileName() != null) {
+                totalEvents += dbHelper.countEventsByFileName(file.getFileName().trim());
+            }
+        }
+
+        int fileCount = selectedFiles.size();
+        final int finalTotalEvents = totalEvents;
+
+        if (finalTotalEvents <= 0) {
+            showCustomConfirmDialog(
+                    "🗑️",
+                    "XÓA " + fileCount + " TỆP ĐÃ CHỌN",
+                    "Bạn có chắc muốn xóa " + fileCount + " tệp đã chọn khỏi ứng dụng?",
+                    "🔴 Xóa " + fileCount + " tệp",
+                    Color.parseColor("#DC2626"),
+                    () -> {
+                        List<Integer> ids = new ArrayList<>();
+                        for (FileHistoryModel file : selectedFiles) {
+                            ids.add(file.getId());
+                            if (file.getFileName() != null) {
+                                deletePhysicalImportedFile(file.getFileName().trim());
+                            }
+                        }
+                        dbHelper.deleteMultipleFileHistories(ids);
+                        playSuccessSound();
+                        fileHistoryAdapter.setMultiSelectMode(false);
+                        View bar = findViewById(R.id.layoutFileMultiSelectBar);
+                        if (bar != null) bar.setVisibility(View.GONE);
+                        refreshFileHistory();
+                        Toast.makeText(MainActivity.this, "Đã xóa thành công " + fileCount + " tệp!", Toast.LENGTH_SHORT).show();
+                    });
+            return;
+        }
+
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_delete_file_events, null);
+        TextView tvDialogTitle = view.findViewById(R.id.tvDeleteDialogTitle);
+        TextView tvDeleteFileName = view.findViewById(R.id.tvDeleteFileName);
+        TextView tvDeleteEventCount = view.findViewById(R.id.tvDeleteEventCount);
+        Button btnDeleteFileAndEvents = view.findViewById(R.id.btnDeleteFileAndEvents);
+        Button btnDeleteHistoryOnly = view.findViewById(R.id.btnDeleteHistoryOnly);
+        TextView btnCancel = view.findViewById(R.id.btnCancelDeleteFile);
+
+        if (tvDialogTitle != null) tvDialogTitle.setText("XÓA " + fileCount + " TỆP VÀ LỊCH ĐÃ NHẬP");
+        if (tvDeleteFileName != null) tvDeleteFileName.setText("Đã chọn: " + fileCount + " tệp");
+        if (tvDeleteEventCount != null) {
+            tvDeleteEventCount.setText("⚠️ Phát hiện có tổng cộng " + finalTotalEvents + " buổi / lịch trình trong ứng dụng được nhập từ các tệp này.\n\nBạn có muốn xóa sạch toàn bộ nội dung của các tệp này khỏi ứng dụng không?");
+        }
+        if (btnDeleteFileAndEvents != null) {
+            btnDeleteFileAndEvents.setText("🔴 Xóa " + fileCount + " tệp & sạch toàn bộ " + finalTotalEvents + " lịch");
+        }
+        if (btnDeleteHistoryOnly != null) {
+            btnDeleteHistoryOnly.setText("Chỉ xóa " + fileCount + " tệp khỏi nhật ký (giữ lại lịch)");
+        }
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(view)
+                .create();
+        KeyboardUtils.applyAutoHideKeyboard(dialog);
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        if (btnDeleteFileAndEvents != null) {
+            btnDeleteFileAndEvents.setOnClickListener(v -> {
+                dialog.dismiss();
+                int totalDeletedEvents = 0;
+                List<Integer> ids = new ArrayList<>();
+                for (FileHistoryModel file : selectedFiles) {
+                    ids.add(file.getId());
+                    if (file.getFileName() != null) {
+                        String fn = file.getFileName().trim();
+                        totalDeletedEvents += dbHelper.deleteEventsByFileName(fn);
+                        deletePhysicalImportedFile(fn);
+                    }
+                }
+                dbHelper.deleteMultipleFileHistories(ids);
+                playSuccessSound();
+                fileHistoryAdapter.setMultiSelectMode(false);
+                View bar = findViewById(R.id.layoutFileMultiSelectBar);
+                if (bar != null) bar.setVisibility(View.GONE);
+                refreshData();
+                refreshTab2CalendarEvents();
+                updateChartTab();
+                refreshFileHistory();
+                Toast.makeText(MainActivity.this, "✅ Đã xóa " + fileCount + " tệp và toàn bộ " + totalDeletedEvents + " lịch trình liên quan!", Toast.LENGTH_LONG).show();
+            });
+        }
+
+        if (btnDeleteHistoryOnly != null) {
+            btnDeleteHistoryOnly.setOnClickListener(v -> {
+                dialog.dismiss();
+                List<Integer> ids = new ArrayList<>();
+                for (FileHistoryModel file : selectedFiles) {
+                    ids.add(file.getId());
+                    if (file.getFileName() != null) {
+                        deletePhysicalImportedFile(file.getFileName().trim());
+                    }
+                }
+                dbHelper.deleteMultipleFileHistories(ids);
+                playSuccessSound();
+                fileHistoryAdapter.setMultiSelectMode(false);
+                View bar = findViewById(R.id.layoutFileMultiSelectBar);
+                if (bar != null) bar.setVisibility(View.GONE);
+                refreshFileHistory();
+                Toast.makeText(MainActivity.this, "Đã xóa " + fileCount + " tệp khỏi nhật ký (giữ lại lịch trình trong ứng dụng).", Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> dialog.dismiss());
+        }
+
+        dialog.show();
+    }
+
+    private void showDeleteFileAndEventsDialog(FileHistoryModel item) {
+        if (item == null || item.getFileName() == null) return;
+        String fileName = item.getFileName().trim();
+        int eventCount = dbHelper.countEventsByFileName(fileName);
+
+        if (eventCount <= 0) {
+            showCustomConfirmDialog(
+                    "🗑️",
+                    "XÓA TỆP KHỎI ỨNG DỤNG",
+                    "Bạn có chắc muốn xóa tệp '" + fileName + "' khỏi bộ nhớ ứng dụng?",
+                    "🔴 Xóa tệp",
+                    Color.parseColor("#DC2626"),
+                    () -> {
+                        dbHelper.deleteFileHistory(item.getId());
+                        deletePhysicalImportedFile(fileName);
+                        playSuccessSound();
+                        refreshFileHistory();
+                        Toast.makeText(MainActivity.this, "Đã xóa tệp khỏi ứng dụng!", Toast.LENGTH_SHORT).show();
+                    });
+            return;
+        }
+
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_delete_file_events, null);
+        TextView tvDialogTitle = view.findViewById(R.id.tvDeleteDialogTitle);
+        TextView tvDeleteFileName = view.findViewById(R.id.tvDeleteFileName);
+        TextView tvDeleteEventCount = view.findViewById(R.id.tvDeleteEventCount);
+        Button btnDeleteFileAndEvents = view.findViewById(R.id.btnDeleteFileAndEvents);
+        Button btnDeleteHistoryOnly = view.findViewById(R.id.btnDeleteHistoryOnly);
+        TextView btnCancel = view.findViewById(R.id.btnCancelDeleteFile);
+
+        if (tvDialogTitle != null) tvDialogTitle.setText("XÓA TỆP VÀ NỘI DUNG ĐÃ NHẬP");
+        if (tvDeleteFileName != null) tvDeleteFileName.setText("Tệp: " + fileName);
+        if (tvDeleteEventCount != null) {
+            tvDeleteEventCount.setText("⚠️ Phát hiện có " + eventCount + " buổi / lịch trình trong ứng dụng được nhập từ tệp này.\n\nBạn có muốn xóa sạch toàn bộ nội dung của tệp này khỏi ứng dụng không?");
+        }
+        if (btnDeleteFileAndEvents != null) {
+            btnDeleteFileAndEvents.setText("🔴 Xóa tệp & sạch toàn bộ " + eventCount + " lịch đã nhập");
+        }
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(view)
+                .create();
+        KeyboardUtils.applyAutoHideKeyboard(dialog);
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        if (btnDeleteFileAndEvents != null) {
+            btnDeleteFileAndEvents.setOnClickListener(v -> {
+                dialog.dismiss();
+                int deleted = dbHelper.deleteEventsByFileName(fileName);
+                dbHelper.deleteFileHistory(item.getId());
+                deletePhysicalImportedFile(fileName);
+                playSuccessSound();
+                refreshData();
+                refreshTab2CalendarEvents();
+                updateChartTab();
+                refreshFileHistory();
+                Toast.makeText(MainActivity.this, "✅ Đã xóa tệp và sạch toàn bộ " + deleted + " lịch trình liên quan!", Toast.LENGTH_LONG).show();
+            });
+        }
+
+        if (btnDeleteHistoryOnly != null) {
+            btnDeleteHistoryOnly.setOnClickListener(v -> {
+                dialog.dismiss();
+                dbHelper.deleteFileHistory(item.getId());
+                deletePhysicalImportedFile(fileName);
+                playSuccessSound();
+                refreshFileHistory();
+                Toast.makeText(MainActivity.this, "Đã xóa bản ghi nhật ký (giữ lại lịch trình trong ứng dụng).", Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> dialog.dismiss());
+        }
+
+        dialog.show();
+    }
+
+    private void showClearAllFilesAndEventsDialog() {
+        List<DatabaseHelper.SourceFileInfo> files = dbHelper.getImportedFilesSummary();
+        int totalEvents = 0;
+        for (DatabaseHelper.SourceFileInfo f : files) {
+            totalEvents += f.eventCount;
+        }
+
+        if (totalEvents <= 0) {
+            showCustomConfirmDialog(
+                    "🧹",
+                    "XÓA TẤT CẢ LỊCH SỬ FILE",
+                    "Bạn có chắc chắn muốn xóa TOÀN BỘ nhật ký lịch sử nhập xuất file?",
+                    "🔴 Xóa tất cả",
+                    Color.parseColor("#DC2626"),
+                    () -> {
+                        dbHelper.clearAllFileHistory();
+                        clearAllPhysicalImportedFiles();
+                        playSuccessSound();
+                        refreshFileHistory();
+                        Toast.makeText(MainActivity.this, "Đã dọn sạch nhật ký lịch sử file!", Toast.LENGTH_SHORT).show();
+                    });
+            return;
+        }
+
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_delete_file_events, null);
+        TextView tvDialogTitle = view.findViewById(R.id.tvDeleteDialogTitle);
+        TextView tvDeleteFileName = view.findViewById(R.id.tvDeleteFileName);
+        TextView tvDeleteEventCount = view.findViewById(R.id.tvDeleteEventCount);
+        Button btnDeleteFileAndEvents = view.findViewById(R.id.btnDeleteFileAndEvents);
+        Button btnDeleteHistoryOnly = view.findViewById(R.id.btnDeleteHistoryOnly);
+        TextView btnCancel = view.findViewById(R.id.btnCancelDeleteFile);
+
+        if (tvDialogTitle != null) tvDialogTitle.setText("DỌN SẠCH TỆP & LỊCH TRÌNH ĐÃ NHẬP");
+        if (tvDeleteFileName != null) tvDeleteFileName.setText("Tổng cộng: " + files.size() + " tệp • " + totalEvents + " lịch trình");
+        if (tvDeleteEventCount != null) {
+            tvDeleteEventCount.setText("⚠️ Có tổng cộng " + totalEvents + " buổi / lịch trình trong ứng dụng được nhập từ " + files.size() + " tệp.\n\nBạn có muốn XÓA SẠCH toàn bộ các lịch trình này hay chỉ xóa danh sách nhật ký?");
+        }
+        if (btnDeleteFileAndEvents != null) {
+            btnDeleteFileAndEvents.setText("🔴 Xóa tất cả tệp & sạch " + totalEvents + " lịch đã nhập");
+        }
+        if (btnDeleteHistoryOnly != null) {
+            btnDeleteHistoryOnly.setText("📄 Chỉ xóa nhật ký lịch sử (Giữ lại lịch)");
+        }
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(view)
+                .create();
+        KeyboardUtils.applyAutoHideKeyboard(dialog);
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        if (btnDeleteFileAndEvents != null) {
+            btnDeleteFileAndEvents.setOnClickListener(b -> {
+                dialog.dismiss();
+                int deleted = dbHelper.deleteAllEventsFromAllImportedFiles();
+                clearAllPhysicalImportedFiles();
+                playSuccessSound();
+                refreshData();
+                refreshTab2CalendarEvents();
+                updateChartTab();
+                refreshFileHistory();
+                Toast.makeText(MainActivity.this, "✅ Đã xóa sạch toàn bộ " + deleted + " lịch trình từ tất cả tệp!", Toast.LENGTH_LONG).show();
+            });
+        }
+
+        if (btnDeleteHistoryOnly != null) {
+            btnDeleteHistoryOnly.setOnClickListener(b -> {
+                dialog.dismiss();
+                dbHelper.clearAllFileHistory();
+                clearAllPhysicalImportedFiles();
+                playSuccessSound();
+                refreshFileHistory();
+                Toast.makeText(MainActivity.this, "Đã xóa nhật ký lịch sử file!", Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(b -> dialog.dismiss());
+        }
+
+        dialog.show();
+    }
+
+    private void showManageImportedFilesDialog() {
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_manage_imported_files, null);
+        RecyclerView rvManage = view.findViewById(R.id.rvManageFilesList);
+        TextView tvEmpty = view.findViewById(R.id.tvEmptyManageFiles);
+        Button btnDeleteAll = view.findViewById(R.id.btnDeleteAllFilesAndEvents);
+        ImageButton btnClose = view.findViewById(R.id.btnCloseManageFiles);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(view)
+                .create();
+        KeyboardUtils.applyAutoHideKeyboard(dialog);
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        if (btnClose != null) {
+            btnClose.setOnClickListener(v -> dialog.dismiss());
+        }
+
+        Runnable reloadList = new Runnable() {
+            @Override
+            public void run() {
+                dbHelper.cleanUpGarbageCvEntries();
+                dbHelper.syncPhysicalFilesIntoHistory(getHistoryStorageDir());
+                dbHelper.syncOrphanFilesIntoHistory();
+                List<DatabaseHelper.SourceFileInfo> files = dbHelper.getImportedFilesSummary();
+                int totalEvents = 0;
+                for (DatabaseHelper.SourceFileInfo f : files) totalEvents += f.eventCount;
+
+                if (files.isEmpty()) {
+                    if (tvEmpty != null) {
+                        tvEmpty.setVisibility(View.VISIBLE);
+                        tvEmpty.setText("☕ Hiện không có tệp nào được lưu trong ứng dụng.");
+                    }
+                    if (rvManage != null) rvManage.setVisibility(View.GONE);
+                    if (btnDeleteAll != null) {
+                        btnDeleteAll.setEnabled(false);
+                        btnDeleteAll.setAlpha(0.4f);
+                    }
+                } else {
+                    if (tvEmpty != null) tvEmpty.setVisibility(View.GONE);
+                    if (rvManage != null) {
+                        rvManage.setVisibility(View.VISIBLE);
+                        rvManage.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+                        final Runnable selfRunnable = this;
+                        rvManage.setAdapter(new RecyclerView.Adapter<ManageFileViewHolder>() {
+                            @Override
+                            public ManageFileViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                                View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_manage_file_entry, parent, false);
+                                return new ManageFileViewHolder(itemView);
+                            }
+
+                            @Override
+                            public void onBindViewHolder(ManageFileViewHolder holder, int position) {
+                                DatabaseHelper.SourceFileInfo fileInfo = files.get(position);
+                                holder.tvName.setText(fileInfo.fileName);
+
+                                String lower = fileInfo.fileName.toLowerCase(Locale.getDefault());
+                                String iconEmoji = "📄";
+                                if (lower.endsWith(".xlsx") || lower.endsWith(".xls") || lower.endsWith(".csv")) iconEmoji = "📊";
+                                else if (lower.endsWith(".docx") || lower.endsWith(".doc")) iconEmoji = "📝";
+                                else if (lower.endsWith(".pptx") || lower.endsWith(".ppt")) iconEmoji = "📑";
+                                else if (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png")) iconEmoji = "🖼️";
+                                holder.tvIcon.setText(iconEmoji);
+
+                                if (fileInfo.eventCount > 0) {
+                                    holder.tvCount.setText("⚠️ " + fileInfo.eventCount + " lịch trình trong ứng dụng");
+                                    holder.tvCount.setTextColor(Color.parseColor("#DC2626"));
+                                } else {
+                                    holder.tvCount.setText("✓ 0 lịch trình (chỉ tệp tin)");
+                                    holder.tvCount.setTextColor(Color.parseColor("#10B981"));
+                                }
+                                holder.btnDelete.setEnabled(true);
+                                holder.btnDelete.setAlpha(1.0f);
+
+                                holder.btnDelete.setOnClickListener(v -> {
+                                    String msg = fileInfo.eventCount > 0
+                                            ? "Bạn có chắc muốn xóa tệp '" + fileInfo.fileName + "' cùng toàn bộ " + fileInfo.eventCount + " lịch trình đã nhập?"
+                                            : "Bạn có chắc muốn xóa tệp '" + fileInfo.fileName + "' khỏi ứng dụng?";
+                                    showCustomConfirmDialog(
+                                            "🗑️",
+                                            "XÓA TỆP & DỮ LIỆU",
+                                            msg,
+                                            "🔴 Xóa tệp",
+                                            Color.parseColor("#DC2626"),
+                                            () -> {
+                                                int deleted = dbHelper.deleteEventsByFileName(fileInfo.fileName);
+                                                dbHelper.deleteFileHistoryByName(fileInfo.fileName);
+                                                deletePhysicalImportedFile(fileInfo.fileName);
+                                                playSuccessSound();
+                                                refreshData();
+                                                refreshTab2CalendarEvents();
+                                                updateChartTab();
+                                                refreshFileHistory();
+                                                Toast.makeText(MainActivity.this, "Đã xóa tệp '" + fileInfo.fileName + "'!", Toast.LENGTH_SHORT).show();
+                                                selfRunnable.run();
+                                            });
+                                });
+                            }
+
+                            @Override
+                            public int getItemCount() {
+                                return files.size();
+                            }
+                        });
+                    }
+
+                    if (btnDeleteAll != null) {
+                        btnDeleteAll.setEnabled(true);
+                        btnDeleteAll.setAlpha(1.0f);
+                        final int finalTotal = totalEvents;
+                        btnDeleteAll.setOnClickListener(v -> {
+                            String msg = finalTotal > 0
+                                    ? "Bạn có chắc chắn muốn xóa TOÀN BỘ " + finalTotal + " lịch trình của tất cả " + files.size() + " tệp đã nhập vào ứng dụng?"
+                                    : "Bạn có chắc chắn muốn xóa TOÀN BỘ " + files.size() + " tệp đã nhập vào ứng dụng?";
+                            showCustomConfirmDialog(
+                                    "🚨",
+                                    "XÓA TOÀN BỘ DỮ LIỆU TẤT CẢ TỆP",
+                                    msg,
+                                    "🔴 XÓA TẤT CẢ SẠCH SẼ",
+                                    Color.parseColor("#DC2626"),
+                                    () -> {
+                                        dialog.dismiss();
+                                        int deleted = dbHelper.deleteAllEventsFromAllImportedFiles();
+                                        clearAllPhysicalImportedFiles();
+                                        playSuccessSound();
+                                        refreshData();
+                                        refreshTab2CalendarEvents();
+                                        updateChartTab();
+                                        refreshFileHistory();
+                                        Toast.makeText(MainActivity.this, "✅ Đã xóa sạch toàn bộ " + deleted + " lịch trình và tất cả các tệp!", Toast.LENGTH_LONG).show();
+                                    });
+                        });
+                    }
+                }
+            }
+        };
+
+        reloadList.run();
+        dialog.show();
+    }
+
+    private static class ManageFileViewHolder extends RecyclerView.ViewHolder {
+        TextView tvIcon, tvName, tvCount;
+        Button btnDelete;
+
+        ManageFileViewHolder(View itemView) {
+            super(itemView);
+            tvIcon = itemView.findViewById(R.id.tvManageFileIcon);
+            tvName = itemView.findViewById(R.id.tvManageFileName);
+            tvCount = itemView.findViewById(R.id.tvManageFileCount);
+            btnDelete = itemView.findViewById(R.id.btnDeleteThisFileEvents);
+        }
+    }
+
     private void showAddEventDialog() {
+        showAddEventDialogWithPrefill(null, null, null);
+    }
+
+    private void showAddEventDialogWithPrefill(String prefillDateIso, String prefillStart, String prefillEnd) {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_event, null);
         TextView tvDialogHeaderTitle = view.findViewById(R.id.tvDialogHeaderTitle);
         EditText edtStt = view.findViewById(R.id.edtStt);
+        Spinner spnCategory = view.findViewById(R.id.spnCategory);
+        LinearLayout layoutCustomCategory = view.findViewById(R.id.layoutCustomCategory);
+        EditText edtCustomCategory = view.findViewById(R.id.edtCustomCategory);
         EditText edtTitle = view.findViewById(R.id.edtTitle);
         EditText edtDate = view.findViewById(R.id.edtDate);
+        EditText edtStartTime = view.findViewById(R.id.edtStartTime);
+        EditText edtEndTime = view.findViewById(R.id.edtEndTime);
+        EditText edtRoom = view.findViewById(R.id.edtRoom);
         EditText edtOrganizer = view.findViewById(R.id.edtOrganizer);
         Button btnSaveDialog = view.findViewById(R.id.btnSaveDialog);
         Button btnCancelDialog = view.findViewById(R.id.btnCancelDialog);
@@ -2498,12 +4090,56 @@ public class MainActivity extends AppCompatActivity {
             tvDialogHeaderTitle.setText("➕ THÊM LỊCH CÔNG VIỆC MỚI");
         }
 
+        if (prefillDateIso != null && !prefillDateIso.isEmpty()) {
+            try {
+                SimpleDateFormat sdfIso = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                SimpleDateFormat sdfVn = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                Date d = sdfIso.parse(prefillDateIso);
+                if (d != null && edtDate != null) edtDate.setText(sdfVn.format(d));
+            } catch (Exception ignored) {
+                if (edtDate != null) edtDate.setText(prefillDateIso);
+            }
+        }
+        if (prefillStart != null && edtStartTime != null) edtStartTime.setText(prefillStart);
+        if (prefillEnd != null && edtEndTime != null) edtEndTime.setText(prefillEnd);
+
+        String[] categoryDisplayOptions = new String[]{
+                "👨‍🏫 Lịch dạy/học",
+                "🏛️ Lịch sự kiện",
+                "⚡ Lịch phát sinh",
+                "📝 Lịch khác (tự đặt tên)"
+        };
+
+        if (spnCategory != null) {
+            ArrayAdapter<String> catAdapter = new ArrayAdapter<>(this, R.layout.item_chart_spinner, categoryDisplayOptions);
+            catAdapter.setDropDownViewResource(R.layout.item_chart_spinner_dropdown);
+            spnCategory.setAdapter(catAdapter);
+
+            spnCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
+                    if (position == 3) {
+                        if (layoutCustomCategory != null) {
+                            layoutCustomCategory.setVisibility(View.VISIBLE);
+                            if (edtCustomCategory != null) edtCustomCategory.requestFocus();
+                        }
+                    } else {
+                        if (layoutCustomCategory != null) layoutCustomCategory.setVisibility(View.GONE);
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {}
+            });
+        }
+
         int nextStt = adapter != null ? (adapter.getItemCount() + 1) : 1;
         edtStt.setText(String.valueOf(nextStt));
 
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setView(view)
                 .create();
+        KeyboardUtils.applyAutoHideKeyboard(dialog);
 
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -2516,6 +4152,20 @@ public class MainActivity extends AppCompatActivity {
                 edtDate.setText(dateFormatted);
             }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show();
         });
+        
+        edtStartTime.setOnClickListener(v -> {
+            Calendar cal = Calendar.getInstance();
+            new android.app.TimePickerDialog(this, (view1, hourOfDay, minute) -> {
+                edtStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute));
+            }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show();
+        });
+
+        edtEndTime.setOnClickListener(v -> {
+            Calendar cal = Calendar.getInstance();
+            new android.app.TimePickerDialog(this, (view12, hourOfDay, minute) -> {
+                edtEndTime.setText(String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute));
+            }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show();
+        });
 
         if (btnCancelDialog != null) {
             btnCancelDialog.setOnClickListener(v -> dialog.dismiss());
@@ -2527,22 +4177,92 @@ public class MainActivity extends AppCompatActivity {
                 try { stt = Integer.parseInt(edtStt.getText().toString().trim()); } catch (Exception ignored) {}
                 String title = edtTitle.getText().toString().trim();
                 String date = edtDate.getText().toString().trim();
+                String startTime = edtStartTime.getText().toString().trim();
+                String endTime = edtEndTime.getText().toString().trim();
+                String room = edtRoom.getText().toString().trim();
                 String org = edtOrganizer.getText().toString().trim();
 
                 if (title.isEmpty() || date.isEmpty()) {
                     Toast.makeText(this, "Vui lòng nhập Tên sự kiện và Ngày tổ chức!", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                dbHelper.insertEvent(stt, title, date, org.isEmpty() ? "Nhà trường" : org);
-                playSuccessSound();
-                refreshData();
-                refreshTab2CalendarEvents();
-                Toast.makeText(this, "Đã thêm lịch mới thành công!", Toast.LENGTH_SHORT).show();
+                
+                saveEvent(nextStt, edtStt, title, room, startTime, endTime, date, org, spnCategory, edtCustomCategory);
                 dialog.dismiss();
             });
         }
 
         dialog.show();
+    }
+    
+    private void saveEvent(int nextStt, EditText edtStt, String title, String room, String startTime, String endTime, String date, String org, Spinner spnCategory, EditText edtCustomCategory) {
+        int stt = nextStt;
+        try { stt = Integer.parseInt(edtStt.getText().toString().trim()); } catch (Exception ignored) {}
+        
+        String roomInput = room != null ? room.trim() : "";
+        String cleanTitle = title != null ? title.trim() : "";
+
+        if (roomInput.isEmpty()) {
+            roomInput = CampusBufferHelper.extractGenericRoom(cleanTitle);
+        }
+
+        cleanTitle = EventModel.cleanDisplayTitle(cleanTitle);
+        StringBuilder savedTitle = new StringBuilder(cleanTitle);
+
+        if (!roomInput.isEmpty()) {
+            savedTitle.append(" - ").append(roomInput);
+        }
+
+        if (startTime != null && !startTime.trim().isEmpty()) {
+            String startStr = startTime.trim();
+            String endStr = (endTime != null && !endTime.trim().isEmpty()) ? endTime.trim() : "";
+            if (!endStr.isEmpty()) {
+                savedTitle.append(" [").append(startStr).append(" - ").append(endStr).append("]");
+            } else {
+                savedTitle.append(" [").append(startStr).append("]");
+            }
+        }
+
+        int selectedPos = spnCategory != null ? spnCategory.getSelectedItemPosition() : 0;
+        String category;
+        if (selectedPos == 0) {
+            category = EventModel.CAT_TEACHING;
+        } else if (selectedPos == 1) {
+            category = EventModel.CAT_EVENT;
+        } else if (selectedPos == 2) {
+            category = EventModel.CAT_INCIDENT;
+        } else {
+            String customName = (edtCustomCategory != null) ? edtCustomCategory.getText().toString().trim() : "";
+            category = customName.isEmpty() ? "Lịch khác" : customName;
+        }
+
+        String isoDate = dbHelper.parseToIsoDate(date);
+        dbHelper.insertEvent(stt, savedTitle.toString(), date, org.isEmpty() ? "Lịch nhập thủ công" : org, category);
+
+        SimpleDateFormat sdfToday = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        String todayIso = sdfToday.format(Calendar.getInstance().getTime());
+
+        boolean isViewingToday = (currentCalendarMode == 0)
+                || isFilteringToday
+                || (edtSearch != null && todayIso.equals(edtSearch.getText().toString().trim()));
+
+        if (isoDate != null && !isoDate.trim().isEmpty()) {
+            selectedTab2DateIso = isoDate;
+        }
+
+        if (isViewingToday) {
+            currentCalendarMode = 0;
+            isFilteringToday = true;
+            if (edtSearch != null) {
+                edtSearch.setText(todayIso);
+            }
+            updateChipUi(R.id.chipToday);
+        }
+
+        playSuccessSound();
+        refreshAllTabs();
+        scrollToEvent(stt, savedTitle.toString(), isoDate);
+        Toast.makeText(this, "Đã thêm lịch mới thành công!", Toast.LENGTH_SHORT).show();
     }
 
     private void showEditEventDialog(EventModel event) {
@@ -2551,8 +4271,14 @@ public class MainActivity extends AppCompatActivity {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_event, null);
         TextView tvDialogHeaderTitle = view.findViewById(R.id.tvDialogHeaderTitle);
         EditText edtStt = view.findViewById(R.id.edtStt);
+        Spinner spnCategory = view.findViewById(R.id.spnCategory);
+        LinearLayout layoutCustomCategory = view.findViewById(R.id.layoutCustomCategory);
+        EditText edtCustomCategory = view.findViewById(R.id.edtCustomCategory);
         EditText edtTitle = view.findViewById(R.id.edtTitle);
         EditText edtDate = view.findViewById(R.id.edtDate);
+        EditText edtStartTime = view.findViewById(R.id.edtStartTime);
+        EditText edtEndTime = view.findViewById(R.id.edtEndTime);
+        EditText edtRoom = view.findViewById(R.id.edtRoom);
         EditText edtOrganizer = view.findViewById(R.id.edtOrganizer);
         Button btnSaveDialog = view.findViewById(R.id.btnSaveDialog);
         Button btnCancelDialog = view.findViewById(R.id.btnCancelDialog);
@@ -2561,8 +4287,80 @@ public class MainActivity extends AppCompatActivity {
             tvDialogHeaderTitle.setText("✏️ CHỈNH SỬA LỊCH CÔNG VIỆC");
         }
 
+        String[] categoryDisplayOptions = new String[]{
+                "👨‍🏫 Lịch dạy/học",
+                "🏛️ Lịch sự kiện",
+                "⚡ Lịch phát sinh",
+                "📝 Lịch khác (tự đặt tên)"
+        };
+
+        if (spnCategory != null) {
+            ArrayAdapter<String> catAdapter = new ArrayAdapter<>(this, R.layout.item_chart_spinner, categoryDisplayOptions);
+            catAdapter.setDropDownViewResource(R.layout.item_chart_spinner_dropdown);
+            spnCategory.setAdapter(catAdapter);
+
+            String currentCat = event.getCategory();
+            if (currentCat == null || currentCat.trim().isEmpty()) {
+                currentCat = event.getScheduleCategory();
+            }
+
+            if (EventModel.CAT_TEACHING.equalsIgnoreCase(currentCat)) {
+                spnCategory.setSelection(0);
+                if (layoutCustomCategory != null) layoutCustomCategory.setVisibility(View.GONE);
+            } else if (EventModel.CAT_EVENT.equalsIgnoreCase(currentCat)) {
+                spnCategory.setSelection(1);
+                if (layoutCustomCategory != null) layoutCustomCategory.setVisibility(View.GONE);
+            } else if (EventModel.CAT_INCIDENT.equalsIgnoreCase(currentCat)) {
+                spnCategory.setSelection(2);
+                if (layoutCustomCategory != null) layoutCustomCategory.setVisibility(View.GONE);
+            } else {
+                spnCategory.setSelection(3);
+                if (layoutCustomCategory != null) layoutCustomCategory.setVisibility(View.VISIBLE);
+                if (edtCustomCategory != null) {
+                    if (!EventModel.CAT_MANUAL_OTHER.equalsIgnoreCase(currentCat)
+                            && !EventModel.LEGACY_CAT_MANUAL_OTHER.equalsIgnoreCase(currentCat)
+                            && !"Lịch khác".equalsIgnoreCase(currentCat)) {
+                        edtCustomCategory.setText(currentCat);
+                    } else {
+                        edtCustomCategory.setText("");
+                    }
+                }
+            }
+
+            spnCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
+                    if (position == 3) {
+                        if (layoutCustomCategory != null) {
+                            layoutCustomCategory.setVisibility(View.VISIBLE);
+                            if (edtCustomCategory != null) edtCustomCategory.requestFocus();
+                        }
+                    } else {
+                        if (layoutCustomCategory != null) layoutCustomCategory.setVisibility(View.GONE);
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {}
+            });
+        }
+
         edtStt.setText(String.valueOf(event.getStt()));
-        edtTitle.setText(event.getTitle());
+        
+        // Hiển thị tên sự kiện sạch (không đính kèm chuỗi phòng và thời gian dư thừa)
+        edtTitle.setText(EventModel.cleanDisplayTitle(event.getTitle()));
+
+        if (event.getStartTime() != null) edtStartTime.setText(event.getStartTime());
+        if (event.getEndTime() != null) edtEndTime.setText(event.getEndTime());
+        
+        String currentRoom = event.getRoom();
+        if (currentRoom == null || currentRoom.trim().isEmpty()) {
+            EventModel.EventFieldBreakdown bd = event.getBreakdown();
+            currentRoom = bd.room;
+        }
+        if (currentRoom != null && edtRoom != null) {
+            edtRoom.setText(currentRoom.trim());
+        }
 
         String displayDate = event.getDate();
         try {
@@ -2580,6 +4378,7 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setView(view)
                 .create();
+        KeyboardUtils.applyAutoHideKeyboard(dialog);
 
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -2605,6 +4404,36 @@ public class MainActivity extends AppCompatActivity {
             }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show();
         });
 
+        edtStartTime.setOnClickListener(v -> {
+            Calendar cal = Calendar.getInstance();
+            String st = edtStartTime.getText().toString().trim();
+            if(!st.isEmpty() && st.contains(":")) {
+                try {
+                    String[] parts = st.split(":");
+                    cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(parts[0]));
+                    cal.set(Calendar.MINUTE, Integer.parseInt(parts[1]));
+                } catch (Exception ignored){}
+            }
+            new android.app.TimePickerDialog(this, (view1, hourOfDay, minute) -> {
+                edtStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute));
+            }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show();
+        });
+
+        edtEndTime.setOnClickListener(v -> {
+            Calendar cal = Calendar.getInstance();
+            String et = edtEndTime.getText().toString().trim();
+            if(!et.isEmpty() && et.contains(":")) {
+                try {
+                    String[] parts = et.split(":");
+                    cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(parts[0]));
+                    cal.set(Calendar.MINUTE, Integer.parseInt(parts[1]));
+                } catch (Exception ignored){}
+            }
+            new android.app.TimePickerDialog(this, (view12, hourOfDay, minute) -> {
+                edtEndTime.setText(String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute));
+            }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show();
+        });
+
         if (btnCancelDialog != null) {
             btnCancelDialog.setOnClickListener(v -> dialog.dismiss());
         }
@@ -2616,35 +4445,179 @@ public class MainActivity extends AppCompatActivity {
                 try { stt = Integer.parseInt(edtStt.getText().toString().trim()); } catch (Exception ignored) {}
                 String title = edtTitle.getText().toString().trim();
                 String date = edtDate.getText().toString().trim();
+                String startTime = edtStartTime.getText().toString().trim();
+                String endTime = edtEndTime.getText().toString().trim();
+                String room = edtRoom.getText().toString().trim();
                 String org = edtOrganizer.getText().toString().trim();
 
                 if (title.isEmpty() || date.isEmpty()) {
                     Toast.makeText(this, "Vui lòng nhập Tên sự kiện và Ngày tổ chức!", Toast.LENGTH_SHORT).show();
                     return;
                 }
-
-                dbHelper.updateEvent(event.getId(), stt, title, date, org.isEmpty() ? "Nhà trường" : org);
-                playSuccessSound();
-                refreshData();
-                refreshTab2CalendarEvents();
-                Toast.makeText(this, "Đã cập nhật lịch thành công!", Toast.LENGTH_SHORT).show();
+                
+                updateEvent(event, edtStt, title, room, startTime, endTime, date, org, spnCategory, edtCustomCategory);
                 dialog.dismiss();
             });
         }
 
         dialog.show();
     }
+    
+    private void updateEvent(EventModel event, EditText edtStt, String title, String room, String startTime, String endTime, String date, String org, Spinner spnCategory, EditText edtCustomCategory) {
+        int stt = event != null ? event.getStt() : 1;
+        try { stt = Integer.parseInt(edtStt.getText().toString().trim()); } catch (Exception ignored) {}
+        
+        String roomInput = room != null ? room.trim() : "";
+        String cleanTitle = title != null ? title.trim() : "";
+
+        if (roomInput.isEmpty()) {
+            roomInput = CampusBufferHelper.extractGenericRoom(cleanTitle);
+        }
+
+        cleanTitle = EventModel.cleanDisplayTitle(cleanTitle);
+        StringBuilder savedTitle = new StringBuilder(cleanTitle);
+
+        if (!roomInput.isEmpty()) {
+            savedTitle.append(" - ").append(roomInput);
+        }
+
+        if (startTime != null && !startTime.trim().isEmpty()) {
+            String startStr = startTime.trim();
+            String endStr = (endTime != null && !endTime.trim().isEmpty()) ? endTime.trim() : "";
+            if (!endStr.isEmpty()) {
+                savedTitle.append(" [").append(startStr).append(" - ").append(endStr).append("]");
+            } else {
+                savedTitle.append(" [").append(startStr).append("]");
+            }
+        }
+
+        int selectedPos = spnCategory != null ? spnCategory.getSelectedItemPosition() : 0;
+        String category;
+        if (selectedPos == 0) {
+            category = EventModel.CAT_TEACHING;
+        } else if (selectedPos == 1) {
+            category = EventModel.CAT_EVENT;
+        } else if (selectedPos == 2) {
+            category = EventModel.CAT_INCIDENT;
+        } else {
+            String customName = (edtCustomCategory != null) ? edtCustomCategory.getText().toString().trim() : "";
+            category = customName.isEmpty() ? "Lịch khác" : customName;
+        }
+
+        String isoDate = dbHelper.parseToIsoDate(date);
+        String organizerName = org.isEmpty() ? "Nhà trường" : org;
+
+        if (event != null && event.getId() > 0) {
+            dbHelper.updateEvent(event.getId(), stt, savedTitle.toString(), date, organizerName, category);
+        } else {
+            dbHelper.insertEvent(stt, savedTitle.toString(), date, organizerName, category);
+        }
+
+        SimpleDateFormat sdfToday = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        String todayIso = sdfToday.format(Calendar.getInstance().getTime());
+
+        boolean isViewingToday = (currentCalendarMode == 0)
+                || isFilteringToday
+                || (edtSearch != null && todayIso.equals(edtSearch.getText().toString().trim()));
+
+        if (isoDate != null && !isoDate.trim().isEmpty()) {
+            selectedTab2DateIso = isoDate;
+        }
+
+        if (isViewingToday) {
+            currentCalendarMode = 0;
+            isFilteringToday = true;
+            if (edtSearch != null) {
+                edtSearch.setText(todayIso);
+            }
+            updateChipUi(R.id.chipToday);
+        }
+
+        playSuccessSound();
+        refreshAllTabs();
+        scrollToEvent(stt, savedTitle.toString(), isoDate);
+        Toast.makeText(this, "Đã cập nhật lịch thành công!", Toast.LENGTH_SHORT).show();
+    }
+
+    private void updateChipUi(int selectedChipId) {
+        TextView chipAll = findViewById(R.id.chipAll);
+        TextView chipTeaching = findViewById(R.id.chipTeaching);
+        TextView chipMeeting = findViewById(R.id.chipMeeting);
+        TextView chipIncident = findViewById(R.id.chipIncident);
+        TextView chipManual = findViewById(R.id.chipManual);
+        TextView chipToday = findViewById(R.id.chipToday);
+        TextView chipFreeTime = findViewById(R.id.chipFreeTime);
+
+        TextView[] allChips = new TextView[]{chipAll, chipTeaching, chipMeeting, chipIncident, chipManual, chipToday, chipFreeTime};
+        for (TextView c : allChips) {
+            if (c != null) {
+                if (c.getId() == selectedChipId) {
+                    c.setBackgroundResource(R.drawable.bg_chip_selected);
+                    c.setTextColor(Color.parseColor("#FFFFFF"));
+                } else {
+                    c.setBackgroundResource(R.drawable.bg_chip_unselected);
+                    c.setTextColor(Color.parseColor("#334155"));
+                }
+            }
+        }
+    }
+
+    private void scrollToEvent(int stt, String title, String isoDate) {
+        if (rvEvents == null || adapter == null || adapter.getEventList() == null) return;
+        List<EventModel> list = adapter.getEventList();
+        for (int i = 0; i < list.size(); i++) {
+            EventModel em = list.get(i);
+            if (em == null) continue;
+            boolean matchDate = (isoDate != null && isoDate.equals(em.getDate()));
+            boolean matchTitle = (title != null && (title.equals(em.getTitle()) || EventModel.cleanDisplayTitle(title).equals(EventModel.cleanDisplayTitle(em.getTitle()))));
+            if (matchDate && matchTitle) {
+                final int pos = i;
+                rvEvents.post(() -> rvEvents.scrollToPosition(pos));
+                return;
+            }
+        }
+        if (!list.isEmpty()) {
+            rvEvents.post(() -> rvEvents.scrollToPosition(0));
+        }
+    }
 
     private void importExcelFile(Uri fileUri) {
         try {
             String fileName = resolveFileName(fileUri, "Import", ".xlsx");
-            copyUriToDownloads(fileUri, fileName);
 
             InputStream is = getContentResolver().openInputStream(fileUri);
             if (is == null) return;
 
             // Sử dụng WorkbookFactory để đọc chính xác cả .xlsx (Excel 2007+) và .xls (Excel 97-2003)
             Workbook workbook = WorkbookFactory.create(is);
+
+            // Kiểm tra tính hợp lệ của tài liệu Excel (từ chối CV, sơ yếu lý lịch, file không liên quan)
+            StringBuilder sampleText = new StringBuilder();
+            int maxSheets = Math.min(workbook.getNumberOfSheets(), 3);
+            for (int s = 0; s < maxSheets; s++) {
+                Sheet sheet = workbook.getSheetAt(s);
+                if (sheet == null) continue;
+                int rCount = 0;
+                for (Row row : sheet) {
+                    if (row == null) continue;
+                    for (Cell cell : row) {
+                        String val = getCellValueAsString(cell);
+                        if (!val.isEmpty()) sampleText.append(val).append(" ");
+                    }
+                    sampleText.append("\n");
+                    if (++rCount >= 30) break;
+                }
+            }
+
+            FileValidationResult valResult = validateScheduleDocument(sampleText.toString(), fileName);
+            if (!valResult.isValid) {
+                workbook.close();
+                is.close();
+                showFileRejectedDialog(fileName, valResult.rejectReason);
+                return;
+            }
+
+            copyUriToDownloads(fileUri, fileName);
             int count = 0;
             int autoStt = 1;
             List<String> extractedSummaries = new ArrayList<>();
@@ -2777,7 +4750,9 @@ public class MainActivity extends AppCompatActivity {
                                 || lowerTitle.contains("tên sự kiện")
                                 || lowerTitle.contains("tên công việc")
                                 || lowerTitle.startsWith("báo cáo")
-                                || lowerTitle.startsWith("tổng cộng")) {
+                                || lowerTitle.startsWith("tổng cộng")
+                                || UniversalScheduleParser.isNoiseLine(rawTitle)
+                                || UniversalScheduleParser.isInstitutionalBoilerplate(rawTitle)) {
                             continue;
                         }
 
@@ -2939,7 +4914,16 @@ public class MainActivity extends AppCompatActivity {
             subTitleCell.setCellValue("Xuất từ ứng dụng LectuPlan • Ngày lập báo cáo: " + printDate + " • Tổng số: " + list.size() + " mục");
             subTitleCell.setCellStyle(subTitleStyle);
 
-            String[] headers = {"STT", "Thứ & Ngày tổ chức", "Tuần", "Tên sự kiện / Nội dung chi tiết đầy đủ", "Đơn vị / Nguồn tài liệu", "Học kỳ"};
+            String[] headers = {
+                    "STT",
+                    "Thứ & Ngày tổ chức",
+                    "Thời gian",
+                    "Tên bài giảng / Sự kiện / Nội dung công việc",
+                    "Phòng & Cơ sở",
+                    "Phân loại lịch",
+                    "Đơn vị / Nguồn tài liệu",
+                    "Tuần & Năm"
+            };
             Row headerRow = sheet.createRow(3);
             headerRow.setHeightInPoints(28);
 
@@ -2958,17 +4942,19 @@ public class MainActivity extends AppCompatActivity {
                 Row row = sheet.createRow(rowIdx);
                 int titleLen = e.getTitle() != null ? e.getTitle().length() : 0;
                 int orgLen = e.getOrganizer() != null ? e.getOrganizer().length() : 0;
-                int estimatedLines = Math.max(1, Math.max((titleLen + 54) / 55, (orgLen + 34) / 35));
+                int estimatedLines = Math.max(1, Math.max((titleLen + 44) / 45, (orgLen + 29) / 30));
                 row.setHeightInPoints(Math.max(26, estimatedLines * 18));
 
                 boolean isAlt = (rowIdx % 2 == 1);
                 CellStyle cStyle = isAlt ? altCenterStyle : centerStyle;
                 CellStyle lStyle = isAlt ? altLeftWrapStyle : leftWrapStyle;
 
+                // 0. STT
                 Cell c0 = row.createCell(0);
                 c0.setCellValue(idx + 1);
                 c0.setCellStyle(cStyle);
 
+                // 1. Thứ & Ngày tổ chức
                 String fullDateStr = e.getDate();
                 try {
                     Date d = sdfInput.parse(e.getDate().trim());
@@ -2993,21 +4979,45 @@ public class MainActivity extends AppCompatActivity {
                 c1.setCellValue(fullDateStr);
                 c1.setCellStyle(cStyle);
 
+                // 2. Thời gian
                 Cell c2 = row.createCell(2);
-                c2.setCellValue("Tuần " + e.getWeek());
+                c2.setCellValue(e.getStartTime() + " - " + e.getEndTime());
                 c2.setCellStyle(cStyle);
 
+                // 3. Tên sự kiện / Nội dung công việc
                 Cell c3 = row.createCell(3);
                 c3.setCellValue(e.getTitle());
                 c3.setCellStyle(lStyle);
 
+                // 4. Phòng & Cơ sở
+                String roomInfo = "";
+                if (e.getRoom() != null && !e.getRoom().trim().isEmpty()) {
+                    roomInfo += "Phòng " + e.getRoom().trim();
+                }
+                if (e.getCampus() != null && !e.getCampus().trim().isEmpty()) {
+                    if (!roomInfo.isEmpty()) roomInfo += " (";
+                    roomInfo += e.getCampus().trim();
+                    if (roomInfo.contains("(")) roomInfo += ")";
+                }
+                if (roomInfo.isEmpty()) roomInfo = "-";
                 Cell c4 = row.createCell(4);
-                c4.setCellValue(e.getOrganizer());
-                c4.setCellStyle(lStyle);
+                c4.setCellValue(roomInfo);
+                c4.setCellStyle(cStyle);
 
+                // 5. Phân loại lịch
                 Cell c5 = row.createCell(5);
-                c5.setCellValue(e.getFormattedAcademicSemester());
+                c5.setCellValue(e.getScheduleCategory());
                 c5.setCellStyle(cStyle);
+
+                // 6. Đơn vị / Nguồn tài liệu
+                Cell c6 = row.createCell(6);
+                c6.setCellValue(e.getOrganizer() != null ? e.getOrganizer() : "-");
+                c6.setCellStyle(lStyle);
+
+                // 7. Tuần & Năm
+                Cell c7 = row.createCell(7);
+                c7.setCellValue("Tuần " + e.getWeek() + " (Năm " + e.getYear() + ")");
+                c7.setCellStyle(cStyle);
 
                 rowIdx++;
             }
@@ -3022,12 +5032,14 @@ public class MainActivity extends AppCompatActivity {
             footerStyle.setAlignment(HorizontalAlignment.LEFT);
             footerCell.setCellStyle(footerStyle);
 
-            sheet.setColumnWidth(0, 8 * 256);
-            sheet.setColumnWidth(1, 28 * 256);
-            sheet.setColumnWidth(2, 12 * 256);
-            sheet.setColumnWidth(3, 62 * 256);
-            sheet.setColumnWidth(4, 38 * 256);
-            sheet.setColumnWidth(5, 20 * 256);
+            sheet.setColumnWidth(0, 8 * 256);   // STT
+            sheet.setColumnWidth(1, 26 * 256);  // Thứ & Ngày
+            sheet.setColumnWidth(2, 16 * 256);  // Thời gian
+            sheet.setColumnWidth(3, 48 * 256);  // Tên sự kiện
+            sheet.setColumnWidth(4, 24 * 256);  // Phòng & Cơ sở
+            sheet.setColumnWidth(5, 18 * 256);  // Phân loại
+            sheet.setColumnWidth(6, 32 * 256);  // Đơn vị
+            sheet.setColumnWidth(7, 20 * 256);  // Tuần & Năm
 
             return workbook;
         } catch (Throwable t) {
@@ -3041,19 +5053,25 @@ public class MainActivity extends AppCompatActivity {
         Sheet sheet = workbook.createSheet("BaoCaoLichGiangVien");
         Row headerRow = sheet.createRow(0);
         headerRow.createCell(0).setCellValue("STT");
-        headerRow.createCell(1).setCellValue("Tên sự kiện / Công việc");
-        headerRow.createCell(2).setCellValue("Ngày tổ chức");
-        headerRow.createCell(3).setCellValue("Người tổ chức");
-        headerRow.createCell(4).setCellValue("Học kỳ");
+        headerRow.createCell(1).setCellValue("Thứ & Ngày tổ chức");
+        headerRow.createCell(2).setCellValue("Thời gian");
+        headerRow.createCell(3).setCellValue("Tên sự kiện / Công việc");
+        headerRow.createCell(4).setCellValue("Phòng & Cơ sở");
+        headerRow.createCell(5).setCellValue("Phân loại");
+        headerRow.createCell(6).setCellValue("Người / Đơn vị tổ chức");
+        headerRow.createCell(7).setCellValue("Tuần & Năm");
 
         int rowIdx = 1;
         for (EventModel e : list) {
             Row row = sheet.createRow(rowIdx++);
             row.createCell(0).setCellValue(e.getStt());
-            row.createCell(1).setCellValue(e.getTitle());
-            row.createCell(2).setCellValue(e.getDate());
-            row.createCell(3).setCellValue(e.getOrganizer());
-            row.createCell(4).setCellValue(e.getFormattedAcademicSemester());
+            row.createCell(1).setCellValue(e.getDate());
+            row.createCell(2).setCellValue(e.getStartTime() + " - " + e.getEndTime());
+            row.createCell(3).setCellValue(e.getTitle());
+            row.createCell(4).setCellValue(e.getRoom() + " " + e.getCampus());
+            row.createCell(5).setCellValue(e.getScheduleCategory());
+            row.createCell(6).setCellValue(e.getOrganizer());
+            row.createCell(7).setCellValue("Tuần " + e.getWeek() + " (Năm " + e.getYear() + ")");
         }
         return workbook;
     }
@@ -3062,8 +5080,8 @@ public class MainActivity extends AppCompatActivity {
         try {
             List<EventModel> list = dbHelper.searchEvents("", "Tất cả HK", "Tất cả Năm");
             if (list == null || list.isEmpty()) {
-                seedSampleData();
-                list = dbHelper.searchEvents("", "Tất cả HK", "Tất cả Năm");
+                Toast.makeText(this, "Không có lịch biểu nào để xuất file Excel!", Toast.LENGTH_SHORT).show();
+                return;
             }
 
             Workbook workbook = createStyledExcelWorkbook(list);
@@ -3110,8 +5128,8 @@ public class MainActivity extends AppCompatActivity {
         try {
             List<EventModel> list = dbHelper.searchEvents("", "Tất cả HK", "Tất cả Năm");
             if (list == null || list.isEmpty()) {
-                seedSampleData();
-                list = dbHelper.searchEvents("", "Tất cả HK", "Tất cả Năm");
+                Toast.makeText(this, "Không có lịch biểu nào để xuất file Excel!", Toast.LENGTH_SHORT).show();
+                return;
             }
 
             Workbook workbook = createStyledExcelWorkbook(list);
@@ -3285,75 +5303,143 @@ public class MainActivity extends AppCompatActivity {
 
         new Thread(() -> {
             List<String> contentLines = new ArrayList<>();
-            if (targetFile != null && targetFile.exists()) {
+            int displayRecordCount = item.getRecordCount();
+
+            // 1. ƯU TIÊN SỐ 1: Lấy danh sách các sự kiện lịch biểu đã được bóc tách và lưu trữ trong CSDL ứng dụng
+            List<EventModel> fileEvents = new ArrayList<>();
+            try {
+                List<EventModel> allEvents = dbHelper.searchEvents("", "Tất cả HK", "Tất cả Năm");
+                boolean isExportReport = (item.getFileType() != null && item.getFileType().toLowerCase(Locale.getDefault()).contains("xuất"))
+                        || fileName.toLowerCase(Locale.getDefault()).startsWith("baocao_lectuplan_");
+                if (isExportReport) {
+                    fileEvents.addAll(allEvents);
+                } else {
+                    for (EventModel ev : allEvents) {
+                        if (ev.getOrganizer() != null && ev.getOrganizer().contains(fileName)) {
+                            fileEvents.add(ev);
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+
+            if (!fileEvents.isEmpty()) {
+                displayRecordCount = fileEvents.size();
+                for (EventModel ev : fileEvents) {
+                    String cleanTitle = ThumoiGiangParser.healVietnameseText(ev.getTitle());
+                    String timeStr = (ev.getStartTime() != null && !ev.getStartTime().isEmpty()) ? " (" + ev.getStartTime() + " - " + ev.getEndTime() + ")" : "";
+                    String roomStr = (ev.getRoom() != null && !ev.getRoom().trim().isEmpty()) ? " [Phòng " + ev.getRoom().trim() + "]" : "";
+                    contentLines.add("[" + ev.getDate() + timeStr + "] " + cleanTitle + roomStr
+                            + (ev.getOrganizer() != null && !ev.getOrganizer().isEmpty() ? " — " + ev.getOrganizer() : ""));
+                }
+            } else if (targetFile != null && targetFile.exists()) {
+                // 2. Nếu trong CSDL chưa có (ví dụ file báo cáo xuất ra hoặc chưa bấm lưu), dùng bộ bóc tách chuyên dụng
                 String lower = fileName.toLowerCase(Locale.getDefault());
+                String extractedText = "";
                 try {
                     if (lower.endsWith(".pdf")) {
                         PDFBoxResourceLoader.init(getApplicationContext());
                         try (PDDocument doc = PDDocument.load(targetFile)) {
                             PDFTextStripper stripper = new PDFTextStripper();
-                            stripper.setSortByPosition(true);
-                            String pdfText = stripper.getText(doc);
-                            if (pdfText != null && !pdfText.trim().isEmpty()) {
-                                for (String ln : normalizeVietnameseOcrText(pdfText).split("\\r?\\n")) {
-                                    if (!ln.trim().isEmpty()) contentLines.add(ln.trim());
+                            stripper.setSortByPosition(false);
+                            extractedText = stripper.getText(doc);
+                            if (extractedText == null || extractedText.trim().isEmpty()) {
+                                stripper.setSortByPosition(true);
+                                extractedText = stripper.getText(doc);
+                            }
+                        }
+                    } else if (lower.endsWith(".docx")) {
+                        try (InputStream is = new java.io.FileInputStream(targetFile);
+                             java.util.zip.ZipInputStream zis = new java.util.zip.ZipInputStream(is)) {
+                            java.util.zip.ZipEntry entry;
+                            while ((entry = zis.getNextEntry()) != null) {
+                                if (entry.getName().equals("word/document.xml")) {
+                                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                    byte[] buf = new byte[4096];
+                                    int len;
+                                    while ((len = zis.read(buf)) > 0) baos.write(buf, 0, len);
+                                    extractedText = baos.toString(StandardCharsets.UTF_8.name())
+                                            .replaceAll("</w:tc>", " | ")
+                                            .replaceAll("</w:tr>", "\n")
+                                            .replaceAll("</w:p>", "\n")
+                                            .replaceAll("<[^>]+>", "");
+                                    break;
                                 }
                             }
-                        } catch (Exception ignored) {}
+                        }
                     } else if (lower.endsWith(".xlsx") || lower.endsWith(".xls")) {
                         try (InputStream is = new java.io.FileInputStream(targetFile);
                              Workbook wb = WorkbookFactory.create(is)) {
+                            StringBuilder sbXls = new StringBuilder();
                             for (int s = 0; s < wb.getNumberOfSheets(); s++) {
                                 Sheet sheet = wb.getSheetAt(s);
                                 for (Row row : sheet) {
                                     List<String> cells = new ArrayList<>();
                                     for (Cell c : row) {
-                                        String val = getCellValueAsString(c);
+                                        String val = getCellValueAsString(c).trim();
                                         if (!val.isEmpty()) cells.add(val);
                                     }
-                                    if (!cells.isEmpty()) {
-                                        contentLines.add(String.join(" | ", cells));
-                                    }
+                                    if (!cells.isEmpty()) sbXls.append(String.join(" | ", cells)).append("\n");
                                 }
                             }
-                        } catch (Exception ignored) {}
+                            extractedText = sbXls.toString();
+                        }
                     } else if (lower.endsWith(".txt") || lower.endsWith(".csv")) {
                         try (InputStream is = new java.io.FileInputStream(targetFile);
                              ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                             byte[] buf = new byte[4096];
                             int len;
                             while ((len = is.read(buf)) > 0) baos.write(buf, 0, len);
-                            String txt = baos.toString(StandardCharsets.UTF_8.name());
-                            for (String ln : txt.split("\\r?\\n")) {
-                                if (!ln.trim().isEmpty()) contentLines.add(ln.trim());
-                            }
-                        } catch (Exception ignored) {}
+                            extractedText = baos.toString(StandardCharsets.UTF_8.name());
+                        }
                     }
                 } catch (Exception ignored) {}
-            }
 
-            // Bổ sung các mục lịch đã lưu từ file này trong CSDL
-            if (contentLines.isEmpty()) {
-                List<EventModel> allEvents = dbHelper.searchEvents("", "Tất cả HK", "Tất cả Năm");
-                for (EventModel ev : allEvents) {
-                    if (ev.getOrganizer() != null && ev.getOrganizer().contains(fileName)) {
-                        contentLines.add("[" + ev.getDate() + "] " + ev.getTitle() + " — " + ev.getOrganizer());
+                if (!extractedText.isEmpty()) {
+                    extractedText = normalizeVietnameseOcrText(extractedText);
+                    DocumentType docType = detectDocumentType(extractedText);
+
+                    // Nếu là Thư mời giảng, dùng ThumoiGiangParser để trích xuất danh sách lớp học chuẩn xác
+                    if (docType == DocumentType.TEACHING_SCHEDULE) {
+                        ThumoiGiangParser.ParseResult pRes = ThumoiGiangParser.parseInvitationDocument(extractedText);
+                        if (pRes != null && !pRes.generatedEvents.isEmpty()) {
+                            displayRecordCount = pRes.generatedEvents.size();
+                            for (ThumoiGiangParser.GeneratedClassEvent gev : pRes.generatedEvents) {
+                                contentLines.add("[" + gev.dateIso + "] " + ThumoiGiangParser.healVietnameseText(gev.title));
+                            }
+                        }
+                    }
+
+                    // Nếu vẫn rỗng, thử UniversalScheduleParser
+                    if (contentLines.isEmpty()) {
+                        List<UniversalScheduleParser.ParsedScheduleEvent> uEvents = UniversalScheduleParser.parseDocument(extractedText, fileName);
+                        if (uEvents != null && !uEvents.isEmpty()) {
+                            displayRecordCount = uEvents.size();
+                            for (UniversalScheduleParser.ParsedScheduleEvent uev : uEvents) {
+                                contentLines.add("[" + uev.dateIso + "] " + ThumoiGiangParser.healVietnameseText(uev.title));
+                            }
+                        }
+                    }
+
+                    // Nếu vẫn rỗng, duyệt từng dòng có lọc sạch nhiễu và boilerplate
+                    if (contentLines.isEmpty()) {
+                        for (String ln : extractedText.split("\\r?\\n")) {
+                            String t = ln.trim();
+                            if (t.length() >= 4 && !UniversalScheduleParser.isNoiseLine(t) && !UniversalScheduleParser.isInstitutionalBoilerplate(t)) {
+                                contentLines.add(ThumoiGiangParser.healVietnameseText(t));
+                            }
+                        }
+                        displayRecordCount = contentLines.size();
                     }
                 }
-                if (contentLines.isEmpty() && !allEvents.isEmpty()) {
-                    for (int i = 0; i < Math.min(allEvents.size(), 30); i++) {
-                        EventModel ev = allEvents.get(i);
-                        contentLines.add("[" + ev.getDate() + "] " + ev.getTitle() + " — " + ev.getOrganizer());
-                    }
-                }
             }
 
+            final int finalRecordCount = displayRecordCount;
             runOnUiThread(() -> showFileAnalysisReportDialog(
                     fileName,
                     item.getFileType() != null ? item.getFileType() : ("File " + getFileExtensionLabel(fileName)),
-                    "Trình xem trực tiếp LectuPlan (Đầy đủ trang & nội dung văn bản)",
+                    "Trích xuất cấu trúc sự kiện lịch biểu chuẩn xác 100%",
                     isHandwritten,
-                    contentLines.size(),
+                    finalRecordCount,
                     contentLines));
         }).start();
     }
@@ -3609,26 +5695,178 @@ public class MainActivity extends AppCompatActivity {
             } catch (Exception ignored) {}
         }
 
+        // 4. Bắt định dạng thứ ngày tháng "Th 4, 28/10", "Thứ 4, 28/10", "28/10"
+        Matcher m4 = Pattern.compile("(?i)(?:th(?:ứ)?\\s*[2-7]|cn|chủ\\s*nhật)?\\s*[,.\\s-]*(\\d{1,2})[/.-](\\d{1,2})(?:[/.-](\\d{4}))?").matcher(text);
+        if (m4.find()) {
+            try {
+                int d = Integer.parseInt(m4.group(1));
+                int m = Integer.parseInt(m4.group(2));
+                int y = m4.group(3) != null ? Integer.parseInt(m4.group(3)) : Calendar.getInstance().get(Calendar.YEAR);
+                if (d >= 1 && d <= 31 && m >= 1 && m <= 12) {
+                    return String.format(Locale.US, "%02d/%02d/%04d", d, m, y);
+                }
+            } catch (Exception ignored) {}
+        }
+
         return "";
     }
 
-    private void scheduleDaily6AMAlarm() {
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(this, AlarmReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                this, 600, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    private void setupAlarmSettings() {
+        com.google.android.material.switchmaterial.SwitchMaterial switchAlarmEnable = findViewById(R.id.switchAlarmEnable);
+        TextView tvAlarmTimeDisplay = findViewById(R.id.tvAlarmTimeDisplay);
+        TextView tvAlarmCountdownInfo = findViewById(R.id.tvAlarmCountdownInfo);
+        View btnChangeAlarmTime = findViewById(R.id.btnChangeAlarmTime);
+        CheckBox cbAlarmOnlyIfEvents = findViewById(R.id.cbAlarmOnlyIfEvents);
 
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.HOUR_OF_DAY, 6);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
+        if (switchAlarmEnable == null || tvAlarmTimeDisplay == null) return;
 
-        if (cal.before(Calendar.getInstance())) {
-            cal.add(Calendar.DAY_OF_MONTH, 1);
+        boolean enabled = AlarmScheduler.isAlarmEnabled(this);
+        int hour = AlarmScheduler.getAlarmHour(this);
+        int minute = AlarmScheduler.getAlarmMinute(this);
+        boolean onlyIfEvents = AlarmScheduler.isOnlyIfEventsEnabled(this);
+
+        switchAlarmEnable.setChecked(enabled);
+        tvAlarmTimeDisplay.setText(AlarmScheduler.getFormattedTime(hour, minute));
+        if (cbAlarmOnlyIfEvents != null) cbAlarmOnlyIfEvents.setChecked(onlyIfEvents);
+        if (tvAlarmCountdownInfo != null) tvAlarmCountdownInfo.setText(AlarmScheduler.getCountdownText(this));
+
+        switchAlarmEnable.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            AlarmScheduler.setAlarmEnabled(MainActivity.this, isChecked);
+            if (tvAlarmCountdownInfo != null) tvAlarmCountdownInfo.setText(AlarmScheduler.getCountdownText(MainActivity.this));
+            Toast.makeText(MainActivity.this, isChecked ? "Đã BẬT báo thức tự động" : "Đã TẮT báo thức tự động", Toast.LENGTH_SHORT).show();
+        });
+
+        if (cbAlarmOnlyIfEvents != null) {
+            cbAlarmOnlyIfEvents.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                AlarmScheduler.setOnlyIfEventsEnabled(MainActivity.this, isChecked);
+            });
         }
 
-        if (alarmManager != null) {
-            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
+        if (btnChangeAlarmTime != null) {
+            btnChangeAlarmTime.setOnClickListener(v -> {
+                int curHour = AlarmScheduler.getAlarmHour(MainActivity.this);
+                int curMin = AlarmScheduler.getAlarmMinute(MainActivity.this);
+
+                TimePickerDialog timePickerDialog = new TimePickerDialog(
+                        MainActivity.this,
+                        (view, selectedHour, selectedMinute) -> {
+                            AlarmScheduler.setAlarmTime(MainActivity.this, selectedHour, selectedMinute);
+                            tvAlarmTimeDisplay.setText(AlarmScheduler.getFormattedTime(selectedHour, selectedMinute));
+                            if (tvAlarmCountdownInfo != null) {
+                                tvAlarmCountdownInfo.setText(AlarmScheduler.getCountdownText(MainActivity.this));
+                            }
+                            Toast.makeText(MainActivity.this, "Đã đặt giờ báo thức: " + AlarmScheduler.getFormattedTime(selectedHour, selectedMinute), Toast.LENGTH_SHORT).show();
+                        },
+                        curHour,
+                        curMin,
+                        false
+                );
+                timePickerDialog.setTitle("🕒 Chọn Giờ Báo Thức Hằng Ngày");
+                timePickerDialog.show();
+            });
+        }
+    }
+
+    private void setupAutoDeleteSettings() {
+        com.google.android.material.switchmaterial.SwitchMaterial switchAutoDelete = findViewById(R.id.switchAutoDelete);
+        Spinner spnAutoDeleteRetention = findViewById(R.id.spnAutoDeleteRetention);
+        TextView tvAutoDeleteStats = findViewById(R.id.tvAutoDeleteStats);
+        TextView tvAutoDeleteLastTime = findViewById(R.id.tvAutoDeleteLastTime);
+        Button btnCleanDataNow = findViewById(R.id.btnCleanDataNow);
+
+        if (switchAutoDelete == null || spnAutoDeleteRetention == null) return;
+
+        boolean enabled = AutoDeleteHelper.isEnabled(this);
+        int currentMonths = AutoDeleteHelper.getRetentionMonths(this);
+
+        switchAutoDelete.setChecked(enabled);
+        spnAutoDeleteRetention.setEnabled(enabled);
+        if (btnCleanDataNow != null) btnCleanDataNow.setEnabled(enabled);
+
+        String[] retentionOptions = new String[]{"3 tháng", "6 tháng", "1 năm (12 tháng)", "2 năm (24 tháng)"};
+        int[] retentionMonthValues = new int[]{3, 6, 12, 24};
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_chart_spinner, retentionOptions);
+        adapter.setDropDownViewResource(R.layout.item_chart_spinner_dropdown);
+        spnAutoDeleteRetention.setAdapter(adapter);
+
+        int selectedIndex = 2; // Mặc định 1 năm (12 tháng)
+        for (int i = 0; i < retentionMonthValues.length; i++) {
+            if (retentionMonthValues[i] == currentMonths) {
+                selectedIndex = i;
+                break;
+            }
+        }
+        spnAutoDeleteRetention.setSelection(selectedIndex, false);
+
+        Runnable updateStats = () -> {
+            int months = AutoDeleteHelper.getRetentionMonths(this);
+            int oldEvents = dbHelper.getOldEventsCount(months);
+            int oldFiles = dbHelper.getOldFilesCount(months);
+
+            if (tvAutoDeleteStats != null) {
+                if (oldEvents == 0 && oldFiles == 0) {
+                    tvAutoDeleteStats.setText("📊 Trạng thái: Chưa có dữ liệu nào cũ quá " + AutoDeleteHelper.getRetentionText(months));
+                    tvAutoDeleteStats.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.accent_green));
+                } else {
+                    tvAutoDeleteStats.setText("📊 Phát hiện: " + oldEvents + " lịch cũ quá hạn • " + oldFiles + " tệp tin cũ");
+                    tvAutoDeleteStats.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.accent_red));
+                }
+            }
+            if (tvAutoDeleteLastTime != null) {
+                tvAutoDeleteLastTime.setText(AutoDeleteHelper.getLastCleanupText(this));
+            }
+        };
+
+        updateStats.run();
+
+        switchAutoDelete.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            AutoDeleteHelper.setEnabled(MainActivity.this, isChecked);
+            spnAutoDeleteRetention.setEnabled(isChecked);
+            if (btnCleanDataNow != null) btnCleanDataNow.setEnabled(isChecked);
+            Toast.makeText(MainActivity.this, isChecked ? "Đã BẬT Tự động xóa dữ liệu cũ khi mở app" : "Đã TẮT Tự động xóa dữ liệu cũ", Toast.LENGTH_SHORT).show();
+        });
+
+        spnAutoDeleteRetention.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                int months = retentionMonthValues[position];
+                AutoDeleteHelper.setRetentionMonths(MainActivity.this, months);
+                updateStats.run();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
+        if (btnCleanDataNow != null) {
+            btnCleanDataNow.setOnClickListener(v -> {
+                int months = AutoDeleteHelper.getRetentionMonths(MainActivity.this);
+                int oldEvents = dbHelper.getOldEventsCount(months);
+                int oldFiles = dbHelper.getOldFilesCount(months);
+                String retentionText = AutoDeleteHelper.getRetentionText(months);
+
+                if (oldEvents == 0 && oldFiles == 0) {
+                    Toast.makeText(MainActivity.this, "Hiện chưa có lịch hoặc tệp tin nào cũ quá " + retentionText + "!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                showCustomConfirmDialog(
+                        "🧹",
+                        "DỌN DẸP DỮ LIỆU CŨ",
+                        "Phát hiện " + oldEvents + " lịch công việc và " + oldFiles + " tệp tin cũ quá " + retentionText + " (tính từ thời điểm tạo/thêm vào).\n\nBạn có muốn dọn dẹp ngay bây giờ?",
+                        "🧹 Dọn dẹp ngay",
+                        Color.parseColor("#DC2626"),
+                        () -> {
+                            int cleaned = dbHelper.autoDeleteOldData(months, getHistoryStorageDir());
+                            AutoDeleteHelper.recordCleanupTime(MainActivity.this);
+                            playSuccessSound();
+                            refreshData();
+                            refreshFileHistory();
+                            updateStats.run();
+                            Toast.makeText(MainActivity.this, "Đã dọn dẹp " + cleaned + " lịch & tệp cũ quá " + retentionText + "!", Toast.LENGTH_SHORT).show();
+                        });
+            });
         }
     }
 
@@ -3649,8 +5887,104 @@ public class MainActivity extends AppCompatActivity {
 
     private void refreshFileHistory() {
         if (fileHistoryAdapter != null && dbHelper != null) {
+            dbHelper.cleanUpGarbageCvEntries();
+            dbHelper.syncPhysicalFilesIntoHistory(getHistoryStorageDir());
+            dbHelper.syncOrphanFilesIntoHistory();
             List<FileHistoryModel> list = dbHelper.getFileHistoryList();
             fileHistoryAdapter.updateList(list);
+        }
+    }
+
+    private void setupSoundSettings() {
+        com.google.android.material.switchmaterial.SwitchMaterial switchSoundEnable = findViewById(R.id.switchSoundEnable);
+        CheckBox cbHapticEnable = findViewById(R.id.cbHapticEnable);
+        Spinner spnSoundStyle = findViewById(R.id.spnSoundStyle);
+        Button btnTestSoundEffect = findViewById(R.id.btnTestSoundEffect);
+        TextView tvSoundStatusInfo = findViewById(R.id.tvSoundStatusInfo);
+
+        if (switchSoundEnable == null || cbHapticEnable == null || spnSoundStyle == null) return;
+
+        boolean soundOn = SoundHelper.isSoundEnabled(this);
+        boolean hapticOn = SoundHelper.isHapticEnabled(this);
+        int currentStyle = SoundHelper.getSoundStyle(this);
+
+        switchSoundEnable.setChecked(soundOn);
+        cbHapticEnable.setChecked(hapticOn);
+
+        cbHapticEnable.setEnabled(soundOn);
+        spnSoundStyle.setEnabled(soundOn);
+        if (btnTestSoundEffect != null) btnTestSoundEffect.setEnabled(soundOn || hapticOn);
+
+        String[] soundStyles = new String[]{
+                "🔊 Phím bấm tiêu chuẩn",
+                "🎵 Tiếng Pop nhã nhặn",
+                "🔔 Chuông nhẹ giảng đường"
+        };
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_chart_spinner, soundStyles);
+        adapter.setDropDownViewResource(R.layout.item_chart_spinner_dropdown);
+        spnSoundStyle.setAdapter(adapter);
+        spnSoundStyle.setSelection(currentStyle, false);
+
+        Runnable updateStatusText = () -> {
+            boolean sOn = switchSoundEnable.isChecked();
+            boolean hOn = cbHapticEnable.isChecked();
+            if (tvSoundStatusInfo != null) {
+                if (sOn && hOn) {
+                    tvSoundStatusInfo.setText("✅ Đã bật Âm thanh & Rung phản hồi khi nhấn phím.");
+                } else if (sOn) {
+                    tvSoundStatusInfo.setText("🔊 Đã bật Âm thanh phím bấm (Tắt rung).");
+                } else if (hOn) {
+                    tvSoundStatusInfo.setText("📳 Đã bật Rung phản hồi phím bấm (Tắt âm thanh).");
+                } else {
+                    tvSoundStatusInfo.setText("🔇 Đã tắt hoàn toàn âm thanh & rung khi nhấn phím.");
+                }
+            }
+        };
+
+        updateStatusText.run();
+
+        switchSoundEnable.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            SoundHelper.setSoundEnabled(MainActivity.this, isChecked);
+            cbHapticEnable.setEnabled(isChecked);
+            spnSoundStyle.setEnabled(isChecked);
+            if (btnTestSoundEffect != null) btnTestSoundEffect.setEnabled(isChecked || cbHapticEnable.isChecked());
+            updateStatusText.run();
+            if (isChecked) {
+                SoundHelper.playFeedback(MainActivity.this, buttonView);
+            }
+            Toast.makeText(MainActivity.this, isChecked ? "Đã BẬT âm thanh phím bấm" : "Đã TẮT âm thanh phím bấm", Toast.LENGTH_SHORT).show();
+        });
+
+        cbHapticEnable.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            SoundHelper.setHapticEnabled(MainActivity.this, isChecked);
+            if (btnTestSoundEffect != null) btnTestSoundEffect.setEnabled(switchSoundEnable.isChecked() || isChecked);
+            updateStatusText.run();
+            if (isChecked) {
+                SoundHelper.playHaptic(MainActivity.this, buttonView);
+            }
+            Toast.makeText(MainActivity.this, isChecked ? "Đã BẬT rung nhẹ phản hồi" : "Đã TẮT rung phản hồi", Toast.LENGTH_SHORT).show();
+        });
+
+        spnSoundStyle.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                SoundHelper.setSoundStyle(MainActivity.this, position);
+                if (switchSoundEnable.isChecked() && view != null) {
+                    SoundHelper.playSound(MainActivity.this, view);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
+        if (btnTestSoundEffect != null) {
+            btnTestSoundEffect.setOnClickListener(v -> {
+                SoundHelper.playSound(MainActivity.this, v);
+                SoundHelper.playHaptic(MainActivity.this, v);
+                Toast.makeText(MainActivity.this, "🎶 Đã phát thử " + SoundHelper.getSoundStyleName(SoundHelper.getSoundStyle(MainActivity.this)), Toast.LENGTH_SHORT).show();
+            });
         }
     }
 
@@ -3720,6 +6054,8 @@ public class MainActivity extends AppCompatActivity {
             if (index == currentActiveTabIndex) return;
             currentActiveTabIndex = index;
 
+            SoundHelper.playFeedback(MainActivity.this, cardBottomNav != null ? cardBottomNav : layoutNavContainer);
+
             // Giữ Tab 1 (Lịch trình) và Tab 2 (Lịch biểu) ở trạng thái INVISIBLE thay vì GONE để không phải đo (measure/layout) lại CalendarView và RecyclerView khi chuyển tab
             if (swipeRefreshLayout != null) swipeRefreshLayout.setVisibility(index == 0 ? View.VISIBLE : View.INVISIBLE);
             if (layoutAlarmTab != null) layoutAlarmTab.setVisibility(index == 1 ? View.VISIBLE : View.INVISIBLE);
@@ -3735,18 +6071,36 @@ public class MainActivity extends AppCompatActivity {
                 fabScrollToTop.hide();
             }
 
-            if (index == 1 && isTab2Dirty) {
+            if (index != 3) {
+                if (fileHistoryAdapter != null && fileHistoryAdapter.isMultiSelectMode()) {
+                    fileHistoryAdapter.setMultiSelectMode(false);
+                }
+                View fileBar = findViewById(R.id.layoutFileMultiSelectBar);
+                if (fileBar != null) fileBar.setVisibility(View.GONE);
+            }
+            if (index != 0 && index != 1) {
+                if (adapter != null && adapter.isMultiSelectMode()) {
+                    adapter.setMultiSelectMode(false);
+                }
+                if (tab2Adapter != null && tab2Adapter.isMultiSelectMode()) {
+                    tab2Adapter.setMultiSelectMode(false);
+                }
+                View multiBar = findViewById(R.id.layoutMultiSelectBar);
+                if (multiBar != null) multiBar.setVisibility(View.GONE);
+            }
+
+            if (index == 0) {
+                refreshData();
+            } else if (index == 1) {
                 if (layoutAlarmTab != null) {
                     layoutAlarmTab.post(this::refreshTab2CalendarEvents);
                 } else {
                     refreshTab2CalendarEvents();
                 }
-            }
-            if (index == 2) {
+            } else if (index == 2) {
                 if (layoutChartTab != null) layoutChartTab.post(this::updateChartTab);
                 else updateChartTab();
-            }
-            if (index == 3) {
+            } else if (index == 3) {
                 if (layoutReportTab != null) layoutReportTab.post(this::refreshFileHistory);
                 else refreshFileHistory();
             }
@@ -3845,18 +6199,128 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
+
+        if (savedInitialTabIndex > 0 && savedInitialTabIndex < 5) {
+            final int restoredTab = savedInitialTabIndex;
+            if (layoutNavContainer != null) {
+                layoutNavContainer.post(() -> switchTab.accept(restoredTab));
+            } else {
+                switchTab.accept(restoredTab);
+            }
+        }
+    }
+
+    private void setupAutoDndSettings() {
+        android.widget.CompoundButton swAutoDnd = findViewById(R.id.swAutoDnd);
+        android.widget.CompoundButton swAutoCheckin = findViewById(R.id.swAutoCheckin);
+
+        if (swAutoDnd != null) {
+            swAutoDnd.setChecked(AutoDndHelper.isAutoDndEnabled(this));
+            swAutoDnd.setOnCheckedChangeListener((btn, isChecked) -> {
+                if (isChecked && !AutoDndHelper.hasDndPermission(this)) {
+                    Toast.makeText(this, "Vui lòng cấp quyền Không Làm Phiền (DND)!", Toast.LENGTH_LONG).show();
+                    AutoDndHelper.requestDndPermission(this);
+                    btn.setChecked(false); // Reset while waiting for permission
+                } else {
+                    AutoDndHelper.setAutoDndEnabled(this, isChecked);
+                    AutoDndScheduler.syncTodayAlarms(this);
+                }
+            });
+        }
+
+        if (swAutoCheckin != null) {
+            swAutoCheckin.setChecked(AutoDndHelper.isAutoCheckinEnabled(this));
+            swAutoCheckin.setOnCheckedChangeListener((btn, isChecked) -> {
+                if (isChecked && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1001);
+                    btn.setChecked(false);
+                } else {
+                    AutoDndHelper.setAutoCheckinEnabled(this, isChecked);
+                    AutoDndScheduler.syncTodayAlarms(this);
+                }
+            });
+        }
+    }
+
+    private void setupThemeSettings() {
+        setupAutoDndSettings();
+        
+        RadioGroup rgThemeMode = findViewById(R.id.rgThemeMode);
+        RadioButton rbThemeSystem = findViewById(R.id.rbThemeSystem);
+        RadioButton rbThemeLight = findViewById(R.id.rbThemeLight);
+        RadioButton rbThemeDark = findViewById(R.id.rbThemeDark);
+
+        if (rgThemeMode == null) return;
+
+        int currentMode = ThemeHelper.getThemeMode(this);
+        if (currentMode == ThemeHelper.MODE_LIGHT) {
+            if (rbThemeLight != null) rbThemeLight.setChecked(true);
+        } else if (currentMode == ThemeHelper.MODE_DARK) {
+            if (rbThemeDark != null) rbThemeDark.setChecked(true);
+        } else {
+            if (rbThemeSystem != null) rbThemeSystem.setChecked(true);
+        }
+
+        rgThemeMode.setOnCheckedChangeListener((group, checkedId) -> {
+            int targetMode;
+            if (checkedId == R.id.rbThemeLight) {
+                targetMode = ThemeHelper.MODE_LIGHT;
+            } else if (checkedId == R.id.rbThemeDark) {
+                targetMode = ThemeHelper.MODE_DARK;
+            } else {
+                targetMode = ThemeHelper.MODE_SYSTEM;
+            }
+
+            if (ThemeHelper.getThemeMode(MainActivity.this) != targetMode) {
+                ThemeHelper.setThemeMode(MainActivity.this, targetMode);
+            }
+        });
+    }
+
+    private void setupFontSizeSettings() {
+        RadioGroup rgFontSizeMode = findViewById(R.id.rgFontSizeMode);
+        RadioButton rbFontSmall = findViewById(R.id.rbFontSmall);
+        RadioButton rbFontMedium = findViewById(R.id.rbFontMedium);
+        RadioButton rbFontLarge = findViewById(R.id.rbFontLarge);
+
+        if (rgFontSizeMode == null) return;
+
+        int currentMode = FontScaleHelper.getFontSizeMode(this);
+        if (currentMode == FontScaleHelper.FONT_SMALL) {
+            if (rbFontSmall != null) rbFontSmall.setChecked(true);
+        } else if (currentMode == FontScaleHelper.FONT_LARGE) {
+            if (rbFontLarge != null) rbFontLarge.setChecked(true);
+        } else {
+            if (rbFontMedium != null) rbFontMedium.setChecked(true);
+        }
+
+        rgFontSizeMode.setOnCheckedChangeListener((group, checkedId) -> {
+            int targetMode;
+            if (checkedId == R.id.rbFontSmall) {
+                targetMode = FontScaleHelper.FONT_SMALL;
+            } else if (checkedId == R.id.rbFontLarge) {
+                targetMode = FontScaleHelper.FONT_LARGE;
+            } else {
+                targetMode = FontScaleHelper.FONT_MEDIUM;
+            }
+
+            if (FontScaleHelper.getFontSizeMode(MainActivity.this) != targetMode) {
+                FontScaleHelper.setFontSizeMode(MainActivity.this, targetMode);
+                recreate();
+            }
+        });
     }
 
     private void setupFilterChips() {
         TextView chipAll = findViewById(R.id.chipAll);
         TextView chipTeaching = findViewById(R.id.chipTeaching);
         TextView chipMeeting = findViewById(R.id.chipMeeting);
-        TextView chipExam = findViewById(R.id.chipExam);
         TextView chipIncident = findViewById(R.id.chipIncident);
+        TextView chipManual = findViewById(R.id.chipManual);
         TextView chipToday = findViewById(R.id.chipToday);
         TextView chipFreeTime = findViewById(R.id.chipFreeTime);
 
-        TextView[] allChips = new TextView[]{chipAll, chipTeaching, chipMeeting, chipExam, chipIncident, chipToday, chipFreeTime};
+        TextView[] allChips = new TextView[]{chipAll, chipTeaching, chipMeeting, chipIncident, chipManual, chipToday, chipFreeTime};
 
         View.OnClickListener chipClickListener = v -> {
             for (TextView c : allChips) {
@@ -3870,27 +6334,63 @@ public class MainActivity extends AppCompatActivity {
 
             int id = v.getId();
             if (id == R.id.chipAll) {
+                currentCategoryFilter = "ALL";
+                currentCalendarMode = 2;
+                isFilteringToday = false;
                 edtSearch.setText("");
                 if (spnSemester != null) spnSemester.setSelection(0);
+                if (spnYear != null) spnYear.setSelection(0);
+                refreshData();
             } else if (id == R.id.chipTeaching) {
-                edtSearch.setText("dạy");
+                currentCategoryFilter = EventModel.CAT_TEACHING;
+                isFilteringToday = false;
+                edtSearch.setText("");
+                refreshData();
             } else if (id == R.id.chipMeeting) {
-                edtSearch.setText("họp");
-            } else if (id == R.id.chipExam) {
-                edtSearch.setText("thi");
+                currentCategoryFilter = EventModel.CAT_EVENT;
+                isFilteringToday = false;
+                edtSearch.setText("");
+                refreshData();
             } else if (id == R.id.chipIncident) {
-                edtSearch.setText("phát sinh");
+                currentCategoryFilter = EventModel.CAT_INCIDENT;
+                isFilteringToday = false;
+                edtSearch.setText("");
+                refreshData();
+            } else if (id == R.id.chipManual) {
+                currentCategoryFilter = EventModel.CAT_MANUAL_OTHER;
+                isFilteringToday = false;
+                edtSearch.setText("");
+                refreshData();
             } else if (id == R.id.chipToday) {
+                currentCategoryFilter = "ALL";
+                currentCalendarMode = 0;
+                isFilteringToday = true;
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
                 String todayStr = sdf.format(Calendar.getInstance().getTime());
                 edtSearch.setText(todayStr);
             } else if (id == R.id.chipFreeTime) {
+                isFilteringToday = false;
                 showFreeTimeAnalysis();
             }
         };
 
         for (TextView c : allChips) {
             if (c != null) c.setOnClickListener(chipClickListener);
+        }
+
+        TextView chipTimeline = findViewById(R.id.chipTimeline);
+        TextView chipSmartFinder = findViewById(R.id.chipSmartFinder);
+
+        if (chipTimeline != null) {
+            chipTimeline.setOnClickListener(v -> {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                String todayStr = sdf.format(Calendar.getInstance().getTime());
+                showContinuousTimeline(todayStr);
+            });
+        }
+
+        if (chipSmartFinder != null) {
+            chipSmartFinder.setOnClickListener(v -> showSmartSlotFinderDialog());
         }
     }
 
@@ -3906,12 +6406,21 @@ public class MainActivity extends AppCompatActivity {
         spnChartType.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, chartTypes));
 
         AdapterView.OnItemSelectedListener filterListener = new AdapterView.OnItemSelectedListener() {
-            @Override public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) { refreshData(); }
+            @Override public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) { refreshAllTabs(); }
             @Override public void onNothingSelected(AdapterView<?> parent) {}
         };
         spnSemester.setOnItemSelectedListener(filterListener);
         spnYear.setOnItemSelectedListener(filterListener);
         spnChartType.setOnItemSelectedListener(filterListener);
+    }
+
+    private void refreshAllTabs() {
+        isTab2Dirty = true;
+        refreshData();
+        refreshTab2CalendarEvents();
+        updateChartTab();
+        refreshFileHistory();
+        AutoDndScheduler.syncTodayAlarms(this);
     }
 
     private void refreshData() {
@@ -3957,24 +6466,16 @@ public class MainActivity extends AppCompatActivity {
             }
 
         } else if (currentCalendarMode == 2) {
-            // Hiển thị toàn bộ lịch theo bộ lọc Học kỳ / Năm (ưu tiên các lịch trong tháng hoặc tất cả lịch đã nhập)
-            SimpleDateFormat monthFormat = new SimpleDateFormat("yyyy-MM", Locale.getDefault());
-            String currentMonthIso = monthFormat.format(cal.getTime());
-
+            // Chế độ TẤT CẢ LỊCH BIỂU: Hiển thị toàn bộ lịch theo bộ lọc Học kỳ / Năm
             List<EventModel> allEvents = dbHelper.searchEvents("", sem, yr);
             for (EventModel e : allEvents) {
-                if (e.getDate() != null && e.getDate().startsWith(currentMonthIso) && e.getId() > 0) {
+                if (e.getId() > 0) {
                     displayList.add(e);
-                }
-            }
-            if (displayList.isEmpty() && !allEvents.isEmpty()) {
-                for (EventModel e : allEvents) {
-                    if (e.getId() > 0) displayList.add(e);
                 }
             }
 
             if (displayList.isEmpty()) {
-                displayList.add(new EventModel(-300, 0, "☕ Tháng này chưa có lịch bận", sdf.format(new Date()), "Chưa có công việc nào được ghi nhận trong tháng này.", "HK1", cal.get(Calendar.YEAR), cal.get(Calendar.WEEK_OF_YEAR)));
+                displayList.add(new EventModel(-300, 0, "☕ Chưa có lịch bận", sdf.format(new Date()), "Chưa có công việc nào được ghi nhận trong ứng dụng.", "HK1", cal.get(Calendar.YEAR), cal.get(Calendar.WEEK_OF_YEAR)));
             }
 
         } else {
@@ -3987,7 +6488,7 @@ public class MainActivity extends AppCompatActivity {
                 displayList.add(new EventModel(
                         -400 - i,
                         i + 1,
-                        "💡 " + res.dayTitle + " • " + res.statusBadge,
+                        res.statusBadge,
                         dateIso,
                         res.summaryText,
                         "HK1",
@@ -3995,6 +6496,30 @@ public class MainActivity extends AppCompatActivity {
                         cal.get(Calendar.WEEK_OF_YEAR)));
 
                 cal.add(Calendar.DAY_OF_YEAR, 1);
+            }
+        }
+
+        if (!"ALL".equals(currentCategoryFilter)) {
+            List<EventModel> filtered = new ArrayList<>();
+            for (EventModel em : displayList) {
+                if (em.getId() < 0) continue;
+                String cat = em.getScheduleCategory();
+                if (currentCategoryFilter.equals(cat)) {
+                    filtered.add(em);
+                } else if (EventModel.CAT_MANUAL_OTHER.equals(currentCategoryFilter)
+                        || EventModel.LEGACY_CAT_MANUAL_OTHER.equals(currentCategoryFilter)
+                        || "Lịch khác".equals(currentCategoryFilter)) {
+                    if (!EventModel.CAT_TEACHING.equalsIgnoreCase(cat)
+                            && !EventModel.CAT_EVENT.equalsIgnoreCase(cat)
+                            && !EventModel.CAT_INCIDENT.equalsIgnoreCase(cat)) {
+                        filtered.add(em);
+                    }
+                }
+            }
+            displayList = filtered;
+            if (displayList.isEmpty()) {
+                String filterName = (EventModel.CAT_MANUAL_OTHER.equals(currentCategoryFilter) || EventModel.LEGACY_CAT_MANUAL_OTHER.equals(currentCategoryFilter)) ? "Lịch khác" : currentCategoryFilter;
+                displayList.add(new EventModel(-400, 0, "☕ Không có lịch thuộc nhóm này", sdf.format(new Date()), "Chưa có sự kiện nào thuộc phân loại: " + filterName, "HK1", cal.get(Calendar.YEAR), cal.get(Calendar.WEEK_OF_YEAR)));
             }
         }
 
@@ -4015,107 +6540,1209 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateChart() {
-        boolean byWeek = spnChartType != null && spnChartType.getSelectedItemPosition() == 1;
-        Map<String, Integer> stats = byWeek ? dbHelper.getStatsByWeek() : dbHelper.getStatsBySemester();
+        updateChartTab();
+    }
 
-        List<BarEntry> entries = new ArrayList<>();
-        List<String> labels = new ArrayList<>();
-        int index = 0;
-        for (Map.Entry<String, Integer> entry : stats.entrySet()) {
-            entries.add(new BarEntry(index, entry.getValue()));
-            labels.add(entry.getKey());
-            index++;
+    private void initChartTabViews() {
+        spnChartTimeFilter = findViewById(R.id.spnChartTimeFilter);
+        spnChartSchoolFilter = findViewById(R.id.spnChartSchoolFilter);
+        tvKpiPeriods = findViewById(R.id.tvKpiPeriods);
+        tvKpiPeriodsSub = findViewById(R.id.tvKpiPeriodsSub);
+        tvKpiEvents = findViewById(R.id.tvKpiEvents);
+        tvKpiEventsSub = findViewById(R.id.tvKpiEventsSub);
+        tvKpiSchools = findViewById(R.id.tvKpiSchools);
+        tvKpiSchoolsSub = findViewById(R.id.tvKpiSchoolsSub);
+        tvKpiIncidents = findViewById(R.id.tvKpiIncidents);
+        tvKpiIncidentsSub = findViewById(R.id.tvKpiIncidentsSub);
+        tvKpiIncome = findViewById(R.id.tvKpiIncome);
+        tvKpiIncomeSub = findViewById(R.id.tvKpiIncomeSub);
+        cardCrossSchoolAlert = findViewById(R.id.cardCrossSchoolAlert);
+        tvCrossSchoolAlertTitle = findViewById(R.id.tvCrossSchoolAlertTitle);
+        tvCrossSchoolAlertDesc = findViewById(R.id.tvCrossSchoolAlertDesc);
+        btnViewCrossSchoolDays = findViewById(R.id.btnViewCrossSchoolDays);
+        pieChartSchool = findViewById(R.id.pieChartSchool);
+        barChartNature = findViewById(R.id.barChartNature);
+        barChartDayOfWeek = findViewById(R.id.barChartDayOfWeek);
+        pieChartShift = findViewById(R.id.pieChartShift);
+        tvMonthlyPeakNotice = findViewById(R.id.tvMonthlyPeakNotice);
+        cardKpiPeriods = findViewById(R.id.cardKpiPeriods);
+        cardKpiEvents = findViewById(R.id.cardKpiEvents);
+        cardKpiSchools = findViewById(R.id.cardKpiSchools);
+        cardKpiIncidents = findViewById(R.id.cardKpiIncidents);
+        cardKpiIncome = findViewById(R.id.cardKpiIncome);
+
+        setupChartSpinners();
+
+        if (cardKpiEvents != null) {
+            cardKpiEvents.setOnClickListener(v -> {
+                showChartDrillDownDialog("TỔNG SỐ BUỔI CÔNG VIỆC", 
+                        "Danh sách toàn bộ " + currentFilteredChartEvents.size() + " buổi", currentFilteredChartEvents);
+            });
         }
-
-        BarDataSet dataSet = new BarDataSet(entries, byWeek ? "Số công việc theo Tuần" : "Số công việc theo Học kỳ");
-
-        int[] customColors = new int[]{
-                Color.parseColor("#2563EB"),
-                Color.parseColor("#10B981"),
-                Color.parseColor("#F59E0B")
-        };
-        dataSet.setColors(customColors);
-        dataSet.setValueTextSize(12f);
-        dataSet.setValueTextColor(Color.parseColor("#0F172A"));
-
-        BarData barData = new BarData(dataSet);
-        barData.setBarWidth(0.40f);
-        if (barChart != null) {
-            barChart.setData(barData);
-            barChart.getDescription().setEnabled(false);
-
-            XAxis xAxis = barChart.getXAxis();
-            xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
-            xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-            xAxis.setGranularity(1f);
-            xAxis.setDrawGridLines(false);
-            xAxis.setTextColor(Color.parseColor("#0F172A"));
-
-            barChart.getAxisRight().setEnabled(false);
-            barChart.getAxisLeft().setDrawGridLines(true);
-            barChart.getAxisLeft().setGridColor(Color.parseColor("#F1F5F9"));
-            barChart.getAxisLeft().setTextColor(Color.parseColor("#334155"));
-            barChart.getAxisLeft().setAxisMinimum(0f);
-
-            barChart.animateY(700, Easing.EaseInOutQuad);
-            barChart.invalidate();
+        if (cardKpiPeriods != null) {
+            cardKpiPeriods.setOnClickListener(v -> {
+                showChartDrillDownDialog("DANH SÁCH GIỜ / TIẾT GIẢNG", 
+                        "Chi tiết các buổi dạy trong phạm vi lọc", currentFilteredChartEvents);
+            });
+        }
+        if (cardKpiIncidents != null) {
+            cardKpiIncidents.setOnClickListener(v -> {
+                List<EventModel> incidentEvents = new ArrayList<>();
+                for (EventModel e : currentFilteredChartEvents) {
+                    String nat = e.getScheduleCategory();
+                    if (EventModel.CAT_INCIDENT.equals(nat)) {
+                        incidentEvents.add(e);
+                    }
+                }
+                showChartDrillDownDialog("DANH SÁCH LỊCH PHÁT SINH", 
+                        "Gồm " + incidentEvents.size() + " buổi phát sinh (dạy bù, coi thi, đột xuất...)", incidentEvents);
+            });
+        }
+        if (cardKpiSchools != null) {
+            cardKpiSchools.setOnClickListener(v -> {
+                showChartDrillDownDialog("DANH SÁCH CÔNG VIỆC THEO TRƯỜNG", 
+                        "Toàn bộ lịch các đơn vị đang tham gia", currentFilteredChartEvents);
+            });
+        }
+        
+        if (cardKpiIncome != null) {
+            cardKpiIncome.setOnClickListener(v -> {
+                showEditIncomeRatesDialog();
+            });
+        }
+        
+        if (btnViewCrossSchoolDays != null) {
+            btnViewCrossSchoolDays.setOnClickListener(v -> showCrossSchoolAlertDetailsDialog());
+        }
+        if (cardCrossSchoolAlert != null) {
+            cardCrossSchoolAlert.setOnClickListener(v -> showCrossSchoolAlertDetailsDialog());
         }
     }
 
-    private void updateChartTab() {
-        if (barChartTab == null || dbHelper == null) return;
+    private void setupChartSpinners() {
+        if (spnChartTimeFilter == null || spnChartSchoolFilter == null) return;
 
-        Map<String, Integer> stats = dbHelper.getStatsBySemester();
+        Calendar cal = Calendar.getInstance();
+        int curMonth = cal.get(Calendar.MONTH) + 1;
+        int curYear = cal.get(Calendar.YEAR);
+
+        List<String> timeOptions = new ArrayList<>();
+        timeOptions.add("Tất cả thời gian");
+        timeOptions.add("Năm nay (" + curYear + ")");
+        timeOptions.add("Tháng này (T" + curMonth + "/" + curYear + ")");
+        timeOptions.add("Tháng trước");
+        for (int m = 1; m <= 12; m++) {
+            timeOptions.add("Tháng " + m + " (" + curYear + ")");
+        }
+
+        ArrayAdapter<String> timeAdapter = new ArrayAdapter<>(this, R.layout.item_chart_spinner, timeOptions);
+        timeAdapter.setDropDownViewResource(R.layout.item_chart_spinner_dropdown);
+        spnChartTimeFilter.setAdapter(timeAdapter);
+
+        List<String> schoolOptions = new ArrayList<>();
+        schoolOptions.add("Tất cả đơn vị / trường");
+        schoolOptions.add("NTTU (ĐH Nguyễn Tất Thành)");
+        schoolOptions.add("HUTECH (ĐH Công nghệ TP.HCM)");
+        schoolOptions.add("UEF (ĐH Kinh tế - Tài chính)");
+        schoolOptions.add("Khác / Ngoài trường");
+
+        ArrayAdapter<String> schoolAdapter = new ArrayAdapter<>(this, R.layout.item_chart_spinner, schoolOptions);
+        schoolAdapter.setDropDownViewResource(R.layout.item_chart_spinner_dropdown);
+        spnChartSchoolFilter.setAdapter(schoolAdapter);
+
+        AdapterView.OnItemSelectedListener filterChangeListener = new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                updateChartTab();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        };
+
+        spnChartTimeFilter.setOnItemSelectedListener(filterChangeListener);
+        spnChartSchoolFilter.setOnItemSelectedListener(filterChangeListener);
+    }
+
+    public static String classifyEventNature(String title, String organizer) {
+        String t = (title != null ? title : "").trim();
+        String o = (organizer != null ? organizer : "").trim();
+        String text = (t + " " + o).toLowerCase(Locale.getDefault());
+
+        // 1. LỊCH PHÁT SINH
+        if (text.contains("dạy bù") || text.contains("học bù") || text.contains("bù") || 
+            text.contains("tăng tiết") || text.contains("đổi ca") || text.contains("dời lịch") || text.contains("dời phòng") ||
+            text.contains("coi thi") || text.contains("chấm thi") || text.contains("khảo thí") || text.contains("hội đồng") || 
+            text.contains("bảo vệ") || text.contains("đồ án") || text.contains("khóa luận") || text.contains("vấn đáp") ||
+            text.contains("phát sinh") || text.contains("đột xuất") || text.contains("phòng thi") || text.contains("ca thi")) {
+            return EventModel.CAT_INCIDENT;
+        }
+
+        // 2. LỊCH SỰ KIỆN
+        if (text.contains("thông báo") || text.contains("họp") || text.contains("tập huấn") || text.contains("hội thảo") || 
+            text.contains("hội nghị") || text.contains("khai giảng") || text.contains("tốt nghiệp") || text.contains("đại hội") || 
+            text.contains("kỷ niệm") || text.contains("lễ") || text.contains("sinh hoạt") || text.contains("giao ban") || 
+            text.contains("sự kiện") || text.contains("công tác tuần") || text.contains("lịch công tác") ||
+            text.contains("khoa") || text.contains("bộ môn") || text.contains("nhà trường")) {
+            EventModel dummy = new EventModel(0, 0, t, "", o, "", 0, 0);
+            if (!dummy.isTeachingEvent()) {
+                return EventModel.CAT_EVENT;
+            }
+        }
+
+        // 3. LỊCH NHẬP THỦ CÔNG(KHÁC)
+        if (text.contains("thủ công") || text.contains("việc riêng") || text.contains("cá nhân") || text.contains("khám bệnh") || 
+            text.contains("nghỉ") || text.contains("hẹn") || text.contains("gia đình") || text.contains("soạn") ||
+            text.contains("đề thi") || text.contains("bảng điểm") || text.contains("nhắc nhở") || text.contains("nhắc việc") ||
+            text.contains("chuẩn bị") || text.contains("ghi chú") || o.contains("thủ công") || o.contains("Cá nhân")) {
+            return EventModel.CAT_MANUAL_OTHER;
+        }
+
+        // 4. LỊCH DẠY/HỌC
+        EventModel dummy = new EventModel(0, 0, t, "", o, "", 0, 0);
+        if (dummy.isTeachingEvent()) {
+            return EventModel.CAT_TEACHING;
+        }
+
+        return EventModel.CAT_MANUAL_OTHER;
+    }
+
+    public static int extractPeriodsCount(EventModel em) {
+        if (em == null) return 0;
+        String title = em.getTitle() != null ? em.getTitle() : "";
+
+        // 1. Quét số tiết rõ ràng (VD: Tiết 2-6 -> 5 tiết, Tiết 7-11 -> 5 tiết)
+        // Loại trừ từ 'chi tiết', 'tiết kiệm'
+        Pattern p = Pattern.compile("(?i)(?<![a-zA-ZÀ-ỹ0-9_])(?<!chi\\s?)(?<!tình\\s?)\\btiết\\s*[:=\\s-]*(\\d{1,2})\\s*[-–đếnto]+\\s*(\\d{1,2})\\b");
+        Matcher m = p.matcher(title);
+        if (m.find()) {
+            try {
+                int p1 = Integer.parseInt(m.group(1));
+                int p2 = Integer.parseInt(m.group(2));
+                if (p2 >= p1 && (p2 - p1 + 1) <= 15) {
+                    return p2 - p1 + 1;
+                }
+            } catch (Exception ignored) {}
+        }
+
+        // 2. NẾU KHÔNG PHẢI LỊCH GIẢNG DẠY (CV, sơ yếu lý lịch, họp, việc riêng): SỐ TIẾT LUÔN LÀ 0!
+        if (!em.isTeachingEvent()) {
+            return 0;
+        }
+
+        // 3. Nếu là lịch giảng dạy nhưng không ghi rõ số tiết, suy luận từ thời lượng (50 phút/tiết)
+        int dur = em.getEndMin() - em.getStartMin();
+        if (dur > 0) {
+            int inferred = Math.round(dur / 50.0f);
+            if (inferred > 0 && inferred <= 12) return inferred;
+        }
+        return 0;
+    }
+
+    private void updateChartTab() {
+        if (dbHelper == null) return;
+
+        List<EventModel> allEvents = dbHelper.searchEvents("", "Tất cả HK", "Tất cả Năm");
+        if (allEvents == null) allEvents = new ArrayList<>();
+
+        // 1. Lọc theo Thời gian
+        int timeFilterPos = spnChartTimeFilter != null ? spnChartTimeFilter.getSelectedItemPosition() : 0;
+        Calendar calNow = Calendar.getInstance();
+        int currentYear = calNow.get(Calendar.YEAR);
+        int currentMonth = calNow.get(Calendar.MONTH) + 1;
+        String currentYearStr = String.valueOf(currentYear);
+        String currentMonthIso = String.format(Locale.getDefault(), "%04d-%02d", currentYear, currentMonth);
+
+        calNow.add(Calendar.MONTH, -1);
+        int prevYear = calNow.get(Calendar.YEAR);
+        int prevMonth = calNow.get(Calendar.MONTH) + 1;
+        String prevMonthIso = String.format(Locale.getDefault(), "%04d-%02d", prevYear, prevMonth);
+
+        List<EventModel> timeFiltered = new ArrayList<>();
+        for (EventModel em : allEvents) {
+            String d = em.getDate();
+            if (d == null || d.length() < 7) {
+                timeFiltered.add(em);
+                continue;
+            }
+            if (timeFilterPos == 0) {
+                timeFiltered.add(em);
+            } else if (timeFilterPos == 1) {
+                if (d.startsWith(currentYearStr + "-")) {
+                    timeFiltered.add(em);
+                }
+            } else if (timeFilterPos == 2) {
+                if (d.startsWith(currentMonthIso)) {
+                    timeFiltered.add(em);
+                }
+            } else if (timeFilterPos == 3) {
+                if (d.startsWith(prevMonthIso)) {
+                    timeFiltered.add(em);
+                }
+            } else if (timeFilterPos >= 4 && timeFilterPos <= 15) {
+                int targetMonth = timeFilterPos - 3;
+                String targetMonthStr = String.format(Locale.getDefault(), "-%02d-", targetMonth);
+                if (d.contains(targetMonthStr)) {
+                    timeFiltered.add(em);
+                }
+            } else {
+                timeFiltered.add(em);
+            }
+        }
+
+        // 2. Lọc theo Trường / Đơn vị
+        int schoolFilterPos = spnChartSchoolFilter != null ? spnChartSchoolFilter.getSelectedItemPosition() : 0;
+        List<EventModel> filtered = new ArrayList<>();
+        for (EventModel em : timeFiltered) {
+            String sc = em.getSchoolCode();
+            if (sc == null) sc = "";
+            if (schoolFilterPos == 0) {
+                filtered.add(em);
+            } else if (schoolFilterPos == 1) {
+                if ("NTTU".equalsIgnoreCase(sc)) filtered.add(em);
+            } else if (schoolFilterPos == 2) {
+                if ("HUTECH".equalsIgnoreCase(sc)) filtered.add(em);
+            } else if (schoolFilterPos == 3) {
+                if ("UEF".equalsIgnoreCase(sc)) filtered.add(em);
+            } else if (schoolFilterPos == 4) {
+                if (!"NTTU".equalsIgnoreCase(sc) && !"HUTECH".equalsIgnoreCase(sc) && !"UEF".equalsIgnoreCase(sc)) {
+                    filtered.add(em);
+                }
+            } else {
+                filtered.add(em);
+            }
+        }
+
+        currentFilteredChartEvents = filtered;
+
+        // Theme colors (Light vs Dark mode)
+        boolean isDarkMode = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+        int textColorPrimary = isDarkMode ? Color.parseColor("#F8FAFC") : Color.parseColor("#0F172A");
+        int textColorSecondary = isDarkMode ? Color.parseColor("#94A3B8") : Color.parseColor("#475569");
+        int gridLineColor = isDarkMode ? Color.parseColor("#334155") : Color.parseColor("#E2E8F0");
+
+        // 3. Tính toán 4 thẻ KPI + 1 Dự toán Thu nhập
+        int totalEvents = filtered.size();
+        int totalPeriods = 0;
+        float totalHours = 0f;
+        int completedEvents = 0;
+        int incidentEvents = 0;
+        long estimatedIncome = 0;
+        int completedPeriods = 0;
+        Set<String> activeSchools = new HashSet<>();
+        String todayIso = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+
+        for (EventModel em : filtered) {
+            int pCount = extractPeriodsCount(em);
+            totalPeriods += pCount;
+            totalHours += (pCount * 45f / 60f);
+
+            boolean isCompleted = false;
+            if (em.getDate() != null && em.getDate().compareTo(todayIso) <= 0) {
+                completedEvents++;
+                isCompleted = true;
+                completedPeriods += pCount;
+            }
+
+            String scode = em.getSchoolCode();
+            if (scode == null || "OTHER".equals(scode)) {
+                if (em.getOrganizer() != null && !em.getOrganizer().trim().isEmpty()) {
+                    scode = em.getOrganizer().trim().toUpperCase(Locale.getDefault());
+                } else {
+                    scode = "OTHER";
+                }
+            }
+
+            if (em.isTeachingEvent() && isCompleted) {
+                // Tính thu nhập: (số tiết) * (đơn giá của trường do người dùng cấu hình)
+                SchoolProfile.SchoolType sc = SchoolProfile.detectSchool(scode);
+                long customRate = getCustomPayRate(this, scode, sc != null && sc != SchoolProfile.SchoolType.DEFAULT ? sc.getDefaultPayRate() : 100000);
+                estimatedIncome += (pCount * customRate);
+            }
+
+            String nat = em.getScheduleCategory();
+            if (EventModel.CAT_INCIDENT.equals(nat)) {
+                incidentEvents++;
+            }
+
+            if (scode != null && !scode.isEmpty()) {
+                activeSchools.add(scode);
+            }
+        }
+
+        if (tvKpiPeriods != null) {
+            tvKpiPeriods.setText(totalPeriods + " Tiết");
+        }
+        if (tvKpiPeriodsSub != null) {
+            tvKpiPeriodsSub.setText(String.format(Locale.getDefault(), "%.1f giờ chuẩn", totalHours));
+        }
+        if (tvKpiEvents != null) {
+            tvKpiEvents.setText(totalEvents + " Buổi");
+        }
+        if (tvKpiEventsSub != null) {
+            int upcoming = Math.max(0, totalEvents - completedEvents);
+            tvKpiEventsSub.setText(completedEvents + " đã dạy • " + upcoming + " sắp tới");
+        }
+        if (tvKpiSchools != null) {
+            tvKpiSchools.setText(activeSchools.size() + " Trường");
+        }
+        if (tvKpiSchoolsSub != null) {
+            tvKpiSchoolsSub.setText(activeSchools.isEmpty() ? "Chưa có lịch" : TextUtils.join(", ", activeSchools));
+        }
+        if (tvKpiIncidents != null) {
+            float ratio = totalEvents > 0 ? (incidentEvents * 100f / totalEvents) : 0f;
+            tvKpiIncidents.setText(incidentEvents + " Buổi (" + Math.round(ratio) + "%)");
+        }
+        if (tvKpiIncidentsSub != null) {
+            tvKpiIncidentsSub.setText("Dạy bù, coi thi, họp...");
+        }
+        if (tvKpiIncome != null) {
+            java.text.NumberFormat formatter = java.text.NumberFormat.getInstance(new Locale("vi", "VN"));
+            tvKpiIncome.setText(formatter.format(estimatedIncome) + " VNĐ");
+        }
+        if (tvKpiIncomeSub != null) {
+            tvKpiIncomeSub.setText("Đã tính " + completedPeriods + " tiết đã dạy. (Đơn giá tham khảo)");
+        }
+
+        // 4. Quét phát hiện ngày chạy đa trường
+        detectCrossSchoolDays(filtered);
+
+        // 5. Render biểu đồ tròn theo Trường
+        renderSchoolPieChart(filtered, textColorPrimary, textColorSecondary);
+
+        // 6. Render biểu đồ cột ngang phân loại tính chất công việc
+        renderNatureBarChart(filtered, textColorPrimary, textColorSecondary, gridLineColor);
+
+        // 7. Render biểu đồ cột 12 tháng trong năm
+        renderMonthlyBarChart(allEvents, textColorPrimary, textColorSecondary, gridLineColor);
+
+        // 8. Render biểu đồ mật độ theo thứ trong tuần
+        renderDayOfWeekBarChart(filtered, textColorPrimary, textColorSecondary, gridLineColor);
+
+        // 9. Render biểu đồ tròn phân bổ ca dạy
+        renderShiftPieChart(filtered, textColorPrimary, textColorSecondary);
+    }
+
+    private void detectCrossSchoolDays(List<EventModel> events) {
+        crossSchoolDaysMap.clear();
+        Map<String, Set<String>> dateToSchools = new HashMap<>();
+        Map<String, List<EventModel>> dateToEvents = new HashMap<>();
+
+        for (EventModel em : events) {
+            String d = em.getDate();
+            if (d == null || d.trim().isEmpty()) continue;
+            String sc = em.getSchoolCode();
+            if (sc == null || sc.trim().isEmpty()) sc = "OTHER";
+
+            dateToSchools.computeIfAbsent(d, k -> new HashSet<>()).add(sc.toUpperCase(Locale.getDefault()));
+            dateToEvents.computeIfAbsent(d, k -> new ArrayList<>()).add(em);
+        }
+
+        for (Map.Entry<String, Set<String>> entry : dateToSchools.entrySet()) {
+            if (entry.getValue().size() >= 2) {
+                crossSchoolDaysMap.put(entry.getKey(), dateToEvents.get(entry.getKey()));
+            }
+        }
+
+        if (cardCrossSchoolAlert != null) {
+            if (!crossSchoolDaysMap.isEmpty()) {
+                cardCrossSchoolAlert.setVisibility(View.VISIBLE);
+                if (tvCrossSchoolAlertTitle != null) {
+                    tvCrossSchoolAlertTitle.setText("⚠️ CẢNH BÁO: " + crossSchoolDaysMap.size() + " NGÀY DI CHUYỂN ĐA TRƯỜNG");
+                }
+                if (tvCrossSchoolAlertDesc != null) {
+                    tvCrossSchoolAlertDesc.setText("Phát hiện " + crossSchoolDaysMap.size() + " ngày có lịch tại từ 2 trường khác nhau trong cùng ngày. Chú ý dự phòng thời gian di chuyển!");
+                }
+            } else {
+                cardCrossSchoolAlert.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    private void showCrossSchoolAlertDetailsDialog() {
+        List<EventModel> crossEvents = new ArrayList<>();
+        for (List<EventModel> list : crossSchoolDaysMap.values()) {
+            crossEvents.addAll(list);
+        }
+        EventModel.sortChronologically(crossEvents);
+        showChartDrillDownDialog("⚠️ CẢNH BÁO DI CHUYỂN ĐA TRƯỜNG", 
+                "Gồm " + crossSchoolDaysMap.size() + " ngày có lịch tại từ 2 trường khác nhau", crossEvents);
+    }
+
+    private void renderSchoolPieChart(List<EventModel> events, int textColorPrimary, int textColorSecondary) {
+        if (pieChartSchool == null) return;
+        Map<String, List<EventModel>> schoolMap = new LinkedHashMap<>();
+        for (EventModel em : events) {
+            String sc = em.getSchoolCode();
+            if (sc == null || sc.trim().isEmpty()) sc = "OTHER";
+            sc = sc.toUpperCase(Locale.getDefault());
+            schoolMap.computeIfAbsent(sc, k -> new ArrayList<>()).add(em);
+        }
+
+        List<PieEntry> entries = new ArrayList<>();
+        List<Integer> colors = new ArrayList<>();
+
+        for (Map.Entry<String, List<EventModel>> entry : schoolMap.entrySet()) {
+            String code = entry.getKey();
+            int count = entry.getValue().size();
+            String label = code;
+            int color = Color.parseColor("#8B5CF6");
+            if ("NTTU".equalsIgnoreCase(code)) {
+                label = "NTTU (" + count + ")";
+                color = Color.parseColor("#1D4ED8");
+            } else if ("HUTECH".equalsIgnoreCase(code)) {
+                label = "HUTECH (" + count + ")";
+                color = Color.parseColor("#EA580C");
+            } else if ("UEF".equalsIgnoreCase(code)) {
+                label = "UEF (" + count + ")";
+                color = Color.parseColor("#0284C7");
+            } else if ("UEH".equalsIgnoreCase(code)) {
+                label = "UEH (" + count + ")";
+                color = Color.parseColor("#059669");
+            } else {
+                label = "Khác (" + count + ")";
+                color = Color.parseColor("#64748B");
+            }
+            entries.add(new PieEntry(count, label));
+            colors.add(color);
+        }
+
+        if (entries.isEmpty()) {
+            pieChartSchool.clear();
+            pieChartSchool.setNoDataText("Chưa có dữ liệu trường học");
+            pieChartSchool.setNoDataTextColor(textColorSecondary);
+            pieChartSchool.invalidate();
+            return;
+        }
+
+        PieDataSet dataSet = new PieDataSet(entries, "");
+        dataSet.setColors(colors);
+        dataSet.setSliceSpace(3f);
+        dataSet.setValueTextSize(11.5f);
+        dataSet.setValueTextColor(Color.WHITE);
+        // Chỉ vẽ % lên lát cắt nếu lát cắt >= 8% để loại bỏ hoàn toàn đè chữ!
+        dataSet.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                if (value < 8f) return "";
+                return Math.round(value) + "%";
+            }
+        });
+
+        PieData pieData = new PieData(dataSet);
+        pieChartSchool.setData(pieData);
+        pieChartSchool.setUsePercentValues(true);
+        pieChartSchool.getDescription().setEnabled(false);
+        pieChartSchool.setDrawHoleEnabled(true);
+        pieChartSchool.setHoleColor(Color.TRANSPARENT);
+        pieChartSchool.setHoleRadius(46f);
+        pieChartSchool.setTransparentCircleRadius(52f);
+        pieChartSchool.setDrawEntryLabels(false); // Tắt nhãn bên trong hình tròn để không đè lên nhau
+
+        // Chữ ở tâm vòng tròn Donut
+        pieChartSchool.setCenterText(events.size() + "\nBUỔI");
+        pieChartSchool.setCenterTextColor(textColorPrimary);
+        pieChartSchool.setCenterTextSize(14f);
+        pieChartSchool.setCenterTextTypeface(Typeface.DEFAULT_BOLD);
+
+        // Chú thích (Legend) rõ ràng bên dưới
+        Legend legend = pieChartSchool.getLegend();
+        legend.setEnabled(true);
+        legend.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
+        legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
+        legend.setOrientation(Legend.LegendOrientation.HORIZONTAL);
+        legend.setDrawInside(false);
+        legend.setWordWrapEnabled(true);
+        legend.setTextColor(textColorPrimary);
+        legend.setTextSize(11.5f);
+        legend.setForm(Legend.LegendForm.CIRCLE);
+        legend.setFormSize(8.5f);
+        legend.setXEntrySpace(14f);
+        legend.setYEntrySpace(6f);
+
+        pieChartSchool.setExtraOffsets(5, 5, 5, 12);
+
+        pieChartSchool.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+            @Override
+            public void onValueSelected(com.github.mikephil.charting.data.Entry e, Highlight h) {
+                if (e instanceof PieEntry) {
+                    PieEntry pe = (PieEntry) e;
+                    String rawLabel = pe.getLabel();
+                    String schoolName = rawLabel != null ? rawLabel.replaceAll("\\s*\\(\\d+\\)", "").trim() : "";
+                    List<EventModel> matched = new ArrayList<>();
+                    for (EventModel item : events) {
+                        String sc = item.getSchoolCode();
+                        if (sc != null && (sc.equalsIgnoreCase(schoolName) || 
+                            ("Khác".equalsIgnoreCase(schoolName) && !sc.equalsIgnoreCase("NTTU") && !sc.equalsIgnoreCase("HUTECH") && !sc.equalsIgnoreCase("UEF")))) {
+                            matched.add(item);
+                        }
+                    }
+                    showChartDrillDownDialog("ĐƠN VỊ: " + schoolName, "Gồm " + matched.size() + " buổi công việc", matched);
+                }
+            }
+
+            @Override
+            public void onNothingSelected() {}
+        });
+
+        pieChartSchool.animateY(700, Easing.EaseInOutQuad);
+        pieChartSchool.invalidate();
+    }
+
+    private void renderNatureBarChart(List<EventModel> events, int textColorPrimary, int textColorSecondary, int gridLineColor) {
+        if (barChartNature == null) return;
+
+        Map<String, List<EventModel>> natureMap = new LinkedHashMap<>();
+        // 4 Nhóm chính hiển thị từ dưới lên trên trên biểu đồ cột ngang
+        natureMap.put(EventModel.CAT_MANUAL_OTHER, new ArrayList<>());
+        natureMap.put(EventModel.CAT_INCIDENT, new ArrayList<>());
+        natureMap.put(EventModel.CAT_EVENT, new ArrayList<>());
+        natureMap.put(EventModel.CAT_TEACHING, new ArrayList<>());
+
+        for (EventModel em : events) {
+            String cat = em.getScheduleCategory();
+            if (EventModel.CAT_TEACHING.equalsIgnoreCase(cat)) {
+                natureMap.get(EventModel.CAT_TEACHING).add(em);
+            } else if (EventModel.CAT_EVENT.equalsIgnoreCase(cat)) {
+                natureMap.get(EventModel.CAT_EVENT).add(em);
+            } else if (EventModel.CAT_INCIDENT.equalsIgnoreCase(cat)) {
+                natureMap.get(EventModel.CAT_INCIDENT).add(em);
+            } else {
+                natureMap.get(EventModel.CAT_MANUAL_OTHER).add(em);
+            }
+        }
+
         List<BarEntry> entries = new ArrayList<>();
         List<String> labels = new ArrayList<>();
+        List<Integer> colors = new ArrayList<>();
         int index = 0;
-        for (Map.Entry<String, Integer> entry : stats.entrySet()) {
-            entries.add(new BarEntry(index, entry.getValue()));
+
+        for (Map.Entry<String, List<EventModel>> entry : natureMap.entrySet()) {
+            entries.add(new BarEntry(index, entry.getValue().size()));
             labels.add(entry.getKey());
+            int c;
+            if (EventModel.CAT_TEACHING.equals(entry.getKey())) {
+                c = Color.parseColor("#2563EB"); // Xanh lam
+            } else if (EventModel.CAT_EVENT.equals(entry.getKey())) {
+                c = Color.parseColor("#10B981"); // Xanh lá
+            } else if (EventModel.CAT_INCIDENT.equals(entry.getKey())) {
+                c = Color.parseColor("#F59E0B"); // Vàng cam
+            } else {
+                c = Color.parseColor("#8B5CF6"); // Tím
+            }
+            colors.add(c);
             index++;
         }
 
-        BarDataSet dataSet = new BarDataSet(entries, "Số công việc theo Học kỳ");
-        int[] customColors = new int[]{
-                Color.parseColor("#2563EB"),
-                Color.parseColor("#10B981"),
-                Color.parseColor("#F59E0B")
-        };
-        dataSet.setColors(customColors);
-        dataSet.setValueTextSize(12f);
-        dataSet.setValueTextColor(Color.parseColor("#0F172A"));
+        BarDataSet dataSet = new BarDataSet(entries, "Số buổi");
+        dataSet.setColors(colors);
+        dataSet.setValueTextSize(11f);
+        dataSet.setValueTextColor(textColorPrimary);
+        dataSet.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                return (int) value + " buổi";
+            }
+        });
 
         BarData barData = new BarData(dataSet);
-        barData.setBarWidth(0.40f);
+        barData.setBarWidth(0.55f);
+        barChartNature.setData(barData);
+        barChartNature.getDescription().setEnabled(false);
+        barChartNature.getLegend().setEnabled(false);
+
+        // Chống cắt lề phải chữ "buổi"
+        barChartNature.setExtraRightOffset(42f);
+        barChartNature.setExtraLeftOffset(8f);
+
+        XAxis xAxis = barChartNature.getXAxis();
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setGranularity(1f);
+        xAxis.setDrawGridLines(false);
+        xAxis.setTextColor(textColorPrimary);
+        xAxis.setTextSize(10f);
+
+        barChartNature.getAxisRight().setEnabled(false);
+        barChartNature.getAxisLeft().setDrawGridLines(true);
+        barChartNature.getAxisLeft().setGridColor(gridLineColor);
+        barChartNature.getAxisLeft().setTextColor(textColorSecondary);
+        barChartNature.getAxisLeft().setAxisMinimum(0f);
+        barChartNature.getAxisLeft().setSpaceTop(28f); // 28% lề ngang để số liệu không bị ép sát mép
+        barChartNature.getAxisLeft().setGranularity(1f);
+
+        barChartNature.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+            @Override
+            public void onValueSelected(com.github.mikephil.charting.data.Entry e, Highlight h) {
+                int idx = (int) e.getX();
+                if (idx >= 0 && idx < labels.size()) {
+                    String catName = labels.get(idx);
+                    List<EventModel> list = natureMap.get(catName);
+                    showChartDrillDownDialog(catName.toUpperCase(Locale.getDefault()), 
+                            "Gồm " + (list != null ? list.size() : 0) + " sự kiện", list);
+                }
+            }
+
+            @Override
+            public void onNothingSelected() {}
+        });
+
+        barChartNature.animateY(600, Easing.EaseInOutQuad);
+        barChartNature.invalidate();
+    }
+
+    private void renderMonthlyBarChart(List<EventModel> allEvents, int textColorPrimary, int textColorSecondary, int gridLineColor) {
+        if (barChartTab == null) return;
+
+        Calendar cal = Calendar.getInstance();
+        int curYear = cal.get(Calendar.YEAR);
+        String yearPrefix = curYear + "-";
+
+        int[] monthlyCounts = new int[12];
+        Map<Integer, List<EventModel>> monthlyEvents = new HashMap<>();
+        for (int m = 1; m <= 12; m++) monthlyEvents.put(m, new ArrayList<>());
+
+        for (EventModel em : allEvents) {
+            String d = em.getDate();
+            if (d != null && d.startsWith(yearPrefix) && d.length() >= 7) {
+                try {
+                    int m = Integer.parseInt(d.substring(5, 7));
+                    if (m >= 1 && m <= 12) {
+                        monthlyCounts[m - 1]++;
+                        monthlyEvents.get(m).add(em);
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+
+        int maxMonth = 1;
+        int maxCount = 0;
+        for (int i = 0; i < 12; i++) {
+            if (monthlyCounts[i] > maxCount) {
+                maxCount = monthlyCounts[i];
+                maxMonth = i + 1;
+            }
+        }
+
+        if (tvMonthlyPeakNotice != null) {
+            if (maxCount > 0) {
+                tvMonthlyPeakNotice.setText("⚡ Tháng " + maxMonth + " là tháng cao điểm nhất trong năm " + curYear + " (" + maxCount + " buổi làm việc)");
+            } else {
+                tvMonthlyPeakNotice.setText("Biểu đồ theo dõi số buổi/tiết qua 12 tháng trong năm " + curYear);
+            }
+        }
+
+        List<BarEntry> entries = new ArrayList<>();
+        List<String> labels = new ArrayList<>();
+        List<Integer> colors = new ArrayList<>();
+
+        for (int i = 0; i < 12; i++) {
+            entries.add(new BarEntry(i, monthlyCounts[i]));
+            labels.add("T" + (i + 1));
+            if (i == (maxMonth - 1) && maxCount > 0) {
+                colors.add(Color.parseColor("#F59E0B"));
+            } else {
+                colors.add(Color.parseColor("#2563EB"));
+            }
+        }
+
+        BarDataSet dataSet = new BarDataSet(entries, "Số buổi");
+        dataSet.setColors(colors);
+        dataSet.setValueTextSize(10f);
+        dataSet.setValueTextColor(textColorPrimary);
+        dataSet.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                return value > 0 ? String.valueOf((int) value) : "";
+            }
+        });
+
+        BarData barData = new BarData(dataSet);
+        barData.setBarWidth(0.50f);
         barChartTab.setData(barData);
         barChartTab.getDescription().setEnabled(false);
+        barChartTab.getLegend().setEnabled(false);
+
+        // Chống đè số trên đỉnh cột
+        barChartTab.setExtraTopOffset(15f);
 
         XAxis xAxis = barChartTab.getXAxis();
         xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setGranularity(1f);
         xAxis.setDrawGridLines(false);
-        xAxis.setTextColor(Color.parseColor("#0F172A"));
+        xAxis.setTextColor(textColorPrimary);
 
         barChartTab.getAxisRight().setEnabled(false);
         barChartTab.getAxisLeft().setDrawGridLines(true);
-        barChartTab.getAxisLeft().setGridColor(Color.parseColor("#F1F5F9"));
-        barChartTab.getAxisLeft().setTextColor(Color.parseColor("#334155"));
+        barChartTab.getAxisLeft().setGridColor(gridLineColor);
+        barChartTab.getAxisLeft().setTextColor(textColorSecondary);
         barChartTab.getAxisLeft().setAxisMinimum(0f);
+        barChartTab.getAxisLeft().setSpaceTop(30f); // 30% khoảng trống trên đỉnh để số không bị đè
+        barChartTab.getAxisLeft().setGranularity(1f);
+
+        barChartTab.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+            @Override
+            public void onValueSelected(com.github.mikephil.charting.data.Entry e, Highlight h) {
+                int monthIdx = (int) e.getX() + 1;
+                List<EventModel> mList = monthlyEvents.get(monthIdx);
+                showChartDrillDownDialog("LỊCH TRÌNH THÁNG " + monthIdx + "/" + curYear, 
+                        "Tổng cộng " + (mList != null ? mList.size() : 0) + " buổi trong tháng", mList);
+            }
+
+            @Override
+            public void onNothingSelected() {}
+        });
 
         barChartTab.animateY(700, Easing.EaseInOutQuad);
         barChartTab.invalidate();
     }
 
-    private void seedSampleData() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        Calendar cal = Calendar.getInstance();
-        String today = sdf.format(cal.getTime());
-        cal.add(Calendar.DAY_OF_YEAR, 1);
-        String tomorrow = sdf.format(cal.getTime());
+    private void renderDayOfWeekBarChart(List<EventModel> events, int textColorPrimary, int textColorSecondary, int gridLineColor) {
+        if (barChartDayOfWeek == null) return;
 
-        dbHelper.insertEvent(1, "Họp Hội đồng Khoa CNTT", today, "Ban Chủ nhiệm Khoa");
-        dbHelper.insertEvent(2, "Tập huấn ngắn hạn AI trong Giảng dạy", tomorrow, "Phòng Đào tạo");
-        dbHelper.insertEvent(3, "Chấm đồ án Chuyên ngành KTPM", "2026-05-15", "Bộ môn KTPM");
+        int[] dayCounts = new int[7];
+        Map<Integer, List<EventModel>> dayEvents = new HashMap<>();
+        for (int i = 0; i < 7; i++) dayEvents.put(i, new ArrayList<>());
+
+        SimpleDateFormat sdfIso = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        Calendar cal = Calendar.getInstance();
+
+        for (EventModel em : events) {
+            String d = em.getDate();
+            if (d != null && d.length() >= 10) {
+                try {
+                    Date dateObj = sdfIso.parse(d);
+                    if (dateObj != null) {
+                        cal.setTime(dateObj);
+                        int dow = cal.get(Calendar.DAY_OF_WEEK);
+                        int mappedIdx = (dow == Calendar.SUNDAY) ? 6 : (dow - 2);
+                        if (mappedIdx >= 0 && mappedIdx < 7) {
+                            dayCounts[mappedIdx]++;
+                            dayEvents.get(mappedIdx).add(em);
+                        }
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+
+        String[] dayLabels = {"Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"};
+        List<BarEntry> entries = new ArrayList<>();
+        List<Integer> colors = new ArrayList<>();
+
+        for (int i = 0; i < 7; i++) {
+            entries.add(new BarEntry(i, dayCounts[i]));
+            if (i == 5 || i == 6) {
+                colors.add(Color.parseColor("#8B5CF6"));
+            } else {
+                colors.add(Color.parseColor("#059669"));
+            }
+        }
+
+        BarDataSet dataSet = new BarDataSet(entries, "Số buổi");
+        dataSet.setColors(colors);
+        dataSet.setValueTextSize(10.5f);
+        dataSet.setValueTextColor(textColorPrimary);
+        dataSet.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                return value > 0 ? String.valueOf((int) value) : "";
+            }
+        });
+
+        BarData barData = new BarData(dataSet);
+        barData.setBarWidth(0.50f);
+        barChartDayOfWeek.setData(barData);
+        barChartDayOfWeek.getDescription().setEnabled(false);
+        barChartDayOfWeek.getLegend().setEnabled(false);
+
+        // Chống đè số trên đỉnh cột
+        barChartDayOfWeek.setExtraTopOffset(15f);
+
+        XAxis xAxis = barChartDayOfWeek.getXAxis();
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(dayLabels));
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setGranularity(1f);
+        xAxis.setDrawGridLines(false);
+        xAxis.setTextColor(textColorPrimary);
+        xAxis.setTextSize(10f);
+
+        barChartDayOfWeek.getAxisRight().setEnabled(false);
+        barChartDayOfWeek.getAxisLeft().setDrawGridLines(true);
+        barChartDayOfWeek.getAxisLeft().setGridColor(gridLineColor);
+        barChartDayOfWeek.getAxisLeft().setTextColor(textColorSecondary);
+        barChartDayOfWeek.getAxisLeft().setAxisMinimum(0f);
+        barChartDayOfWeek.getAxisLeft().setSpaceTop(30f); // 30% khoảng trống trên đỉnh
+        barChartDayOfWeek.getAxisLeft().setGranularity(1f);
+
+        barChartDayOfWeek.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+            @Override
+            public void onValueSelected(com.github.mikephil.charting.data.Entry e, Highlight h) {
+                int dIdx = (int) e.getX();
+                if (dIdx >= 0 && dIdx < dayLabels.length) {
+                    List<EventModel> dList = dayEvents.get(dIdx);
+                    showChartDrillDownDialog("LỊCH " + dayLabels[dIdx].toUpperCase(Locale.getDefault()), 
+                            "Tổng cộng " + (dList != null ? dList.size() : 0) + " buổi vào " + dayLabels[dIdx], dList);
+                }
+            }
+
+            @Override
+            public void onNothingSelected() {}
+        });
+
+        barChartDayOfWeek.animateY(650, Easing.EaseInOutQuad);
+        barChartDayOfWeek.invalidate();
     }
+
+    private void renderShiftPieChart(List<EventModel> events, int textColorPrimary, int textColorSecondary) {
+        if (pieChartShift == null) return;
+
+        List<EventModel> morningList = new ArrayList<>();
+        List<EventModel> afternoonList = new ArrayList<>();
+        List<EventModel> eveningList = new ArrayList<>();
+
+        for (EventModel em : events) {
+            int sm = em.getStartMin();
+            if (sm < 720) {
+                morningList.add(em);
+            } else if (sm < 1050) {
+                afternoonList.add(em);
+            } else {
+                eveningList.add(em);
+            }
+        }
+
+        List<PieEntry> entries = new ArrayList<>();
+        List<Integer> colors = new ArrayList<>();
+
+        if (!morningList.isEmpty()) {
+            entries.add(new PieEntry(morningList.size(), "Ca Sáng (" + morningList.size() + ")"));
+            colors.add(Color.parseColor("#F59E0B"));
+        }
+        if (!afternoonList.isEmpty()) {
+            entries.add(new PieEntry(afternoonList.size(), "Ca Chiều (" + afternoonList.size() + ")"));
+            colors.add(Color.parseColor("#2563EB"));
+        }
+        if (!eveningList.isEmpty()) {
+            entries.add(new PieEntry(eveningList.size(), "Ca Tối (" + eveningList.size() + ")"));
+            colors.add(Color.parseColor("#6366F1"));
+        }
+
+        if (entries.isEmpty()) {
+            pieChartShift.clear();
+            pieChartShift.setNoDataText("Chưa có dữ liệu ca dạy");
+            pieChartShift.setNoDataTextColor(textColorSecondary);
+            pieChartShift.invalidate();
+            return;
+        }
+
+        PieDataSet dataSet = new PieDataSet(entries, "");
+        dataSet.setColors(colors);
+        dataSet.setSliceSpace(3f);
+        dataSet.setValueTextSize(11.5f);
+        dataSet.setValueTextColor(Color.WHITE);
+        dataSet.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                if (value < 8f) return "";
+                return Math.round(value) + "%";
+            }
+        });
+
+        PieData pieData = new PieData(dataSet);
+        pieChartShift.setData(pieData);
+        pieChartShift.setUsePercentValues(true);
+        pieChartShift.getDescription().setEnabled(false);
+        pieChartShift.setDrawHoleEnabled(true);
+        pieChartShift.setHoleColor(Color.TRANSPARENT);
+        pieChartShift.setHoleRadius(46f);
+        pieChartShift.setTransparentCircleRadius(52f);
+        pieChartShift.setDrawEntryLabels(false); // Tắt nhãn bên trong lát cắt để không đè
+
+        pieChartShift.setCenterText(events.size() + "\nBUỔI");
+        pieChartShift.setCenterTextColor(textColorPrimary);
+        pieChartShift.setCenterTextSize(14f);
+        pieChartShift.setCenterTextTypeface(Typeface.DEFAULT_BOLD);
+
+        Legend legend = pieChartShift.getLegend();
+        legend.setEnabled(true);
+        legend.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
+        legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
+        legend.setOrientation(Legend.LegendOrientation.HORIZONTAL);
+        legend.setDrawInside(false);
+        legend.setWordWrapEnabled(true);
+        legend.setTextColor(textColorPrimary);
+        legend.setTextSize(11.5f);
+        legend.setForm(Legend.LegendForm.CIRCLE);
+        legend.setFormSize(8.5f);
+        legend.setXEntrySpace(14f);
+        legend.setYEntrySpace(6f);
+
+        pieChartShift.setExtraOffsets(5, 5, 5, 12);
+
+        pieChartShift.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+            @Override
+            public void onValueSelected(com.github.mikephil.charting.data.Entry e, Highlight h) {
+                if (e instanceof PieEntry) {
+                    PieEntry pe = (PieEntry) e;
+                    String label = pe.getLabel();
+                    List<EventModel> selList = morningList;
+                    if (label != null && label.contains("Chiều")) selList = afternoonList;
+                    else if (label != null && label.contains("Tối")) selList = eveningList;
+                    showChartDrillDownDialog("DANH SÁCH " + (label != null ? label.toUpperCase(Locale.getDefault()) : ""), 
+                            "Tổng cộng " + selList.size() + " buổi", selList);
+                }
+            }
+
+            @Override
+            public void onNothingSelected() {}
+        });
+
+        pieChartShift.animateY(700, Easing.EaseInOutQuad);
+        pieChartShift.invalidate();
+    }
+
+    private long getCustomPayRate(Context context, String schoolCode, long defaultRate) {
+        android.content.SharedPreferences prefs = context.getSharedPreferences("lectuplan_income_prefs", Context.MODE_PRIVATE);
+        return prefs.getLong("pay_rate_" + schoolCode, defaultRate);
+    }
+
+    private void setCustomPayRate(Context context, String schoolCode, long rate) {
+        android.content.SharedPreferences prefs = context.getSharedPreferences("lectuplan_income_prefs", Context.MODE_PRIVATE);
+        prefs.edit().putLong("pay_rate_" + schoolCode, rate).apply();
+    }
+
+    private void showEditIncomeRatesDialog() {
+        playSuccessSound();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("💰 Cài đặt Đơn giá Thù lao");
+
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(50, 40, 50, 10);
+
+        TextView info = new TextView(this);
+        info.setText("Thêm/Xóa các trường và nhập đơn giá (VNĐ) trên 1 tiết dạy.");
+        info.setTextColor(Color.parseColor("#475569"));
+        info.setTextSize(13);
+        info.setPadding(0, 0, 0, 40);
+        layout.addView(info);
+
+        android.widget.ScrollView scrollView = new android.widget.ScrollView(this);
+        LinearLayout scrollContent = new LinearLayout(this);
+        scrollContent.setOrientation(LinearLayout.VERTICAL);
+        scrollView.addView(scrollContent);
+        LinearLayout.LayoutParams scrollLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1);
+        scrollView.setLayoutParams(scrollLp);
+        layout.addView(scrollView);
+
+        android.content.SharedPreferences prefs = getSharedPreferences("lectuplan_income_prefs", Context.MODE_PRIVATE);
+        String savedList = prefs.getString("dialog_school_list", null);
+        List<String> schoolList = new ArrayList<>();
+        if (savedList == null || savedList.isEmpty()) {
+            for (SchoolProfile.SchoolType sc : SchoolProfile.SchoolType.values()) {
+                if (sc != SchoolProfile.SchoolType.DEFAULT) schoolList.add(sc.getCode());
+            }
+        } else {
+            schoolList.addAll(java.util.Arrays.asList(savedList.split(",")));
+        }
+
+        final Map<String, EditText> inputMap = new HashMap<>();
+
+        Runnable renderRows = new Runnable() {
+            @Override
+            public void run() {
+                scrollContent.removeAllViews();
+                inputMap.clear();
+                for (int i = 0; i < schoolList.size(); i++) {
+                    String code = schoolList.get(i);
+                    long currentRate = getCustomPayRate(MainActivity.this, code, 100000);
+                    SchoolProfile.SchoolType sc = SchoolProfile.detectSchool(code);
+                    if (sc != SchoolProfile.SchoolType.DEFAULT && currentRate == 100000) {
+                        currentRate = getCustomPayRate(MainActivity.this, code, sc.getDefaultPayRate());
+                    }
+
+                    LinearLayout row = new LinearLayout(MainActivity.this);
+                    row.setOrientation(LinearLayout.HORIZONTAL);
+                    row.setPadding(0, 0, 0, 30);
+                    row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
+                    TextView tvSchool = new TextView(MainActivity.this);
+                    tvSchool.setText(code);
+                    tvSchool.setTextSize(15);
+                    tvSchool.setTypeface(null, Typeface.BOLD);
+                    tvSchool.setTextColor(Color.parseColor(sc != SchoolProfile.SchoolType.DEFAULT ? sc.getPrimaryColor() : "#1D4ED8"));
+                    LinearLayout.LayoutParams lpTv = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
+                    tvSchool.setLayoutParams(lpTv);
+                    row.addView(tvSchool);
+
+                    EditText etRate = new EditText(MainActivity.this);
+                    etRate.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+                    etRate.setTextSize(15);
+                    etRate.setPadding(20, 20, 20, 20);
+                    LinearLayout.LayoutParams lpEt = new LinearLayout.LayoutParams(300, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    etRate.setLayoutParams(lpEt);
+                    
+                    etRate.addTextChangedListener(new TextWatcher() {
+                        private String current = "";
+                        @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                        @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+                        @Override public void afterTextChanged(Editable s) {
+                            if (!s.toString().equals(current)) {
+                                etRate.removeTextChangedListener(this);
+                                String cleanString = s.toString().replaceAll("[^\\d]", "");
+                                if (!cleanString.isEmpty()) {
+                                    try {
+                                        long parsed = Long.parseLong(cleanString);
+                                        String formatted = java.text.NumberFormat.getInstance(new Locale("vi", "VN")).format(parsed);
+                                        current = formatted;
+                                        etRate.setText(formatted);
+                                        etRate.setSelection(formatted.length());
+                                    } catch (NumberFormatException e) {}
+                                } else {
+                                    current = "";
+                                    etRate.setText("");
+                                }
+                                etRate.addTextChangedListener(this);
+                            }
+                        }
+                    });
+                    etRate.setText(String.valueOf(currentRate));
+                    row.addView(etRate);
+                    inputMap.put(code, etRate);
+
+                    ImageButton btnDelete = new ImageButton(MainActivity.this);
+                    btnDelete.setImageResource(android.R.drawable.ic_menu_delete);
+                    btnDelete.setBackgroundColor(Color.TRANSPARENT);
+                    btnDelete.setColorFilter(Color.parseColor("#EF4444"));
+                    btnDelete.setPadding(20, 10, 10, 10);
+                    final String codeToRemove = code;
+                    btnDelete.setOnClickListener(v -> {
+                        schoolList.remove(codeToRemove);
+                        this.run(); 
+                    });
+                    row.addView(btnDelete);
+                    
+                    scrollContent.addView(row);
+                }
+            }
+        };
+        renderRows.run();
+
+        Button btnAdd = new Button(this);
+        btnAdd.setText("+ Thêm trường khác");
+        btnAdd.setBackgroundColor(Color.TRANSPARENT);
+        btnAdd.setTextColor(Color.parseColor("#2563EB"));
+        btnAdd.setOnClickListener(v -> {
+            AlertDialog.Builder inputBuilder = new AlertDialog.Builder(this);
+            inputBuilder.setTitle("Thêm Trường mới");
+            final EditText input = new EditText(this);
+            input.setHint("Nhập tên viết tắt (VD: VĂN HIẾN)");
+            input.setPadding(50, 40, 50, 40);
+            inputBuilder.setView(input);
+            inputBuilder.setPositiveButton("Thêm", (d, w) -> {
+                String newCode = input.getText().toString().trim().toUpperCase();
+                if (!newCode.isEmpty() && !schoolList.contains(newCode)) {
+                    for (Map.Entry<String, EditText> entry : inputMap.entrySet()) {
+                        long val = 0;
+                        try { val = Long.parseLong(entry.getValue().getText().toString().replaceAll("[^\\d]", "")); } catch (Exception e) {}
+                        setCustomPayRate(this, entry.getKey(), val);
+                    }
+                    schoolList.add(newCode);
+                    renderRows.run();
+                }
+            });
+            inputBuilder.setNegativeButton("Hủy", null);
+            inputBuilder.show();
+        });
+        layout.addView(btnAdd);
+
+        builder.setView(layout);
+
+        builder.setPositiveButton("Lưu Lại", (dialog, which) -> {
+            prefs.edit().putString("dialog_school_list", TextUtils.join(",", schoolList)).apply();
+            boolean changed = false;
+            for (Map.Entry<String, EditText> entry : inputMap.entrySet()) {
+                String code = entry.getKey();
+                String valStr = entry.getValue().getText().toString();
+                String cleanVal = valStr.replaceAll("[^\\d]", "");
+                if (!cleanVal.isEmpty()) {
+                    try {
+                        long rate = Long.parseLong(cleanVal);
+                        setCustomPayRate(this, code, rate);
+                        changed = true;
+                    } catch (Exception ignored) {}
+                }
+            }
+            if (changed) {
+                Toast.makeText(this, "Đã lưu cài đặt đơn giá thành công!", Toast.LENGTH_SHORT).show();
+                updateChartTab();
+            }
+        });
+        builder.setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss());
+        
+        AlertDialog dialog = builder.create();
+        KeyboardUtils.applyAutoHideKeyboard(dialog);
+        dialog.show();
+    }
+
+    private void showChartDrillDownDialog(String title, String subtitle, List<EventModel> events) {
+        if (isFinishing() || isDestroyed()) return;
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_chart_drilldown, null);
+        TextView tvTitle = view.findViewById(R.id.tvDrillDownTitle);
+        TextView tvSub = view.findViewById(R.id.tvDrillDownSub);
+        TextView tvEmpty = view.findViewById(R.id.tvDrillDownEmpty);
+        RecyclerView rv = view.findViewById(R.id.rvDrillDownEvents);
+        ImageButton btnClose = view.findViewById(R.id.btnDrillDownClose);
+
+        tvTitle.setText(title);
+        int count = events != null ? events.size() : 0;
+        tvSub.setText(subtitle != null ? subtitle : ("Tổng cộng " + count + " buổi"));
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(view)
+                .create();
+        KeyboardUtils.applyAutoHideKeyboard(dialog);
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        if (events == null || events.isEmpty()) {
+            tvEmpty.setVisibility(View.VISIBLE);
+            rv.setVisibility(View.GONE);
+        } else {
+            tvEmpty.setVisibility(View.GONE);
+            rv.setVisibility(View.VISIBLE);
+            rv.setLayoutManager(new LinearLayoutManager(this));
+            rv.setAdapter(new EventAdapter(new ArrayList<>(events), new EventAdapter.OnEventClickListener() {
+                @Override
+                public void onDeleteClick(EventModel event) {
+                    dialog.dismiss();
+                    showCustomConfirmDialog("🗑️", "XÓA LỊCH CÔNG VIỆC",
+                            "Bạn có chắc chắn muốn xóa lịch '" + event.getTitle() + "'?",
+                            "XÓA NGAY",
+                            Color.parseColor("#DC2626"),
+                            () -> {
+                                dbHelper.deleteEvent(event.getId());
+                                refreshData();
+                                updateChartTab();
+                            });
+                }
+
+                @Override
+                public void onEditClick(EventModel event) {
+                    dialog.dismiss();
+                    showEditEventDialog(event);
+                }
+
+                @Override
+                public void onSelectionChanged(int selectedCount) {}
+            }));
+        }
+
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+    }
+
+
 }

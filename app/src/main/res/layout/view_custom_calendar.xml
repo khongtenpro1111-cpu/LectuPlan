@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/layoutCustomCalendarRoot"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
+    android:background="@color/surface_calendar_bg"
     android:padding="8dp">
 
     <!-- Header: Tháng năm và nút điều hướng < > kèm icon chọn nhanh Tháng / Năm -->
@@ -20,7 +22,7 @@
             android:layout_height="36dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_media_previous"
-            android:tint="#475569"
+            app:tint="@color/text_secondary"
             android:contentDescription="Tháng trước" />
 
         <LinearLayout
@@ -40,7 +42,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Tháng 10 năm 2026"
-                android:textColor="#0F172A"
+                android:textColor="@color/text_primary"
                 android:textSize="14.5sp"
                 android:textStyle="bold" />
 
@@ -48,7 +50,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=" ▾"
-                android:textColor="#6D28D9"
+                android:textColor="#8B5CF6"
                 android:textSize="16sp"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -59,7 +61,7 @@
             android:layout_height="36dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_media_next"
-            android:tint="#475569"
+            app:tint="@color/text_secondary"
             android:contentDescription="Tháng sau" />
     </LinearLayout>
 
@@ -70,12 +72,12 @@
         android:orientation="horizontal"
         android:paddingVertical="4dp">
 
-        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="T2" android:textSize="12sp" android:textColor="#64748B" android:textStyle="bold" />
-        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="T3" android:textSize="12sp" android:textColor="#64748B" android:textStyle="bold" />
-        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="T4" android:textSize="12sp" android:textColor="#64748B" android:textStyle="bold" />
-        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="T5" android:textSize="12sp" android:textColor="#64748B" android:textStyle="bold" />
-        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="T6" android:textSize="12sp" android:textColor="#64748B" android:textStyle="bold" />
-        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="T7" android:textSize="12sp" android:textColor="#64748B" android:textStyle="bold" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="T2" android:textSize="12sp" android:textColor="@color/text_secondary" android:textStyle="bold" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="T3" android:textSize="12sp" android:textColor="@color/text_secondary" android:textStyle="bold" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="T4" android:textSize="12sp" android:textColor="@color/text_secondary" android:textStyle="bold" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="T5" android:textSize="12sp" android:textColor="@color/text_secondary" android:textStyle="bold" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="T6" android:textSize="12sp" android:textColor="@color/text_secondary" android:textStyle="bold" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="T7" android:textSize="12sp" android:textColor="@color/text_secondary" android:textStyle="bold" />
         <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="CN" android:textSize="12sp" android:textColor="#EF4444" android:textStyle="bold" />
     </LinearLayout>
 
@@ -106,7 +108,7 @@
             android:layout_height="wrap_content"
             android:text="Lịch dạy/học"
             android:textSize="11sp"
-            android:textColor="#334155"
+            android:textColor="@color/text_secondary"
             android:layout_marginEnd="12dp" />
 
         <View
@@ -119,7 +121,7 @@
             android:layout_height="wrap_content"
             android:text="Họp/Thi"
             android:textSize="11sp"
-            android:textColor="#334155"
+            android:textColor="@color/text_secondary"
             android:layout_marginEnd="12dp" />
 
         <View
@@ -132,7 +134,7 @@
             android:layout_height="wrap_content"
             android:text="Ghi tay"
             android:textSize="11sp"
-            android:textColor="#334155" />
+            android:textColor="@color/text_secondary" />
     </LinearLayout>
 
 </LinearLayout>
