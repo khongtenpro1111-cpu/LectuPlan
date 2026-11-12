@@ -146,11 +146,13 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnRejectUnderstand"
             android:layout_width="match_parent"
-            android:layout_height="46dp"
+            android:layout_height="wrap_content"
+            android:minHeight="46dp"
             android:text="ĐÃ HIỂU"
             android:textColor="#FFFFFF"
             android:textSize="14sp"
             android:textStyle="bold"
+            android:paddingVertical="6dp"
             app:cornerRadius="12dp"
             app:backgroundTint="#EF4444" />
     </LinearLayout>

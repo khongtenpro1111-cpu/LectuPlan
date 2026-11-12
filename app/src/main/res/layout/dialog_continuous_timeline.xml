@@ -71,18 +71,21 @@
             <Button
                 android:id="@+id/btnTimelinePrevDay"
                 android:layout_width="0dp"
-                android:layout_height="36dp"
+                android:layout_height="wrap_content"
+                android:minHeight="36dp"
                 android:layout_weight="1"
                 android:text="◀ Ngày trước"
                 android:textSize="11sp"
                 android:textColor="@color/text_secondary"
                 android:backgroundTint="@color/surface_card_secondary"
+                android:paddingVertical="4dp"
                 app:cornerRadius="8dp" />
 
             <Button
                 android:id="@+id/btnTimelineToday"
                 android:layout_width="0dp"
-                android:layout_height="36dp"
+                android:layout_height="wrap_content"
+                android:minHeight="36dp"
                 android:layout_weight="1"
                 android:layout_marginHorizontal="6dp"
                 android:text="Hôm nay"
@@ -90,17 +93,20 @@
                 android:textColor="@color/accent_blue"
                 android:backgroundTint="@color/surface_card_secondary"
                 android:textStyle="bold"
+                android:paddingVertical="4dp"
                 app:cornerRadius="8dp" />
 
             <Button
                 android:id="@+id/btnTimelineNextDay"
                 android:layout_width="0dp"
-                android:layout_height="36dp"
+                android:layout_height="wrap_content"
+                android:minHeight="36dp"
                 android:layout_weight="1"
                 android:text="Ngày sau ▶"
                 android:textSize="11sp"
                 android:textColor="@color/text_secondary"
                 android:backgroundTint="@color/surface_card_secondary"
+                android:paddingVertical="4dp"
                 app:cornerRadius="8dp" />
         </LinearLayout>
 

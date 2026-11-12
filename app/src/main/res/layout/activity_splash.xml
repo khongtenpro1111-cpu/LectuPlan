@@ -82,7 +82,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="Phiên bản v1.1.0"
+            android:text="Phiên bản v1.1.1"
             android:textSize="12sp"
             android:textColor="#C7D2FE" />
     </LinearLayout>

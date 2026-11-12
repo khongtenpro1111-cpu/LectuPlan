@@ -1,7 +1,7 @@
 {
-  "latest_version_code": 2,
-  "latest_version_name": "1.1.0",
-  "apk_url": "https://github.com/tkyl/LectuPlan/releases/download/v1.1.0/LectuPlan.apk",
-  "release_notes": "🎉 Phiên bản v1.1.0 bổ sung bộ 5 tính năng cao cấp:\n• ✨ AI Đề xuất Lịch Dạy Bù / Dạy Thay Offline\n• 🤖 Tự động Không Làm Phiền (DND) & Check-in GPS\n• 💰 Quản lý & Dự toán Thu nhập Thỉnh giảng\n• 🖼️ Chia sẻ Thiệp ảnh Office Hours\n• 🎙️ Ghi chú sau Buổi học bằng Giọng nói",
+  "latest_version_code": 3,
+  "latest_version_name": "1.1.1",
+  "apk_url": "https://github.com/tkyl/LectuPlan/releases/latest",
+  "release_notes": "• Tự động căn chỉnh giao diện co giãn thông minh (Responsive Design) tương thích 100% mọi màn hình điện thoại.\n• Đổi tên Tab 1 thành 'Trang chủ' với biểu tượng Ngôi nhà hiện đại.\n• Tích hợp Cảnh báo Xung đột Trùng giờ trực tiếp khi bấm Lưu lịch.\n• Tối ưu hóa bộ 4 thẻ KPI thống kê cân đối & làm sạch tên đơn vị trường.",
   "force_update": false
 }

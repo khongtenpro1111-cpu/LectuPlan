@@ -24,16 +24,24 @@ public class FontScaleHelper {
 
     public static Context wrapContext(Context context) {
         int mode = getFontSizeMode(context);
-        float fontScale = 1.0f;
+        Configuration configuration = new Configuration(context.getResources().getConfiguration());
+        float systemScale = context.getResources().getConfiguration().fontScale;
+        if (systemScale <= 0) systemScale = 1.0f;
+
+        float fontScale;
         if (mode == FONT_SMALL) {
-            fontScale = 0.88f;
+            fontScale = systemScale * 0.88f;
         } else if (mode == FONT_LARGE) {
-            fontScale = 1.20f;
+            fontScale = systemScale * 1.18f;
         } else {
-            fontScale = 1.0f;
+            fontScale = systemScale;
         }
 
-        Configuration configuration = new Configuration(context.getResources().getConfiguration());
+        // Cap max font scale to prevent UI clipping/breakage on small screen phones with large system font setting
+        if (fontScale > 1.25f) {
+            fontScale = 1.25f;
+        }
+
         configuration.fontScale = fontScale;
         return context.createConfigurationContext(configuration);
     }

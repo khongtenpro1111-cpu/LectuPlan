@@ -49,7 +49,7 @@ public class VersionCheckHelper {
             PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
             return pInfo.versionName;
         } catch (PackageManager.NameNotFoundException e) {
-            return "1.1.0";
+            return "1.1.1";
         }
     }
 
@@ -132,8 +132,8 @@ public class VersionCheckHelper {
                     in.close();
 
                     JSONObject json = new JSONObject(response.toString());
-                    int remoteVersionCode = json.optInt("latest_version_code", 1);
-                    String remoteVersionName = json.optString("latest_version_name", "1.1.0");
+                    int remoteVersionCode = json.optInt("latest_version_code", 3);
+                    String remoteVersionName = json.optString("latest_version_name", "1.1.1");
                     String apkUrl = json.optString("apk_url", "");
                     String releaseNotes = json.optString("release_notes", "Bổ sung các cải tiến và sửa lỗi hiệu năng.");
                     boolean forceUpdate = json.optBoolean("force_update", false);

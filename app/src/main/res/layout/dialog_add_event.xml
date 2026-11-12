@@ -274,19 +274,22 @@
                 <Button
                     android:id="@+id/btnCancelDialog"
                     android:layout_width="0dp"
-                    android:layout_height="44dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="44dp"
                     android:layout_weight="1"
                     android:text="Hủy"
                     android:textColor="@color/text_secondary"
                     android:backgroundTint="@color/surface_card_secondary"
                     android:textSize="15sp"
                     android:textStyle="bold"
+                    android:paddingVertical="6dp"
                     app:cornerRadius="12dp" />
 
                 <Button
                     android:id="@+id/btnSaveDialog"
                     android:layout_width="0dp"
-                    android:layout_height="44dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="44dp"
                     android:layout_weight="1.2"
                     android:layout_marginStart="10dp"
                     android:text="Lưu công việc"
@@ -294,6 +297,7 @@
                     android:backgroundTint="#2563EB"
                     android:textSize="13sp"
                     android:textStyle="bold"
+                    android:paddingVertical="6dp"
                     app:cornerRadius="12dp" />
             </LinearLayout>
 

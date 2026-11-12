@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
@@ -19,6 +20,8 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.pdf.PdfRenderer;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.net.Uri;
@@ -32,10 +35,12 @@ import android.provider.OpenableColumns;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.animation.OvershootInterpolator;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -1334,6 +1339,19 @@ public class MainActivity extends AppCompatActivity {
         datePickerDialog.show();
     }
 
+    private void applyAdaptiveDialogBounds(Dialog dialog) {
+        if (dialog == null || dialog.getWindow() == null) return;
+        Window window = dialog.getWindow();
+        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        int width = (int) (metrics.widthPixels * 0.94);
+        int maxAllowedWidth = (int) (600 * metrics.density);
+        if (width > maxAllowedWidth) {
+            width = maxAllowedWidth;
+        }
+        window.setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT);
+    }
+
     private void showMonthYearPickerDialog() {
         if (currentCalMonthInstance == null) {
             currentCalMonthInstance = Calendar.getInstance();
@@ -1344,10 +1362,7 @@ public class MainActivity extends AppCompatActivity {
                 .setView(dialogView)
                 .create();
         KeyboardUtils.applyAutoHideKeyboard(dialog);
-
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-        }
+        applyAdaptiveDialogBounds(dialog);
 
         android.widget.NumberPicker npMonth = dialogView.findViewById(R.id.npMonthPicker);
         android.widget.NumberPicker npYear = dialogView.findViewById(R.id.npYearPicker);
@@ -1721,9 +1736,7 @@ public class MainActivity extends AppCompatActivity {
                 .setView(view)
                 .create();
         KeyboardUtils.applyAutoHideKeyboard(dialog);
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
-        }
+        applyAdaptiveDialogBounds(dialog);
 
         final String[] currentDateArr = new String[]{targetDateIso != null ? targetDateIso : selectedTab2DateIso};
 
@@ -1824,10 +1837,7 @@ public class MainActivity extends AppCompatActivity {
                 .setView(view)
                 .create();
         KeyboardUtils.applyAutoHideKeyboard(dialog);
-
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        }
+        applyAdaptiveDialogBounds(dialog);
 
         if (btnOpenTimelineFromFree != null) {
             btnOpenTimelineFromFree.setOnClickListener(v -> {
@@ -1867,10 +1877,7 @@ public class MainActivity extends AppCompatActivity {
                 .setView(view)
                 .create();
         KeyboardUtils.applyAutoHideKeyboard(dialog);
-
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        }
+        applyAdaptiveDialogBounds(dialog);
 
         Runnable performScan = () -> {
             int reqMinutes = 120;
@@ -2311,10 +2318,7 @@ public class MainActivity extends AppCompatActivity {
                 .setView(view)
                 .create();
         KeyboardUtils.applyAutoHideKeyboard(dialog);
-
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        }
+        applyAdaptiveDialogBounds(dialog);
 
         if (btnDownloadReport != null) {
             btnDownloadReport.setOnClickListener(v -> downloadHistoryFileToDevice(fileName));
@@ -2364,10 +2368,8 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setView(view)
                 .create();
-
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        }
+        KeyboardUtils.applyAutoHideKeyboard(dialog);
+        applyAdaptiveDialogBounds(dialog);
 
         if (btnCloseTop != null) btnCloseTop.setOnClickListener(v -> dialog.dismiss());
 
@@ -2498,9 +2500,7 @@ public class MainActivity extends AppCompatActivity {
                 .create();
 
         KeyboardUtils.applyAutoHideKeyboard(dialog);
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        }
+        applyAdaptiveDialogBounds(dialog);
 
         View.OnClickListener dismissListener = v -> {
             SoundHelper.playFeedback(this, v);
@@ -2911,10 +2911,7 @@ public class MainActivity extends AppCompatActivity {
                         .setCancelable(true)
                         .create();
                 KeyboardUtils.applyAutoHideKeyboard(dialog);
-
-                if (dialog.getWindow() != null) {
-                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                }
+                applyAdaptiveDialogBounds(dialog);
 
                 if (btnRejectUnderstand != null) {
                     btnRejectUnderstand.setOnClickListener(v -> dialog.dismiss());
@@ -3597,10 +3594,7 @@ public class MainActivity extends AppCompatActivity {
                 .setView(view)
                 .create();
         KeyboardUtils.applyAutoHideKeyboard(dialog);
-
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        }
+        applyAdaptiveDialogBounds(dialog);
 
         if (btnCancel != null) {
             btnCancel.setOnClickListener(v -> dialog.dismiss());
@@ -3686,10 +3680,7 @@ public class MainActivity extends AppCompatActivity {
                 .setView(view)
                 .create();
         KeyboardUtils.applyAutoHideKeyboard(dialog);
-
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        }
+        applyAdaptiveDialogBounds(dialog);
 
         if (btnDeleteFileAndEvents != null) {
             btnDeleteFileAndEvents.setOnClickListener(v -> {
@@ -3787,10 +3778,7 @@ public class MainActivity extends AppCompatActivity {
                 .setView(view)
                 .create();
         KeyboardUtils.applyAutoHideKeyboard(dialog);
-
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        }
+        applyAdaptiveDialogBounds(dialog);
 
         if (btnDeleteFileAndEvents != null) {
             btnDeleteFileAndEvents.setOnClickListener(v -> {
@@ -3873,10 +3861,7 @@ public class MainActivity extends AppCompatActivity {
                 .setView(view)
                 .create();
         KeyboardUtils.applyAutoHideKeyboard(dialog);
-
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        }
+        applyAdaptiveDialogBounds(dialog);
 
         if (btnDeleteFileAndEvents != null) {
             btnDeleteFileAndEvents.setOnClickListener(b -> {
@@ -3921,10 +3906,7 @@ public class MainActivity extends AppCompatActivity {
                 .setView(view)
                 .create();
         KeyboardUtils.applyAutoHideKeyboard(dialog);
-
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        }
+        applyAdaptiveDialogBounds(dialog);
 
         if (btnClose != null) {
             btnClose.setOnClickListener(v -> dialog.dismiss());
@@ -4070,6 +4052,47 @@ public class MainActivity extends AppCompatActivity {
         showAddEventDialogWithPrefill(null, null, null);
     }
 
+    private List<EventModel> findConflictingEventsOnDate(String dateInput, String startTimeInput, String endTimeInput, String titleInput, int excludeEventId) {
+        List<EventModel> conflicts = new ArrayList<>();
+        if (dateInput == null || dateInput.trim().isEmpty()) return conflicts;
+
+        String isoDate = dbHelper.parseToIsoDate(dateInput);
+        if (isoDate == null || isoDate.trim().isEmpty()) return conflicts;
+
+        int newStart = TimeNormalizer.timeStringToMinute(startTimeInput);
+        int newEnd = TimeNormalizer.timeStringToMinute(endTimeInput);
+
+        if (newStart <= 0 || newEnd <= 0) {
+            TimeNormalizer.NormalizedRange range = TimeNormalizer.parseFromText(titleInput != null ? titleInput : "", SchoolProfile.SchoolType.DEFAULT);
+            if (range != null && range.startMin > 0 && range.endMin > 0) {
+                newStart = range.startMin;
+                newEnd = range.endMin;
+            }
+        }
+
+        if (newStart <= 0 || newEnd <= 0 || newEnd <= newStart) {
+            return conflicts;
+        }
+
+        List<EventModel> existingOnDate = dbHelper.getEventsForDate(isoDate);
+        if (existingOnDate == null || existingOnDate.isEmpty()) return conflicts;
+
+        for (EventModel ev : existingOnDate) {
+            if (ev == null) continue;
+            if (excludeEventId > 0 && ev.getId() == excludeEventId) continue;
+
+            int eStart = ev.getStartMin();
+            int eEnd = ev.getEndMin();
+
+            if (eStart > 0 && eEnd > 0 && eEnd > eStart) {
+                if (newStart < eEnd && newEnd > eStart) {
+                    conflicts.add(ev);
+                }
+            }
+        }
+        return conflicts;
+    }
+
     private void showAddEventDialogWithPrefill(String prefillDateIso, String prefillStart, String prefillEnd) {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_event, null);
         TextView tvDialogHeaderTitle = view.findViewById(R.id.tvDialogHeaderTitle);
@@ -4140,10 +4163,7 @@ public class MainActivity extends AppCompatActivity {
                 .setView(view)
                 .create();
         KeyboardUtils.applyAutoHideKeyboard(dialog);
-
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        }
+        applyAdaptiveDialogBounds(dialog);
 
         edtDate.setOnClickListener(v -> {
             Calendar cal = Calendar.getInstance();
@@ -4186,7 +4206,34 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(this, "Vui lòng nhập Tên sự kiện và Ngày tổ chức!", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                
+
+                List<EventModel> conflicts = findConflictingEventsOnDate(date, startTime, endTime, title, -1);
+                if (!conflicts.isEmpty()) {
+                    StringBuilder conflictMsg = new StringBuilder();
+                    conflictMsg.append("Phát hiện lịch mới nhập bị TRÙNG THỜI GIAN với:\n");
+                    for (EventModel c : conflicts) {
+                        String cTitle = EventModel.cleanDisplayTitle(c.getTitle());
+                        String cTime = (c.getStartTime() != null && c.getEndTime() != null)
+                                ? (c.getStartTime() + " - " + c.getEndTime()) : "";
+                        conflictMsg.append("\n• ").append(cTitle);
+                        if (!cTime.isEmpty()) conflictMsg.append(" [").append(cTime).append("]");
+                    }
+                    conflictMsg.append("\n\nBạn có chắc chắn muốn tiếp tục lưu lịch này không?");
+
+                    showCustomConfirmDialog(
+                            "⚠️",
+                            "CẢNH BÁO TRÙNG GIỜ",
+                            conflictMsg.toString(),
+                            "🔴 Vẫn lưu lịch",
+                            Color.parseColor("#DC2626"),
+                            () -> {
+                                saveEvent(nextStt, edtStt, title, room, startTime, endTime, date, org, spnCategory, edtCustomCategory);
+                                dialog.dismiss();
+                            }
+                    );
+                    return;
+                }
+
                 saveEvent(nextStt, edtStt, title, room, startTime, endTime, date, org, spnCategory, edtCustomCategory);
                 dialog.dismiss();
             });
@@ -4379,10 +4426,7 @@ public class MainActivity extends AppCompatActivity {
                 .setView(view)
                 .create();
         KeyboardUtils.applyAutoHideKeyboard(dialog);
-
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        }
+        applyAdaptiveDialogBounds(dialog);
 
         edtDate.setOnClickListener(v -> {
             Calendar cal = Calendar.getInstance();
@@ -4454,7 +4498,34 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(this, "Vui lòng nhập Tên sự kiện và Ngày tổ chức!", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                
+
+                List<EventModel> conflicts = findConflictingEventsOnDate(date, startTime, endTime, title, event.getId());
+                if (!conflicts.isEmpty()) {
+                    StringBuilder conflictMsg = new StringBuilder();
+                    conflictMsg.append("Phát hiện lịch chỉnh sửa bị TRÙNG THỜI GIAN với:\n");
+                    for (EventModel c : conflicts) {
+                        String cTitle = EventModel.cleanDisplayTitle(c.getTitle());
+                        String cTime = (c.getStartTime() != null && c.getEndTime() != null)
+                                ? (c.getStartTime() + " - " + c.getEndTime()) : "";
+                        conflictMsg.append("\n• ").append(cTitle);
+                        if (!cTime.isEmpty()) conflictMsg.append(" [").append(cTime).append("]");
+                    }
+                    conflictMsg.append("\n\nBạn có chắc chắn muốn tiếp tục lưu thay đổi không?");
+
+                    showCustomConfirmDialog(
+                            "⚠️",
+                            "CẢNH BÁO TRÙNG GIỜ",
+                            conflictMsg.toString(),
+                            "🔴 Vẫn lưu thay đổi",
+                            Color.parseColor("#DC2626"),
+                            () -> {
+                                updateEvent(event, edtStt, title, room, startTime, endTime, date, org, spnCategory, edtCustomCategory);
+                                dialog.dismiss();
+                            }
+                    );
+                    return;
+                }
+
                 updateEvent(event, edtStt, title, room, startTime, endTime, date, org, spnCategory, edtCustomCategory);
                 dialog.dismiss();
             });
@@ -6829,7 +6900,7 @@ public class MainActivity extends AppCompatActivity {
         int incidentEvents = 0;
         long estimatedIncome = 0;
         int completedPeriods = 0;
-        Set<String> activeSchools = new HashSet<>();
+        Set<String> cleanSchoolNames = new LinkedHashSet<>();
         String todayIso = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
 
         for (EventModel em : filtered) {
@@ -6845,28 +6916,35 @@ public class MainActivity extends AppCompatActivity {
             }
 
             String scode = em.getSchoolCode();
-            if (scode == null || "OTHER".equals(scode)) {
-                if (em.getOrganizer() != null && !em.getOrganizer().trim().isEmpty()) {
-                    scode = em.getOrganizer().trim().toUpperCase(Locale.getDefault());
-                } else {
-                    scode = "OTHER";
+            SchoolProfile.SchoolType sc = SchoolProfile.detectSchool(scode);
+            if (sc == null || sc == SchoolProfile.SchoolType.DEFAULT) {
+                sc = SchoolProfile.detectSchool(em.getOrganizer());
+            }
+
+            if (sc != null && sc != SchoolProfile.SchoolType.DEFAULT) {
+                cleanSchoolNames.add(sc.getDisplayName());
+            } else {
+                String org = em.getOrganizer();
+                if (org != null && !org.trim().isEmpty()) {
+                    String cleanOrg = org.trim();
+                    String lower = cleanOrg.toLowerCase(Locale.getDefault());
+                    if (!lower.endsWith(".pdf") && !lower.endsWith(".jpg") && !lower.endsWith(".png")
+                            && !lower.endsWith(".xlsx") && !lower.endsWith(".docx")
+                            && !cleanOrg.contains("LỊCH TRỰC TUYẾN") && !cleanOrg.contains("LỊCH HỌC")
+                            && !cleanOrg.startsWith("VLQ") && !cleanOrg.equals("Lịch nhập thủ công")) {
+                        cleanSchoolNames.add(cleanOrg);
+                    }
                 }
             }
 
             if (em.isTeachingEvent() && isCompleted) {
-                // Tính thu nhập: (số tiết) * (đơn giá của trường do người dùng cấu hình)
-                SchoolProfile.SchoolType sc = SchoolProfile.detectSchool(scode);
-                long customRate = getCustomPayRate(this, scode, sc != null && sc != SchoolProfile.SchoolType.DEFAULT ? sc.getDefaultPayRate() : 100000);
+                long customRate = getCustomPayRate(this, scode != null ? scode : "OTHER", sc != null && sc != SchoolProfile.SchoolType.DEFAULT ? sc.getDefaultPayRate() : 100000);
                 estimatedIncome += (pCount * customRate);
             }
 
             String nat = em.getScheduleCategory();
             if (EventModel.CAT_INCIDENT.equals(nat)) {
                 incidentEvents++;
-            }
-
-            if (scode != null && !scode.isEmpty()) {
-                activeSchools.add(scode);
             }
         }
 
@@ -6884,10 +6962,20 @@ public class MainActivity extends AppCompatActivity {
             tvKpiEventsSub.setText(completedEvents + " đã dạy • " + upcoming + " sắp tới");
         }
         if (tvKpiSchools != null) {
-            tvKpiSchools.setText(activeSchools.size() + " Trường");
+            int count = cleanSchoolNames.size();
+            tvKpiSchools.setText(count > 0 ? (count + " Đơn vị") : "0 Đơn vị");
         }
         if (tvKpiSchoolsSub != null) {
-            tvKpiSchoolsSub.setText(activeSchools.isEmpty() ? "Chưa có lịch" : TextUtils.join(", ", activeSchools));
+            if (cleanSchoolNames.isEmpty()) {
+                tvKpiSchoolsSub.setText("Chưa có lịch làm việc");
+            } else {
+                List<String> list = new ArrayList<>(cleanSchoolNames);
+                if (list.size() <= 2) {
+                    tvKpiSchoolsSub.setText(TextUtils.join(", ", list));
+                } else {
+                    tvKpiSchoolsSub.setText(list.get(0) + ", " + list.get(1) + " (+" + (list.size() - 2) + " khác)");
+                }
+            }
         }
         if (tvKpiIncidents != null) {
             float ratio = totalEvents > 0 ? (incidentEvents * 100f / totalEvents) : 0f;
@@ -7703,9 +7791,7 @@ public class MainActivity extends AppCompatActivity {
                 .setView(view)
                 .create();
         KeyboardUtils.applyAutoHideKeyboard(dialog);
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        }
+        applyAdaptiveDialogBounds(dialog);
 
         if (events == null || events.isEmpty()) {
             tvEmpty.setVisibility(View.VISIBLE);

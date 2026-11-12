@@ -47,7 +47,8 @@
         <!-- Vùng cuộn thông tin giới thiệu chi tiết -->
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="420dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:fillViewport="true"
             android:scrollbars="vertical"
             android:layout_marginBottom="14dp">
@@ -219,7 +220,7 @@
                     android:id="@+id/tvAppIntroTechnicalInfo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="• Phiên bản: v1.1.0 (Stable)\n• Tác giả / Phát triển: TKyl\n• Yêu cầu thiết bị: Android 8.0 trở lên (API 26+)\n• Nền tảng: Android (Java / Kotlin, Material Design 3)\n• Môn học: Lập trình Di động (LTDD)\n• Trường: Đại học Nguyễn Tất Thành (NTTU)"
+                    android:text="• Phiên bản: v1.1.1 (Stable)\n• Tác giả / Phát triển: TKyl\n• Yêu cầu thiết bị: Android 8.0 trở lên (API 26+)\n• Nền tảng: Android (Java / Kotlin, Material Design 3)\n• Môn học: Lập trình Di động (LTDD)\n• Trường: Đại học Nguyễn Tất Thành (NTTU)"
                     android:textSize="14sp"
                     android:textColor="@color/text_secondary"
                     android:lineSpacingExtra="5dp"

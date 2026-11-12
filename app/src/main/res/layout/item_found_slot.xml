@@ -90,24 +90,28 @@
             <Button
                 android:id="@+id/btnScheduleSlot"
                 android:layout_width="wrap_content"
-                android:layout_height="36dp"
+                android:layout_height="wrap_content"
+                android:minHeight="36dp"
                 android:text="+ Nhét lịch"
                 android:textColor="#FFFFFF"
                 android:backgroundTint="#16A34A"
                 android:textSize="11sp"
                 android:textStyle="bold"
+                android:paddingVertical="4dp"
                 app:cornerRadius="8dp" />
 
             <Button
                 android:id="@+id/btnShareSlot"
                 android:layout_width="wrap_content"
-                android:layout_height="36dp"
+                android:layout_height="wrap_content"
+                android:minHeight="36dp"
                 android:layout_marginTop="4dp"
                 android:text="📢 Báo SV"
                 android:textColor="#2563EB"
                 android:backgroundTint="#EFF6FF"
                 android:textSize="11sp"
                 android:textStyle="bold"
+                android:paddingVertical="4dp"
                 app:cornerRadius="8dp"
                 style="?attr/materialButtonOutlinedStyle"
                 app:strokeColor="#BFDBFE" />
