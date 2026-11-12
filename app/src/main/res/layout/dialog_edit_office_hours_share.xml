@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="6dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/border_default"
+    app:cardBackgroundColor="@color/surface_card">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- Tiêu đề Dialog -->
+            <TextView
+                android:id="@+id/tvShareDialogHeader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="📢 CHỈNH SỬA &amp; CHIA SẺ LỊCH TIẾP SV"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="@color/tab_header_title" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Tùy chỉnh thông tin thời gian &amp; nội dung trước khi tạo thiệp và chia sẻ"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Tiêu đề thiệp (Card Title) -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tiêu đề hiển thị trên ảnh thiệp *"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/edtCardTitle"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:background="@drawable/bg_search_input"
+                android:hint="LỊCH TIẾP SINH VIÊN (OFFICE HOURS)"
+                android:inputType="textCapCharacters"
+                android:paddingHorizontal="14dp"
+                android:textSize="14sp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_tertiary"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Ngày tổ chức -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ngày tổ chức *"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/edtShareDate"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_search_input"
+                android:hint="📅 Bấm để chọn ngày tổ chức"
+                android:focusable="false"
+                android:clickable="true"
+                android:paddingHorizontal="14dp"
+                android:textSize="14sp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_tertiary"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Khung Thời gian -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Khung giờ (Từ - Đến) *"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="4dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+
+                <EditText
+                    android:id="@+id/edtShareStartTime"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_search_input"
+                    android:hint="06:45"
+                    android:focusable="false"
+                    android:clickable="true"
+                    android:paddingHorizontal="14dp"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_tertiary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" - "
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginHorizontal="8dp" />
+
+                <EditText
+                    android:id="@+id/edtShareEndTime"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_search_input"
+                    android:hint="21:45"
+                    android:focusable="false"
+                    android:clickable="true"
+                    android:paddingHorizontal="14dp"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_tertiary" />
+            </LinearLayout>
+
+            <!-- Lời nhắn trên ảnh thiệp -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="4dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Lời nhắn / Ngữ cảnh trên ảnh thiệp *"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary" />
+
+                <TextView
+                    android:id="@+id/tvCardNoteCharCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0/220"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_tertiary" />
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/edtCardNote"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="70dp"
+                android:background="@drawable/bg_search_input"
+                android:hint="Nhập lời nhắn hiển thị trên ảnh thiệp..."
+                android:inputType="textMultiLine|textCapSentences"
+                android:maxLength="220"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="10dp"
+                android:textSize="14sp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_tertiary"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Nội dung tin nhắn đính kèm -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nội dung tin nhắn văn bản đính kèm (Zalo, Facebook...) *"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/edtShareTextMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="80dp"
+                android:background="@drawable/bg_search_input"
+                android:hint="Nhập tin nhắn văn bản đính kèm..."
+                android:inputType="textMultiLine|textCapSentences"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="10dp"
+                android:textSize="14sp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_tertiary"
+                android:layout_marginBottom="20dp" />
+
+            <!-- Nút Hủy và Nút Chia sẻ -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="end">
+
+                <Button
+                    android:id="@+id/btnCancelShare"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hủy"
+                    android:textColor="@color/text_secondary"
+                    android:backgroundTint="#F1F5F9"
+                    android:textSize="14sp"
+                    android:layout_marginEnd="8dp"
+                    style="?attr/borderlessButtonStyle" />
+
+                <Button
+                    android:id="@+id/btnDoShare"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🚀 Tạo &amp; Chia sẻ"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#1E3A8A"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="10dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</com.google.android.material.card.MaterialCardView>

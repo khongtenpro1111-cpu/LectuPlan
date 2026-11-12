@@ -1153,7 +1153,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
 
         if (list.isEmpty()) {
-            insertNotification("🎉 Chào mừng đến với LectuPlan v1.1.1", "Hệ thống trợ lý lịch biểu đã được cập nhật phiên bản v1.1.1 tối ưu giao diện tương thích 100%!", "SYSTEM");
+            insertNotification("🎉 Chào mừng đến với LectuPlan v1.1.2", "Hệ thống trợ lý lịch biểu đã được cập nhật phiên bản v1.1.2 hỗ trợ báo SV và tùy chỉnh thiệp linh hoạt!", "SYSTEM");
             insertNotification("🤖 Trợ lý Tự động DND & GPS", "Tính năng tự động tắt chuông và check-in GPS khi đứng lớp đã sẵn sàng.", "DND");
             return getAllNotifications();
         }

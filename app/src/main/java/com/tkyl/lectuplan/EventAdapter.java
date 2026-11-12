@@ -246,10 +246,39 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
             if (holder.btnEdit != null) holder.btnEdit.setVisibility(View.GONE);
             if (holder.btnDelete != null) holder.btnDelete.setVisibility(View.GONE);
 
+            if (holder.btnShareFreeEvent != null) {
+                holder.btnShareFreeEvent.setVisibility(View.VISIBLE);
+                holder.btnShareFreeEvent.setOnClickListener(v -> {
+                    String dateIso = event.getDate();
+                    String dayDisplay = formatFullDate(dateIso, event.getWeek());
+                    if (dayDisplay == null || dayDisplay.trim().isEmpty()) dayDisplay = dateIso;
+
+                    TimeNormalizer.NormalizedRange range = TimeNormalizer.parseFromText((event.getTitle() != null ? event.getTitle() : "") + " " + (event.getOrganizer() != null ? event.getOrganizer() : ""), SchoolProfile.SchoolType.DEFAULT);
+                    int startMin = range.startMin;
+                    int endMin = range.endMin;
+                    String timeRangeStr = TimeNormalizer.minuteToTimeString(startMin) + " - " + TimeNormalizer.minuteToTimeString(endMin);
+
+                    SmartSlotAdapter.FoundSlot slot = new SmartSlotAdapter.FoundSlot(
+                            dateIso,
+                            dayDisplay,
+                            startMin,
+                            endMin,
+                            timeRangeStr,
+                            range.getDurationMinutes(),
+                            range.getDurationFormatted(),
+                            bd.organizer != null ? bd.organizer : "Thời gian trống"
+                    );
+                    OfficeHoursShareHelper.shareSlotAsImage(holder.itemView.getContext(), slot);
+                });
+            }
+
             if (holder.tvConflictBadge != null) holder.tvConflictBadge.setVisibility(View.GONE);
             if (holder.layoutConflictDetails != null) holder.layoutConflictDetails.setVisibility(View.GONE);
 
         } else {
+            if (holder.btnShareFreeEvent != null) {
+                holder.btnShareFreeEvent.setVisibility(View.GONE);
+            }
             if (holder.cardEventItem != null) {
                 holder.cardEventItem.setCardBackgroundColor(cardBgColor);
                 holder.cardEventItem.setStrokeColor(cardStrokeColor);
@@ -592,7 +621,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
         View viewTimelineBranch;
         MaterialCardView cardEventItem;
         View viewLeftAccentStrip;
-        TextView tvSemesterBadge, tvTimeBadge, tvConflictBadge;
+        TextView tvSemesterBadge, tvTimeBadge, tvConflictBadge, btnShareFreeEvent;
         ImageButton btnDelete, btnEdit;
         CheckBox cbSelect;
 
@@ -652,6 +681,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
 
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnDelete = itemView.findViewById(R.id.btnDelete);
+            btnShareFreeEvent = itemView.findViewById(R.id.btnShareFreeEvent);
             cbSelect = itemView.findViewById(R.id.cbSelect);
         }
     }

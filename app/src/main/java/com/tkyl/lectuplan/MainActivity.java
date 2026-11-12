@@ -1775,6 +1775,25 @@ public class MainActivity extends AppCompatActivity {
                     dialog.dismiss();
                     showEditEventDialog(event);
                 }
+
+                @Override
+                public void onShareFreeSlotClick(TimelineSlot slot) {
+                    if (slot == null) return;
+                    String dateIso = currentIso;
+                    String dayDisplay = summary.dayHeaderTitle != null ? summary.dayHeaderTitle : dateIso;
+                    String timeRangeStr = TimeNormalizer.minuteToTimeString(slot.getStartMin()) + " - " + TimeNormalizer.minuteToTimeString(slot.getEndMin());
+                    SmartSlotAdapter.FoundSlot foundSlot = new SmartSlotAdapter.FoundSlot(
+                            dateIso,
+                            dayDisplay,
+                            slot.getStartMin(),
+                            slot.getEndMin(),
+                            timeRangeStr,
+                            slot.getDurationMinutes(),
+                            slot.getDurationMinutes() + " phút",
+                            slot.getSuggestion()
+                    );
+                    OfficeHoursShareHelper.shareSlotAsImage(MainActivity.this, foundSlot);
+                }
             });
             rvTimelineStream.setLayoutManager(new LinearLayoutManager(this));
             rvTimelineStream.setAdapter(adapter);
@@ -1845,7 +1864,28 @@ public class MainActivity extends AppCompatActivity {
 
         if (rvFreeTimeDays != null) {
             rvFreeTimeDays.setLayoutManager(new LinearLayoutManager(this));
-            rvFreeTimeDays.setAdapter(new FreeTimeDayAdapter(dayList));
+            rvFreeTimeDays.setAdapter(new FreeTimeDayAdapter(dayList, new FreeTimeDayAdapter.OnFreeDayClickListener() {
+                @Override
+                public void onDayClick(FreeTimeDayModel item) {
+                    showContinuousTimeline(item.getDateIso());
+                }
+
+                @Override
+                public void onShareDayClick(FreeTimeDayModel item) {
+                    if (item == null) return;
+                    SmartSlotAdapter.FoundSlot foundSlot = new SmartSlotAdapter.FoundSlot(
+                            item.getDateIso(),
+                            item.getDayTitle(),
+                            TimeNormalizer.DAY_START_MINUTE,
+                            TimeNormalizer.DAY_END_MINUTE,
+                            "07:00 - 17:00",
+                            600,
+                            "Cả ngày",
+                            item.getStatusBadge()
+                    );
+                    OfficeHoursShareHelper.shareSlotAsImage(MainActivity.this, foundSlot);
+                }
+            }));
         }
 
         AlertDialog dialog = new AlertDialog.Builder(this)

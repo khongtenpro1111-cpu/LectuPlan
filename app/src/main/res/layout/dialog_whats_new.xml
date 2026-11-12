@@ -40,7 +40,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="Phiên bản v1.1.1"
+                android:text="Phiên bản v1.1.2"
                 android:textColor="#E0E7FF"
                 android:textSize="13sp" />
         </LinearLayout>
@@ -48,7 +48,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="🌟 BỘ CẢI TIẾN &amp; TÍNH NĂNG MỚI TRONG v1.1.1:"
+            android:text="🌟 BỘ CẢI TIẾN &amp; TÍNH NĂNG MỚI TRONG v1.1.2:"
             android:textColor="@color/accent_purple"
             android:textSize="14sp"
             android:textStyle="bold"
@@ -71,7 +71,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="1. 📱 Giao diện Tương thích Tự động (Responsive Design): Tự động co giãn thông minh vừa vặn 100% tất cả các kích thước điện thoại, không che hay mất chữ."
+                    android:text="1. 📝 Tùy chỉnh Lịch tiếp SV (Office Hours): Cho phép tự do chỉnh sửa thời gian, tiêu đề, ngày, lời nhắn và nội dung tin nhắn gửi đính kèm trước khi xuất thiệp ảnh."
                     android:textSize="13.5sp"
                     android:textColor="@color/text_primary"
                     android:layout_marginBottom="10dp" />
@@ -79,7 +79,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="2. 🏠 Đổi tên Tab 1 thành 'Trang chủ': Định danh rõ ràng với biểu tượng Ngôi nhà hiện đại, phân biệt rành mạch với Tab Lịch biểu."
+                    android:text="2. 📢 Bổ sung nút 'Báo SV' toàn diện: Xuất hiện tại tất cả các mắt xích thời gian trống (Dòng chảy liên tục, Phân tích rảnh 7 ngày, Trang chủ)."
                     android:textSize="13.5sp"
                     android:textColor="@color/text_primary"
                     android:layout_marginBottom="10dp" />
@@ -87,7 +87,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="3. ⚠️ Cảnh báo Trùng giờ khi Lưu lịch: Tự động phát hiện và bật pop-up cảnh báo xung đột thời gian ngay lập tức khi tạo hoặc sửa lịch."
+                    android:text="3. 🛡️ Cơ chế Chống tràn Thiệp ảnh: Tự động co dãn cỡ chữ, bộ đếm 220 ký tự trực quan và tự động cắt chữ '...' nếu lời nhắn vượt quá khung thiệp."
                     android:textSize="13.5sp"
                     android:textColor="@color/text_primary"
                     android:layout_marginBottom="10dp" />
@@ -95,15 +95,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="4. 📊 Thống kê KPI Cân đối &amp; Sạch sẽ: Làm gọn tên đơn vị trường, hiển thị thông số minh bạch và cân đối chiều cao bộ thẻ thống kê."
-                    android:textSize="13.5sp"
-                    android:textColor="@color/text_primary"
-                    android:layout_marginBottom="10dp" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="5. ⚡ Nâng cao Hiệu năng &amp; Ổn định: Tối ưu cuộn trang mượt mà, căn chỉnh thanh menu nổi glassmorphism và chuông thông báo."
+                    android:text="4. ⚡ Nâng cao Trải nghiệm &amp; Hiệu năng: Tối ưu bộ chọn ngày giờ, nâng cao độ mượt mà khi tương tác và chia sẻ ứng dụng."
                     android:textSize="13.5sp"
                     android:textColor="@color/text_primary"
                     android:layout_marginBottom="10dp" />

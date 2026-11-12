@@ -19,6 +19,7 @@ public class TimelineSlotAdapter extends RecyclerView.Adapter<TimelineSlotAdapte
     public interface OnSlotClickListener {
         void onFreeSlotClick(TimelineSlot slot);
         void onBusyEventClick(EventModel event);
+        default void onShareFreeSlotClick(TimelineSlot slot) {}
     }
 
     private List<TimelineSlot> slotList;
@@ -109,11 +110,22 @@ public class TimelineSlotAdapter extends RecyclerView.Adapter<TimelineSlotAdapte
             holder.btnQuickAdd.setOnClickListener(v -> {
                 if (listener != null) listener.onFreeSlotClick(slot);
             });
+
+            if (holder.btnShareTimelineSlot != null) {
+                holder.btnShareTimelineSlot.setVisibility(View.VISIBLE);
+                holder.btnShareTimelineSlot.setOnClickListener(v -> {
+                    if (listener != null) listener.onShareFreeSlotClick(slot);
+                });
+            }
+
             holder.cardView.setOnClickListener(v -> {
                 if (listener != null) listener.onFreeSlotClick(slot);
             });
         } else {
             holder.btnQuickAdd.setVisibility(View.GONE);
+            if (holder.btnShareTimelineSlot != null) {
+                holder.btnShareTimelineSlot.setVisibility(View.GONE);
+            }
             if (slot.getSourceEvent() != null) {
                 holder.cardView.setOnClickListener(v -> {
                     if (listener != null) listener.onBusyEventClick(slot.getSourceEvent());
@@ -138,6 +150,7 @@ public class TimelineSlotAdapter extends RecyclerView.Adapter<TimelineSlotAdapte
         TextView tvSubtitle;
         TextView tvSuggestion;
         TextView btnQuickAdd;
+        TextView btnShareTimelineSlot;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -149,6 +162,7 @@ public class TimelineSlotAdapter extends RecyclerView.Adapter<TimelineSlotAdapte
             tvSubtitle = itemView.findViewById(R.id.tvSlotSubtitle);
             tvSuggestion = itemView.findViewById(R.id.tvSlotSuggestion);
             btnQuickAdd = itemView.findViewById(R.id.btnQuickAddSlot);
+            btnShareTimelineSlot = itemView.findViewById(R.id.btnShareTimelineSlot);
         }
     }
 }

@@ -1,7 +1,7 @@
 {
-  "latest_version_code": 3,
-  "latest_version_name": "1.1.1",
+  "latest_version_code": 4,
+  "latest_version_name": "1.1.2",
   "apk_url": "https://github.com/khongtenpro1111-cpu/LectuPlan/releases/latest",
-  "release_notes": "• Tự động căn chỉnh giao diện co giãn thông minh (Responsive Design) tương thích 100% mọi màn hình điện thoại.\n• Đổi tên Tab 1 thành 'Trang chủ' với biểu tượng Ngôi nhà hiện đại.\n• Tích hợp Cảnh báo Xung đột Trùng giờ trực tiếp khi bấm Lưu lịch.\n• Tối ưu hóa bộ 4 thẻ KPI thống kê cân đối & làm sạch tên đơn vị trường.",
+  "release_notes": "• ✨ Chỉnh sửa thông tin & thời gian linh hoạt trước khi tạo thiệp Lịch tiếp SV (Office Hours).\n• 📢 Bổ sung nút 'Báo SV' ở tất cả các vị trí thời gian trống trên toàn bộ ứng dụng.\n• 🛡️ Cơ chế co dãn chữ & cắt chữ tự động chống tràn thiệp ảnh chia sẻ.\n• 🚀 Nâng cao trải nghiệm người dùng & hiệu năng ứng dụng.",
   "force_update": false
 }

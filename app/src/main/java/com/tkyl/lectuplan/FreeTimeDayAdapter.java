@@ -13,6 +13,7 @@ public class FreeTimeDayAdapter extends RecyclerView.Adapter<FreeTimeDayAdapter.
 
     public interface OnFreeDayClickListener {
         void onDayClick(FreeTimeDayModel item);
+        default void onShareDayClick(FreeTimeDayModel item) {}
     }
 
     private List<FreeTimeDayModel> dayList;
@@ -73,6 +74,12 @@ public class FreeTimeDayAdapter extends RecyclerView.Adapter<FreeTimeDayAdapter.
             holder.tvAfternoonDetail.setText(afternoon != null && !afternoon.isEmpty() ? afternoon : "🟢 Trống cả buổi chiều (13:00 - 17:00)");
         }
 
+        if (holder.btnShareFreeDay != null) {
+            holder.btnShareFreeDay.setOnClickListener(v -> {
+                if (listener != null) listener.onShareDayClick(item);
+            });
+        }
+
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onDayClick(item);
         });
@@ -84,7 +91,7 @@ public class FreeTimeDayAdapter extends RecyclerView.Adapter<FreeTimeDayAdapter.
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitle, tvBadge, tvMorningDetail, tvAfternoonDetail;
+        TextView tvTitle, tvBadge, tvMorningDetail, tvAfternoonDetail, btnShareFreeDay;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -92,6 +99,7 @@ public class FreeTimeDayAdapter extends RecyclerView.Adapter<FreeTimeDayAdapter.
             tvBadge = itemView.findViewById(R.id.tvFreeStatusBadge);
             tvMorningDetail = itemView.findViewById(R.id.tvMorningDetail);
             tvAfternoonDetail = itemView.findViewById(R.id.tvAfternoonDetail);
+            btnShareFreeDay = itemView.findViewById(R.id.btnShareFreeDay);
         }
     }
 }
