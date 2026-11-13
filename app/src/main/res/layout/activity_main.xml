@@ -2373,7 +2373,7 @@
         android:layout_height="wrap_content"
         android:layout_above="@id/fabAddEvent"
         android:layout_alignParentEnd="true"
-        android:layout_marginEnd="24dp"
+        android:layout_marginEnd="28dp"
         android:layout_marginBottom="10dp"
         android:contentDescription="Lên đầu trang"
         android:src="@drawable/ic_arrow_upward"
