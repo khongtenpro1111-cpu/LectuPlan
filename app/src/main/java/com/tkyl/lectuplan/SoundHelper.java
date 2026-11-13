@@ -73,16 +73,20 @@ public class SoundHelper {
     public static synchronized void playFeedback(Context context, View view) {
         if (context == null) return;
 
+        if (view != null) {
+            view.setSoundEffectsEnabled(false);
+        }
+
+        if (!isSoundEnabled(context)) return;
+
         long now = System.currentTimeMillis();
         if (now - lastFeedbackTime < 100) return;
         lastFeedbackTime = now;
 
-        if (isSoundEnabled(context)) {
-            playSound(context, view);
-        }
+        playSound(context, view, true);
 
         if (isHapticEnabled(context)) {
-            playHaptic(context, view);
+            playHaptic(context, view, true);
         }
     }
 
@@ -90,7 +94,16 @@ public class SoundHelper {
      * Phát hiệu ứng âm thanh nút bấm dứt khoát trên kênh STREAM_MUSIC / PCM AudioTrack.
      */
     public static void playSound(Context context, View view) {
+        playSound(context, view, false);
+    }
+
+    public static void playSound(Context context, View view, boolean force) {
         if (context == null) return;
+        if (view != null) {
+            view.setSoundEffectsEnabled(false);
+        }
+        if (!force && !isSoundEnabled(context)) return;
+
         int style = getSoundStyle(context);
         try {
             switch (style) {
@@ -174,9 +187,15 @@ public class SoundHelper {
     /**
      * Phát hiệu ứng rung phản hồi xúc giác (Haptic Feedback) dứt khoát qua Vibrator.
      */
-    @SuppressLint("MissingPermission")
     public static void playHaptic(Context context, View view) {
+        playHaptic(context, view, false);
+    }
+
+    @SuppressLint("MissingPermission")
+    public static void playHaptic(Context context, View view, boolean force) {
         if (context == null) return;
+        if (!force && (!isSoundEnabled(context) || !isHapticEnabled(context))) return;
+
         try {
             Vibrator v = getVibrator(context);
             if (v != null && v.hasVibrator()) {

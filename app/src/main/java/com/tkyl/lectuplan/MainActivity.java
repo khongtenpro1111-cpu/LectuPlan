@@ -314,6 +314,7 @@ public class MainActivity extends AppCompatActivity {
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             View target = findInteractiveTarget(getWindow().getDecorView(), (int) ev.getRawX(), (int) ev.getRawY());
             if (target != null) {
+                target.setSoundEffectsEnabled(false);
                 SoundHelper.playFeedback(this, target);
             }
         }
@@ -322,6 +323,8 @@ public class MainActivity extends AppCompatActivity {
 
     private View findInteractiveTarget(View view, int rawX, int rawY) {
         if (view == null || view.getVisibility() != View.VISIBLE) return null;
+
+        view.setSoundEffectsEnabled(false);
 
         int[] location = new int[2];
         view.getLocationOnScreen(location);
