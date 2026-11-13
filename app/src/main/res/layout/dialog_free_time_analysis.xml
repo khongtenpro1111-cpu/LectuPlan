@@ -16,35 +16,22 @@
         android:orientation="vertical"
         android:padding="20dp">
 
+        <!-- Header: Tiêu đề & Nút đóng -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="12dp">
+            android:layout_marginBottom="8dp">
 
-            <LinearLayout
+            <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="💡 KHOẢNG THỜI GIAN TRỐNG (7 ngày tới)"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/accent_amber" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="Khung giờ chuẩn: Sáng (06:45-11:35) • Chiều (12:30-16:35)"
-                    android:textSize="11sp"
-                    android:textColor="@color/text_secondary" />
-            </LinearLayout>
+                android:text="💡 KHOẢNG THỜI GIAN TRỐNG (7 ngày tới)"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@color/accent_amber" />
 
             <ImageButton
                 android:id="@+id/btnCloseFreeTimeDialog"
@@ -54,6 +41,52 @@
                 android:contentDescription="Đóng"
                 android:src="@android:drawable/ic_menu_close_clear_cancel"
                 app:tint="@color/nav_item_unselected_tint" />
+        </LinearLayout>
+
+        <!-- Subheader: Thông tin & Nút cuộn -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Khung giờ chuẩn: Sáng (06:45-11:35) • Chiều (12:30-16:35)"
+                android:textSize="11sp"
+                android:textColor="@color/text_secondary" />
+
+            <TextView
+                android:id="@+id/btnFreeTimeScrollTop"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:background="@drawable/bg_search_input"
+                android:gravity="center"
+                android:paddingHorizontal="8dp"
+                android:text="⬆️ Đầu"
+                android:textColor="@color/accent_blue"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginEnd="4dp" />
+
+            <TextView
+                android:id="@+id/btnFreeTimeScrollBottom"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:background="@drawable/bg_search_input"
+                android:gravity="center"
+                android:paddingHorizontal="8dp"
+                android:text="⬇️ Cuối"
+                android:textColor="@color/accent_blue"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true" />
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView

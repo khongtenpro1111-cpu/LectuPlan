@@ -124,9 +124,10 @@ public class ThumoiGiangParser {
         // 3. Trích xuất danh bạ Thư ký & Hotline khoa
         result.contacts = extractDepartmentContacts(fullText);
 
-        // 4. Trích xuất ngày nghỉ lễ động từ văn bản
+        // 4. Trích xuất ngày nghỉ lễ động & bảng quy đổi giờ học từ văn bản
         Set<String> holidaySet = extractHolidayDates(fullText);
         result.holidayDates.addAll(holidaySet);
+        Map<Integer, int[]> customPeriodMap = parseCustomPeriodMap(fullText);
 
         // 5. Bóc tách các hàng bảng môn học (Hỗ trợ đa dòng và OCR lệch ô)
         result.items = extractTeachingItems(fullText, result.school);
@@ -165,7 +166,7 @@ public class ThumoiGiangParser {
             }
             itemsPerDayOfWeek.get(dow).add(item);
 
-            TimeNormalizer.NormalizedRange timeRange = TimeNormalizer.fromPeriodRange(item.school, item.startPeriod, item.periodCount);
+            TimeNormalizer.NormalizedRange timeRange = TimeNormalizer.fromPeriodRange(item.school, item.startPeriod, item.periodCount, customPeriodMap);
 
             try {
                 Date dStart = sdfVn.parse(item.startDateStr);
@@ -505,6 +506,35 @@ public class ThumoiGiangParser {
     }
 
     /**
+     * Bóc tách bảng quy đổi Tiết học ➔ Giờ học trực tiếp từ văn bản (nếu tài liệu có in bảng giờ học ở chân trang)
+     */
+    public static Map<Integer, int[]> parseCustomPeriodMap(String fullText) {
+        Map<Integer, int[]> map = new HashMap<>();
+        if (fullText == null || fullText.isEmpty()) return map;
+
+        Pattern p = Pattern.compile("(?i)(?:tiết\\s*)?(\\d{1,2})\\s*[:=.]?\\s*(\\d{1,2})[h:g](\\d{0,2})\\s*[-–đếnto]+\\s*(\\d{1,2})[h:g](\\d{0,2})");
+        Matcher m = p.matcher(fullText);
+        while (m.find() && m.group(1) != null && m.group(2) != null && m.group(4) != null) {
+            try {
+                int period = Integer.parseInt(m.group(1));
+                int h1 = Integer.parseInt(m.group(2));
+                String g3 = m.group(3);
+                int m1 = (g3 != null && !g3.isEmpty()) ? Integer.parseInt(g3) : 0;
+                int h2 = Integer.parseInt(m.group(4));
+                String g5 = m.group(5);
+                int m2 = (g5 != null && !g5.isEmpty()) ? Integer.parseInt(g5) : 0;
+
+                int startMin = h1 * 60 + m1;
+                int endMin = h2 * 60 + m2;
+                if (period >= 1 && period <= 20 && endMin > startMin) {
+                    map.put(period, new int[]{startMin, endMin});
+                }
+            } catch (Exception ignored) {}
+        }
+        return map;
+    }
+
+    /**
      * Quét và trích xuất danh sách ngày nghỉ lễ động từ văn bản
      */
     public static Set<String> extractHolidayDates(String fullText) {
@@ -627,28 +657,34 @@ public class ThumoiGiangParser {
         // CHIẾN LƯỢC 4: Duyệt từng dòng đơn lẻ (Line by line fallback cho file Excel / Text có sẵn trên 1 dòng)
         if (items.isEmpty()) {
             String[] lines = normalizedText.split("\\r?\\n");
-            Pattern linePattern = Pattern.compile("(?i)([A-Z0-9._-]{3,12}).*?([a-zA-ZÀ-ỹ\\s]{4,35}).*?(?:thứ\\s*([2-7]|cn)|\\b([2-7])\\b).*?(\\d{1,2})\\s+(\\d{1,2}).*?([ERUABC0-9/._-]+).*?(\\d{1,2}/\\d{1,2}/\\d{4})\\s*[-–đếnto,/]+\\s*(\\d{1,2}/\\d{1,2}/\\d{4})");
+            Pattern altPattern = Pattern.compile("(?i)(?:(\\d{1,2})\\s+)?(?:(\\d{1,2})\\s+)?(?:(\\d{1,2})\\s+)?([A-Z0-9._-]{3,12})\\s+(.+?)\\s+(?:thứ\\s*)?([2-7]|CN)\\s+(\\d{1,2})\\s+(\\d{1,2})\\s+([A-Z0-9/._-]+)\\s+(.*?)\\s*(\\d{1,2}/\\d{1,2}/\\d{4})\\s*[-–đếnto,/\\s]+\\s*(\\d{1,2}/\\d{1,2}/\\d{4})");
             int autoStt = 1;
             for (String line : lines) {
                 String clean = line.replaceAll("[|]+", " ").replaceAll("\\s+", " ").trim();
                 if (UniversalScheduleParser.isNoiseLine(clean) || UniversalScheduleParser.isInstitutionalBoilerplate(clean)) {
                     continue;
                 }
-                Matcher ml = linePattern.matcher(clean);
+                Matcher ml = altPattern.matcher(clean);
                 if (ml.find()) {
                     ParsedTeachingItem item = new ParsedTeachingItem();
                     item.school = school;
-                    item.stt = autoStt++;
-                    item.subjectCode = ml.group(1).trim();
-                    item.subjectName = healVietnameseText(ml.group(2).trim());
-                    String dowStr = ml.group(3) != null ? ml.group(3).trim() : ml.group(4).trim();
+                    try { if (ml.group(1) != null) item.stt = Integer.parseInt(ml.group(1).trim()); } catch (Exception ignored) { item.stt = autoStt++; }
+                    if (ml.group(2) != null) item.group = ml.group(2).trim();
+                    if (ml.group(3) != null) item.subGroup = ml.group(3).trim();
+                    item.subjectCode = ml.group(4).trim();
+                    item.subjectName = healVietnameseText(ml.group(5).replaceAll("\\d+", "").replaceAll("\\s+", " ").trim());
+                    String dowStr = ml.group(6).trim();
                     item.dayOfWeekVn = dowStr.equalsIgnoreCase("CN") ? 8 : Integer.parseInt(dowStr);
-                    item.startPeriod = Integer.parseInt(ml.group(5).trim());
-                    item.periodCount = Integer.parseInt(ml.group(6).trim());
-                    item.room = ml.group(7).trim();
-                    item.className = "Lớp phân công";
-                    item.startDateStr = ml.group(8).trim();
-                    item.endDateStr = ml.group(9).trim();
+                    item.startPeriod = Integer.parseInt(ml.group(7).trim());
+                    item.periodCount = Integer.parseInt(ml.group(8).trim());
+                    item.room = ml.group(9).trim();
+                    if (ml.group(10) != null && !ml.group(10).trim().isEmpty()) {
+                        item.className = ml.group(10).trim();
+                    } else {
+                        item.className = "Lớp phân công";
+                    }
+                    item.startDateStr = ml.group(11).trim();
+                    item.endDateStr = ml.group(12).trim();
                     items.add(item);
                 }
             }

@@ -154,16 +154,53 @@
             </LinearLayout>
         </HorizontalScrollView>
 
-        <!-- Thống kê kết quả -->
-        <TextView
-            android:id="@+id/tvFinderResultCount"
+        <!-- Thống kê kết quả & Nút cuộn -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="💡 Đang quét lịch trong 7 ngày tới..."
-            android:textColor="@color/accent_green"
-            android:textStyle="bold"
-            android:textSize="12sp"
-            android:layout_marginBottom="8dp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/tvFinderResultCount"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="💡 Đang quét lịch trong 7 ngày tới..."
+                android:textColor="@color/accent_green"
+                android:textStyle="bold"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/btnSlotFinderScrollTop"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:background="@drawable/bg_search_input"
+                android:gravity="center"
+                android:paddingHorizontal="8dp"
+                android:text="⬆️ Đầu"
+                android:textColor="@color/accent_blue"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginEnd="4dp" />
+
+            <TextView
+                android:id="@+id/btnSlotFinderScrollBottom"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:background="@drawable/bg_search_input"
+                android:gravity="center"
+                android:paddingHorizontal="8dp"
+                android:text="⬇️ Cuối"
+                android:textColor="@color/accent_blue"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
 
         <!-- Danh sách khe rảnh tìm thấy -->
         <androidx.recyclerview.widget.RecyclerView

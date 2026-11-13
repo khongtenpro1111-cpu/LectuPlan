@@ -2,11 +2,13 @@
 <TextView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="48dp"
-    android:textSize="13.5sp"
+    android:layout_height="38dp"
+    android:textSize="12.5sp"
     android:fontFamily="sans-serif-medium"
     android:textColor="@color/text_primary"
-    android:background="@color/surface_card"
+    android:background="@drawable/bg_spinner_item_selector"
     android:gravity="center_vertical"
-    android:paddingHorizontal="16dp" />
+    android:paddingHorizontal="14dp"
+    android:singleLine="true"
+    android:ellipsize="end" />
 

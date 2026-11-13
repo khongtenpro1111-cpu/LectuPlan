@@ -116,13 +116,13 @@
                             android:id="@+id/tvConflictBadge"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:background="@drawable/bg_chip_unselected"
-                            android:backgroundTint="#FEE2E2"
-                            android:paddingHorizontal="6dp"
+                            android:background="@drawable/bg_chip_selected"
+                            android:backgroundTint="#EF4444"
+                            android:paddingHorizontal="8dp"
                             android:paddingVertical="3dp"
                             android:layout_marginEnd="6dp"
-                            android:text="⚠️ Trùng giờ"
-                            android:textColor="#DC2626"
+                            android:text="⚠️ TRÙNG LỊCH"
+                            android:textColor="#FFFFFF"
                             android:textSize="11sp"
                             android:textStyle="bold"
                             android:visibility="gone" />
@@ -346,34 +346,38 @@
                             android:textStyle="bold" />
                     </LinearLayout>
 
-                    <!-- Dòng cảnh báo trùng lịch trực tiếp -->
+                    <!-- Khung cảnh báo trùng lịch trực quan với chi tiết khoảng thời gian trùng -->
                     <LinearLayout
                         android:id="@+id/layoutConflictDetails"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="top"
-                        android:layout_marginTop="4dp"
-                        android:layout_marginBottom="2dp"
+                        android:orientation="vertical"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="4dp"
+                        android:background="@drawable/bg_search_input"
+                        android:backgroundTint="#FEF2F2"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="8dp"
                         android:visibility="gone">
 
                         <TextView
-                            android:layout_width="85dp"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Cảnh báo:"
-                            android:textColor="#EF4444"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
+                            android:text="🚨 CẢNH BÁO TRÙNG THỜI GIAN:"
+                            android:textColor="#DC2626"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="4dp" />
 
                         <TextView
                             android:id="@+id/tvConflictDetails"
-                            android:layout_width="0dp"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Đang trùng với..."
-                            android:textColor="#DC2626"
-                            android:textSize="13sp"
-                            android:textStyle="italic" />
+                            android:text="• Trùng từ 07:30 - 11:35..."
+                            android:textColor="#991B1B"
+                            android:textSize="12.5sp"
+                            android:lineSpacingExtra="3dp"
+                            android:textStyle="bold" />
                     </LinearLayout>
 
                     <!-- Dòng ẩn tương thích: layoutDateRow, tvDate, tvStt -->

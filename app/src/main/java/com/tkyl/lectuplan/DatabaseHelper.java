@@ -183,23 +183,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public void sanitizeEventTitles(SQLiteDatabase db) {
-        if (db == null) return;
-        try {
-            Cursor cursor = db.rawQuery("SELECT id, title FROM " + TABLE_EVENTS + " WHERE title LIKE '%(Phòng:%' OR title LIKE '%(Thời gian:%' OR title LIKE '%- Phòng%' OR title LIKE '%| Tiết%'", null);
-            if (cursor != null) {
-                while (cursor.moveToNext()) {
-                    int id = cursor.getInt(0);
-                    String title = cursor.getString(1);
-                    String cleanTitle = EventModel.cleanDisplayTitle(title);
-                    if (!cleanTitle.equals(title)) {
-                        ContentValues cv = new ContentValues();
-                        cv.put("title", cleanTitle);
-                        db.update(TABLE_EVENTS, cv, "id = ?", new String[]{String.valueOf(id)});
-                    }
-                }
-                cursor.close();
-            }
-        } catch (Exception ignored) {}
+        // Giữ nguyên tiêu đề gốc chứa đầy đủ Tiết & Khung giờ [HH:mm - HH:mm] trong SQLite Database
+        // để EventModel & TimeNormalizer luôn trích xuất chính xác 100% thời gian khi tải ứng dụng.
     }
 
     public void cleanUpGarbageCvEntries() {
@@ -1153,7 +1138,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
 
         if (list.isEmpty()) {
-            insertNotification("🎉 Chào mừng đến với LectuPlan v1.1.2", "Hệ thống trợ lý lịch biểu đã được cập nhật phiên bản v1.1.2 hỗ trợ báo SV và tùy chỉnh thiệp linh hoạt!", "SYSTEM");
+            insertNotification("🎉 Chào mừng đến với LectuPlan v1.1.3", "Hệ thống trợ lý lịch biểu đã được cập nhật phiên bản v1.1.3 hỗ trợ đa trường học, phân tích khung giờ trống & tìm slot thông minh!", "SYSTEM");
             insertNotification("🤖 Trợ lý Tự động DND & GPS", "Tính năng tự động tắt chuông và check-in GPS khi đứng lớp đã sẵn sàng.", "DND");
             return getAllNotifications();
         }

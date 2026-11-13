@@ -555,6 +555,18 @@ public class UniversalScheduleParser {
             } catch (Exception ignored) {}
         }
 
+        // Dạng 4: Hàng bảng số không chứa từ "Tiết": (Thứ) (Tiết BĐ) (Số tiết) (Phòng)
+        Matcher mBare = Pattern.compile("(?i)(?:thứ\\s*[2-7]|cn|\\b[2-7]\\b)\\s+(\\d{1,2})\\s+(\\d{1,2})\\b").matcher(text);
+        if (mBare.find() && mBare.group(1) != null && mBare.group(2) != null) {
+            try {
+                int pStart = Integer.parseInt(mBare.group(1));
+                int count = Integer.parseInt(mBare.group(2));
+                if (pStart >= 1 && pStart <= 16 && count >= 1 && count <= 10) {
+                    return new PeriodRange(pStart, pStart + count - 1);
+                }
+            } catch (Exception ignored) {}
+        }
+
         return null;
     }
 

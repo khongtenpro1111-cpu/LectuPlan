@@ -656,6 +656,44 @@ public class MainActivity extends AppCompatActivity {
 
         TextView btnEnableMultiSelect = findViewById(R.id.btnEnableMultiSelect);
         TextView btnTab2EnableMultiSelect = findViewById(R.id.btnTab2EnableMultiSelect);
+
+        TextView btnScrollTop = findViewById(R.id.btnScrollTop);
+        TextView btnScrollBottom = findViewById(R.id.btnScrollBottom);
+        if (btnScrollTop != null) {
+            btnScrollTop.setOnClickListener(v -> {
+                if (rvEvents != null && rvEvents.getAdapter() != null && rvEvents.getAdapter().getItemCount() > 0) {
+                    rvEvents.smoothScrollToPosition(0);
+                }
+            });
+        }
+        if (btnScrollBottom != null) {
+            btnScrollBottom.setOnClickListener(v -> {
+                if (rvEvents != null && rvEvents.getAdapter() != null && rvEvents.getAdapter().getItemCount() > 0) {
+                    rvEvents.smoothScrollToPosition(rvEvents.getAdapter().getItemCount() - 1);
+                }
+            });
+        }
+
+        TextView btnTab2ScrollTop = findViewById(R.id.btnTab2ScrollTop);
+        TextView btnTab2ScrollBottom = findViewById(R.id.btnTab2ScrollBottom);
+        if (btnTab2ScrollTop != null) {
+            btnTab2ScrollTop.setOnClickListener(v -> {
+                NestedScrollView svAlarm = findViewById(R.id.layoutAlarmTab);
+                if (svAlarm != null) svAlarm.smoothScrollTo(0, 0);
+                if (rvTab2Events != null && rvTab2Events.getAdapter() != null && rvTab2Events.getAdapter().getItemCount() > 0) {
+                    rvTab2Events.smoothScrollToPosition(0);
+                }
+            });
+        }
+        if (btnTab2ScrollBottom != null) {
+            btnTab2ScrollBottom.setOnClickListener(v -> {
+                NestedScrollView svAlarm = findViewById(R.id.layoutAlarmTab);
+                if (svAlarm != null) svAlarm.fullScroll(View.FOCUS_DOWN);
+                if (rvTab2Events != null && rvTab2Events.getAdapter() != null && rvTab2Events.getAdapter().getItemCount() > 0) {
+                    rvTab2Events.smoothScrollToPosition(rvTab2Events.getAdapter().getItemCount() - 1);
+                }
+            });
+        }
         MaterialCardView layoutMultiSelectBar = findViewById(R.id.layoutMultiSelectBar);
         TextView tvSelectedCount = findViewById(R.id.tvSelectedCount);
         Button btnSelectAll = findViewById(R.id.btnSelectAll);
@@ -715,6 +753,8 @@ public class MainActivity extends AppCompatActivity {
                 if (currentActiveTabIndex == 0) {
                     if (rvEvents != null) rvEvents.smoothScrollToPosition(0);
                 } else if (currentActiveTabIndex == 1) {
+                    NestedScrollView svAlarm = findViewById(R.id.layoutAlarmTab);
+                    if (svAlarm != null) svAlarm.smoothScrollTo(0, 0);
                     if (rvTab2Events != null) rvTab2Events.smoothScrollToPosition(0);
                 } else if (currentActiveTabIndex == 2) {
                     NestedScrollView sv = findViewById(R.id.layoutChartTab);
@@ -778,7 +818,7 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-        // Lắng nghe sự kiện cuộn cho các tab lướt dọc (Biểu đồ, Báo cáo, Cài đặt)
+        // Lắng nghe sự kiện cuộn cho các tab lướt dọc (Lịch biểu, Biểu đồ, Báo cáo, Cài đặt)
         NestedScrollView.OnScrollChangeListener nestedScrollListener = (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
             if (scrollY > 250) {
                 if (fabScrollToTop != null && fabScrollToTop.getVisibility() != View.VISIBLE) {
@@ -790,6 +830,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
+        NestedScrollView svAlarm = findViewById(R.id.layoutAlarmTab);
+        if (svAlarm != null) svAlarm.setOnScrollChangeListener(nestedScrollListener);
         NestedScrollView svChart = findViewById(R.id.layoutChartTab);
         if (svChart != null) svChart.setOnScrollChangeListener(nestedScrollListener);
         NestedScrollView svReport = findViewById(R.id.layoutReportTab);
@@ -1744,6 +1786,22 @@ public class MainActivity extends AppCompatActivity {
         Button btnTimelineToday = view.findViewById(R.id.btnTimelineToday);
         Button btnTimelineNextDay = view.findViewById(R.id.btnTimelineNextDay);
         RecyclerView rvTimelineStream = view.findViewById(R.id.rvTimelineStream);
+        TextView btnTimelineScrollTop = view.findViewById(R.id.btnTimelineScrollTop);
+        TextView btnTimelineScrollBottom = view.findViewById(R.id.btnTimelineScrollBottom);
+        if (btnTimelineScrollTop != null) {
+            btnTimelineScrollTop.setOnClickListener(v -> {
+                if (rvTimelineStream != null && rvTimelineStream.getAdapter() != null && rvTimelineStream.getAdapter().getItemCount() > 0) {
+                    rvTimelineStream.smoothScrollToPosition(0);
+                }
+            });
+        }
+        if (btnTimelineScrollBottom != null) {
+            btnTimelineScrollBottom.setOnClickListener(v -> {
+                if (rvTimelineStream != null && rvTimelineStream.getAdapter() != null && rvTimelineStream.getAdapter().getItemCount() > 0) {
+                    rvTimelineStream.smoothScrollToPosition(rvTimelineStream.getAdapter().getItemCount() - 1);
+                }
+            });
+        }
         Button btnOpenSmartFinderFromTimeline = view.findViewById(R.id.btnOpenSmartFinderFromTimeline);
         Button btnAddNewEventFromTimeline = view.findViewById(R.id.btnAddNewEventFromTimeline);
 
@@ -1844,6 +1902,22 @@ public class MainActivity extends AppCompatActivity {
         playSuccessSound();
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_free_time_analysis, null);
         RecyclerView rvFreeTimeDays = view.findViewById(R.id.rvFreeTimeDays);
+        TextView btnFreeTimeScrollTop = view.findViewById(R.id.btnFreeTimeScrollTop);
+        TextView btnFreeTimeScrollBottom = view.findViewById(R.id.btnFreeTimeScrollBottom);
+        if (btnFreeTimeScrollTop != null) {
+            btnFreeTimeScrollTop.setOnClickListener(v -> {
+                if (rvFreeTimeDays != null && rvFreeTimeDays.getAdapter() != null && rvFreeTimeDays.getAdapter().getItemCount() > 0) {
+                    rvFreeTimeDays.smoothScrollToPosition(0);
+                }
+            });
+        }
+        if (btnFreeTimeScrollBottom != null) {
+            btnFreeTimeScrollBottom.setOnClickListener(v -> {
+                if (rvFreeTimeDays != null && rvFreeTimeDays.getAdapter() != null && rvFreeTimeDays.getAdapter().getItemCount() > 0) {
+                    rvFreeTimeDays.smoothScrollToPosition(rvFreeTimeDays.getAdapter().getItemCount() - 1);
+                }
+            });
+        }
         ImageButton btnCloseDialog = view.findViewById(R.id.btnCloseFreeTimeDialog);
         Button btnClose = view.findViewById(R.id.btnCloseFreeTime);
         Button btnOpenTimelineFromFree = view.findViewById(R.id.btnOpenTimelineFromFree);
@@ -1925,6 +1999,22 @@ public class MainActivity extends AppCompatActivity {
         TextView chipFind180 = view.findViewById(R.id.chipFind180);
         TextView tvFinderResultCount = view.findViewById(R.id.tvFinderResultCount);
         RecyclerView rvFoundSlots = view.findViewById(R.id.rvFoundSlots);
+        TextView btnSlotFinderScrollTop = view.findViewById(R.id.btnSlotFinderScrollTop);
+        TextView btnSlotFinderScrollBottom = view.findViewById(R.id.btnSlotFinderScrollBottom);
+        if (btnSlotFinderScrollTop != null) {
+            btnSlotFinderScrollTop.setOnClickListener(v -> {
+                if (rvFoundSlots != null && rvFoundSlots.getAdapter() != null && rvFoundSlots.getAdapter().getItemCount() > 0) {
+                    rvFoundSlots.smoothScrollToPosition(0);
+                }
+            });
+        }
+        if (btnSlotFinderScrollBottom != null) {
+            btnSlotFinderScrollBottom.setOnClickListener(v -> {
+                if (rvFoundSlots != null && rvFoundSlots.getAdapter() != null && rvFoundSlots.getAdapter().getItemCount() > 0) {
+                    rvFoundSlots.smoothScrollToPosition(rvFoundSlots.getAdapter().getItemCount() - 1);
+                }
+            });
+        }
         ImageButton btnCloseSlotFinder = view.findViewById(R.id.btnCloseSlotFinder);
         Button btnCloseFinderDialog = view.findViewById(R.id.btnCloseFinderDialog);
 
@@ -2322,6 +2412,15 @@ public class MainActivity extends AppCompatActivity {
         Button btnOpenExternalReport = view.findViewById(R.id.btnOpenExternalReport);
         ImageButton btnCloseTop = view.findViewById(R.id.btnCloseAnalysisTop);
         Button btnCloseBottom = view.findViewById(R.id.btnCloseAnalysisBottom);
+        androidx.core.widget.NestedScrollView nsvFileReport = view.findViewById(R.id.nsvFileReport);
+        TextView btnFileReportScrollTop = view.findViewById(R.id.btnFileReportScrollTop);
+        TextView btnFileReportScrollBottom = view.findViewById(R.id.btnFileReportScrollBottom);
+        if (btnFileReportScrollTop != null && nsvFileReport != null) {
+            btnFileReportScrollTop.setOnClickListener(v -> nsvFileReport.fullScroll(View.FOCUS_UP));
+        }
+        if (btnFileReportScrollBottom != null && nsvFileReport != null) {
+            btnFileReportScrollBottom.setOnClickListener(v -> nsvFileReport.fullScroll(View.FOCUS_DOWN));
+        }
 
         if (tvTitle != null) {
             tvTitle.setText("🔍 XEM NỘI DUNG & PHÂN TÍCH FILE");
@@ -2417,6 +2516,22 @@ public class MainActivity extends AppCompatActivity {
         Button btnBatchDelete = view.findViewById(R.id.btnNotifBatchDelete);
         Button btnCancelMultiSelect = view.findViewById(R.id.btnNotifCancelMultiSelect);
         RecyclerView rv = view.findViewById(R.id.rvNotifications);
+        TextView btnNotifScrollTop = view.findViewById(R.id.btnNotifScrollTop);
+        TextView btnNotifScrollBottom = view.findViewById(R.id.btnNotifScrollBottom);
+        if (btnNotifScrollTop != null) {
+            btnNotifScrollTop.setOnClickListener(v -> {
+                if (rv != null && rv.getAdapter() != null && rv.getAdapter().getItemCount() > 0) {
+                    rv.smoothScrollToPosition(0);
+                }
+            });
+        }
+        if (btnNotifScrollBottom != null) {
+            btnNotifScrollBottom.setOnClickListener(v -> {
+                if (rv != null && rv.getAdapter() != null && rv.getAdapter().getItemCount() > 0) {
+                    rv.smoothScrollToPosition(rv.getAdapter().getItemCount() - 1);
+                }
+            });
+        }
         TextView tvEmpty = view.findViewById(R.id.tvNotifEmpty);
         Button btnClearAll = view.findViewById(R.id.btnClearAllNotifs);
 
@@ -3006,16 +3121,16 @@ public class MainActivity extends AppCompatActivity {
         int teachingScore = 0;
         if (lower.contains("thư mời giảng") || lower.contains("thoi khoa bieu") || lower.contains("thời khóa biểu")
                 || lower.contains("lịch giảng dạy") || lower.contains("kế hoạch giảng dạy")
-                || lower.contains("lịch học") || lower.contains("lịch dạy")) {
+                || lower.contains("lịch học") || lower.contains("lịch dạy")
+                || lower.contains("ngày học") || lower.contains("lớp học") || lower.contains("môn học")
+                || lower.contains("thời gian học") || lower.contains("mã mh") || lower.contains("mã môn")) {
             teachingScore += 5;
         }
-        if (lower.contains("tiết bđ") || lower.contains("tiết bắt đầu") || lower.contains("số tiết")) teachingScore += 3;
-        if (lower.contains("tổ th") || lower.contains("nhóm/tổ") || lower.contains("nhóm lớp")) teachingScore += 3;
-        if (lower.contains("mã mh") || lower.contains("mã môn") || lower.contains("mã học phần")) teachingScore += 3;
-        if (lower.contains("sĩ số") || lower.contains("tín chỉ") || lower.contains("đợt học")) teachingScore += 2;
-        if (lower.matches("(?s).*\\btiết\\s*[:=\\s-]*\\d+\\s*[-–đếnto]+\\s*\\d+\\b.*")) teachingScore += 4;
-        if (lower.contains("giảng viên:") || lower.contains("giảng viên :") || lower.contains("gv:")) teachingScore += 3;
-        if (lower.matches("(?s).*\\bphòng\\s*[:=]?\\s*[a-z0-9_./-]+.*") && (lower.contains("tiết") || lower.contains("lịch"))) teachingScore += 3;
+        if (lower.contains("tiết bđ") || lower.contains("tiết bắt đầu") || lower.contains("số tiết") || lower.contains("tiết")) teachingScore += 3;
+        if (lower.contains("tổ th") || lower.contains("nhóm/tổ") || lower.contains("nhóm lớp") || lower.contains("nhóm")) teachingScore += 2;
+        if (lower.contains("mã mh") || lower.contains("mã môn") || lower.contains("mã học phần") || lower.contains("mã hp")) teachingScore += 3;
+        if (lower.contains("sĩ số") || lower.contains("tín chỉ") || lower.contains("đợt học") || lower.contains("phòng")) teachingScore += 2;
+        if (lower.matches("(?s).*\\d{1,2}/\\d{1,2}/\\d{4}\\s*[-–đếnto]+\\s*\\d{1,2}/\\d{1,2}/\\d{4}.*")) teachingScore += 3;
 
         int workScore = 0;
         if (lower.contains("lịch công tác") || lower.contains("kế hoạch công tác") || lower.contains("lịch làm việc")
@@ -3111,10 +3226,9 @@ public class MainActivity extends AppCompatActivity {
         List<String> extractedSummaries = new ArrayList<>();
 
         // 1. Thư mời giảng có cấu trúc thời khóa biểu đại học chuyên sâu (kỳ học nhiều tuần)
-        if (docType == DocumentType.TEACHING_SCHEDULE) {
-            try {
-                ThumoiGiangParser.ParseResult pResult = ThumoiGiangParser.parseInvitationDocument(fullText);
-                if (pResult != null && !pResult.generatedEvents.isEmpty()) {
+        try {
+            ThumoiGiangParser.ParseResult pResult = ThumoiGiangParser.parseInvitationDocument(fullText);
+            if (pResult != null && !pResult.generatedEvents.isEmpty()) {
                     android.database.sqlite.SQLiteDatabase writableDb = dbHelper.getWritableDatabase();
                     writableDb.beginTransaction();
                     try {
@@ -3143,8 +3257,7 @@ public class MainActivity extends AppCompatActivity {
                     showFileAnalysisReportDialog(fileName, activeFormatLabel, "Bóc tách Thư mời giảng (Tự động rải lịch từng tuần & kiểm tra ngày lễ)", isHandwritten, count, extractedSummaries);
                     return;
                 }
-            } catch (Exception ignored) {}
-        }
+        } catch (Exception ignored) {}
 
         // 2. Bóc tách thông minh đa năng (UniversalScheduleParser): Dành cho Ảnh chụp lịch học OCR (theo ngày/tuần), thẻ môn học điện tử
         try {
@@ -3953,6 +4066,22 @@ public class MainActivity extends AppCompatActivity {
     private void showManageImportedFilesDialog() {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_manage_imported_files, null);
         RecyclerView rvManage = view.findViewById(R.id.rvManageFilesList);
+        TextView btnManageFilesScrollTop = view.findViewById(R.id.btnManageFilesScrollTop);
+        TextView btnManageFilesScrollBottom = view.findViewById(R.id.btnManageFilesScrollBottom);
+        if (btnManageFilesScrollTop != null) {
+            btnManageFilesScrollTop.setOnClickListener(v -> {
+                if (rvManage != null && rvManage.getAdapter() != null && rvManage.getAdapter().getItemCount() > 0) {
+                    rvManage.smoothScrollToPosition(0);
+                }
+            });
+        }
+        if (btnManageFilesScrollBottom != null) {
+            btnManageFilesScrollBottom.setOnClickListener(v -> {
+                if (rvManage != null && rvManage.getAdapter() != null && rvManage.getAdapter().getItemCount() > 0) {
+                    rvManage.smoothScrollToPosition(rvManage.getAdapter().getItemCount() - 1);
+                }
+            });
+        }
         TextView tvEmpty = view.findViewById(R.id.tvEmptyManageFiles);
         Button btnDeleteAll = view.findViewById(R.id.btnDeleteAllFilesAndEvents);
         ImageButton btnClose = view.findViewById(R.id.btnCloseManageFiles);
@@ -4164,6 +4293,8 @@ public class MainActivity extends AppCompatActivity {
         Button btnSaveDialog = view.findViewById(R.id.btnSaveDialog);
         Button btnCancelDialog = view.findViewById(R.id.btnCancelDialog);
 
+        setupSchoolChipListeners(view, edtOrganizer);
+
         if (tvDialogHeaderTitle != null) {
             tvDialogHeaderTitle.setText("➕ THÊM LỊCH CÔNG VIỆC MỚI");
         }
@@ -4188,6 +4319,9 @@ public class MainActivity extends AppCompatActivity {
                 "📝 Lịch khác (tự đặt tên)"
         };
 
+        CheckBox cbCalculateIncome = view.findViewById(R.id.cbCalculateIncome);
+        if (cbCalculateIncome != null) cbCalculateIncome.setChecked(true);
+
         if (spnCategory != null) {
             ArrayAdapter<String> catAdapter = new ArrayAdapter<>(this, R.layout.item_chart_spinner, categoryDisplayOptions);
             catAdapter.setDropDownViewResource(R.layout.item_chart_spinner_dropdown);
@@ -4196,6 +4330,9 @@ public class MainActivity extends AppCompatActivity {
             spnCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
+                    if (cbCalculateIncome != null) {
+                        cbCalculateIncome.setChecked(position == 0);
+                    }
                     if (position == 3) {
                         if (layoutCustomCategory != null) {
                             layoutCustomCategory.setVisibility(View.VISIBLE);
@@ -4282,14 +4419,14 @@ public class MainActivity extends AppCompatActivity {
                             "🔴 Vẫn lưu lịch",
                             Color.parseColor("#DC2626"),
                             () -> {
-                                saveEvent(nextStt, edtStt, title, room, startTime, endTime, date, org, spnCategory, edtCustomCategory);
+                                saveEvent(nextStt, edtStt, title, room, startTime, endTime, date, org, spnCategory, edtCustomCategory, cbCalculateIncome);
                                 dialog.dismiss();
                             }
                     );
                     return;
                 }
 
-                saveEvent(nextStt, edtStt, title, room, startTime, endTime, date, org, spnCategory, edtCustomCategory);
+                saveEvent(nextStt, edtStt, title, room, startTime, endTime, date, org, spnCategory, edtCustomCategory, cbCalculateIncome);
                 dialog.dismiss();
             });
         }
@@ -4297,7 +4434,7 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
     
-    private void saveEvent(int nextStt, EditText edtStt, String title, String room, String startTime, String endTime, String date, String org, Spinner spnCategory, EditText edtCustomCategory) {
+    private void saveEvent(int nextStt, EditText edtStt, String title, String room, String startTime, String endTime, String date, String org, Spinner spnCategory, EditText edtCustomCategory, CheckBox cbCalculateIncome) {
         int stt = nextStt;
         try { stt = Integer.parseInt(edtStt.getText().toString().trim()); } catch (Exception ignored) {}
         
@@ -4338,8 +4475,25 @@ public class MainActivity extends AppCompatActivity {
             category = customName.isEmpty() ? "Lịch khác" : customName;
         }
 
+        boolean calculateIncome = (cbCalculateIncome != null) ? cbCalculateIncome.isChecked() : (selectedPos == 0);
+        String finalOrg = org != null ? org.trim() : "";
+        if (!calculateIncome) {
+            if (!finalOrg.toLowerCase(Locale.getDefault()).contains("không tính thù lao") && !finalOrg.toLowerCase(Locale.getDefault()).contains("không thù lao")) {
+                finalOrg = finalOrg.isEmpty() ? "Không tính thù lao" : (finalOrg + " • (Không tính thù lao)");
+            }
+        } else {
+            if (selectedPos != 0) {
+                if (!finalOrg.toLowerCase(Locale.getDefault()).contains("có tính thù lao") && !finalOrg.toLowerCase(Locale.getDefault()).contains("có thù lao")) {
+                    finalOrg = finalOrg.isEmpty() ? "Có tính thù lao" : (finalOrg + " • (Có tính thù lao)");
+                }
+            } else {
+                finalOrg = finalOrg.replaceAll("(?i)\\s*•\\s*\\(không tính thù lao\\)", "")
+                                   .replaceAll("(?i)\\bkhông tính thù lao\\b", "").trim();
+            }
+        }
+
         String isoDate = dbHelper.parseToIsoDate(date);
-        dbHelper.insertEvent(stt, savedTitle.toString(), date, org.isEmpty() ? "Lịch nhập thủ công" : org, category);
+        dbHelper.insertEvent(stt, savedTitle.toString(), date, finalOrg.isEmpty() ? "Lịch nhập thủ công" : finalOrg, category);
 
         SimpleDateFormat sdfToday = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         String todayIso = sdfToday.format(Calendar.getInstance().getTime());
@@ -4367,6 +4521,61 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "Đã thêm lịch mới thành công!", Toast.LENGTH_SHORT).show();
     }
 
+    private void setupSchoolChipListeners(View dialogView, EditText edtOrganizer) {
+        if (dialogView == null || edtOrganizer == null) return;
+
+        View btnClearOrganizer = dialogView.findViewById(R.id.btnClearOrganizer);
+        View chipSchoolClear = dialogView.findViewById(R.id.chipSchoolClear);
+
+        if (btnClearOrganizer != null) {
+            btnClearOrganizer.setVisibility(edtOrganizer.getText().length() > 0 ? View.VISIBLE : View.GONE);
+            btnClearOrganizer.setOnClickListener(v -> edtOrganizer.setText(""));
+        }
+        if (chipSchoolClear != null) {
+            chipSchoolClear.setOnClickListener(v -> edtOrganizer.setText(""));
+        }
+
+        edtOrganizer.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (btnClearOrganizer != null) {
+                    btnClearOrganizer.setVisibility(s.length() > 0 ? View.VISIBLE : View.GONE);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        int[] chipIds = new int[]{
+                R.id.chipSchoolNttu, R.id.chipSchoolHutech, R.id.chipSchoolUef,
+                R.id.chipSchoolUeh, R.id.chipSchoolVlu, R.id.chipSchoolTdtu,
+                R.id.chipSchoolHcmut, R.id.chipSchoolHcmute, R.id.chipSchoolIuh,
+                R.id.chipSchoolSgu
+        };
+        String[] schoolCodes = new String[]{
+                "NTTU", "HUTECH", "UEF", "UEH", "VLU", "TDTU", "HCMUT", "HCMUTE", "IUH", "SGU"
+        };
+        for (int i = 0; i < chipIds.length; i++) {
+            TextView chip = dialogView.findViewById(chipIds[i]);
+            if (chip != null) {
+                final String code = schoolCodes[i];
+                chip.setOnClickListener(v -> {
+                    String current = edtOrganizer.getText().toString().trim();
+                    if (current.isEmpty()) {
+                        edtOrganizer.setText(code);
+                    } else if (!current.contains(code)) {
+                        edtOrganizer.setText(code + " - " + current);
+                    }
+                    edtOrganizer.setSelection(edtOrganizer.getText().length());
+                });
+            }
+        }
+    }
+
     private void showEditEventDialog(EventModel event) {
         if (event == null) return;
 
@@ -4384,6 +4593,13 @@ public class MainActivity extends AppCompatActivity {
         EditText edtOrganizer = view.findViewById(R.id.edtOrganizer);
         Button btnSaveDialog = view.findViewById(R.id.btnSaveDialog);
         Button btnCancelDialog = view.findViewById(R.id.btnCancelDialog);
+        CheckBox cbCalculateIncome = view.findViewById(R.id.cbCalculateIncome);
+
+        if (cbCalculateIncome != null) {
+            cbCalculateIncome.setChecked(event.isIncomeEligible());
+        }
+
+        setupSchoolChipListeners(view, edtOrganizer);
 
         if (tvDialogHeaderTitle != null) {
             tvDialogHeaderTitle.setText("✏️ CHỈNH SỬA LỊCH CÔNG VIỆC");
@@ -4574,14 +4790,14 @@ public class MainActivity extends AppCompatActivity {
                             "🔴 Vẫn lưu thay đổi",
                             Color.parseColor("#DC2626"),
                             () -> {
-                                updateEvent(event, edtStt, title, room, startTime, endTime, date, org, spnCategory, edtCustomCategory);
+                                updateEvent(event, edtStt, title, room, startTime, endTime, date, org, spnCategory, edtCustomCategory, cbCalculateIncome);
                                 dialog.dismiss();
                             }
                     );
                     return;
                 }
 
-                updateEvent(event, edtStt, title, room, startTime, endTime, date, org, spnCategory, edtCustomCategory);
+                updateEvent(event, edtStt, title, room, startTime, endTime, date, org, spnCategory, edtCustomCategory, cbCalculateIncome);
                 dialog.dismiss();
             });
         }
@@ -4589,7 +4805,7 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
     
-    private void updateEvent(EventModel event, EditText edtStt, String title, String room, String startTime, String endTime, String date, String org, Spinner spnCategory, EditText edtCustomCategory) {
+    private void updateEvent(EventModel event, EditText edtStt, String title, String room, String startTime, String endTime, String date, String org, Spinner spnCategory, EditText edtCustomCategory, CheckBox cbCalculateIncome) {
         int stt = event != null ? event.getStt() : 1;
         try { stt = Integer.parseInt(edtStt.getText().toString().trim()); } catch (Exception ignored) {}
         
@@ -4630,8 +4846,25 @@ public class MainActivity extends AppCompatActivity {
             category = customName.isEmpty() ? "Lịch khác" : customName;
         }
 
+        boolean calculateIncome = (cbCalculateIncome != null) ? cbCalculateIncome.isChecked() : (selectedPos == 0);
+        String finalOrg = org != null ? org.trim() : "";
+        if (!calculateIncome) {
+            if (!finalOrg.toLowerCase(Locale.getDefault()).contains("không tính thù lao") && !finalOrg.toLowerCase(Locale.getDefault()).contains("không thù lao")) {
+                finalOrg = finalOrg.isEmpty() ? "Không tính thù lao" : (finalOrg + " • (Không tính thù lao)");
+            }
+        } else {
+            if (selectedPos != 0) {
+                if (!finalOrg.toLowerCase(Locale.getDefault()).contains("có tính thù lao") && !finalOrg.toLowerCase(Locale.getDefault()).contains("có thù lao")) {
+                    finalOrg = finalOrg.isEmpty() ? "Có tính thù lao" : (finalOrg + " • (Có tính thù lao)");
+                }
+            } else {
+                finalOrg = finalOrg.replaceAll("(?i)\\s*•\\s*\\(không tính thù lao\\)", "")
+                                   .replaceAll("(?i)\\bkhông tính thù lao\\b", "").trim();
+            }
+        }
+
         String isoDate = dbHelper.parseToIsoDate(date);
-        String organizerName = org.isEmpty() ? "Nhà trường" : org;
+        String organizerName = finalOrg.isEmpty() ? "Nhà trường" : finalOrg;
 
         if (event != null && event.getId() > 0) {
             dbHelper.updateEvent(event.getId(), stt, savedTitle.toString(), date, organizerName, category);
@@ -6822,14 +7055,22 @@ public class MainActivity extends AppCompatActivity {
 
         if (cardKpiEvents != null) {
             cardKpiEvents.setOnClickListener(v -> {
+                int calcPeriods = 0;
+                for (EventModel e : currentFilteredChartEvents) {
+                    calcPeriods += extractPeriodsCount(e);
+                }
                 showChartDrillDownDialog("TỔNG SỐ BUỔI CÔNG VIỆC", 
-                        "Danh sách toàn bộ " + currentFilteredChartEvents.size() + " buổi", currentFilteredChartEvents);
+                        "Gồm " + currentFilteredChartEvents.size() + " buổi công việc (tổng cộng " + calcPeriods + " tiết dạy)", currentFilteredChartEvents);
             });
         }
         if (cardKpiPeriods != null) {
             cardKpiPeriods.setOnClickListener(v -> {
+                int calcPeriods = 0;
+                for (EventModel e : currentFilteredChartEvents) {
+                    calcPeriods += extractPeriodsCount(e);
+                }
                 showChartDrillDownDialog("DANH SÁCH GIỜ / TIẾT GIẢNG", 
-                        "Chi tiết các buổi dạy trong phạm vi lọc", currentFilteredChartEvents);
+                        "Gồm " + currentFilteredChartEvents.size() + " buổi dạy (tổng cộng " + calcPeriods + " tiết giảng)", currentFilteredChartEvents);
             });
         }
         if (cardKpiIncidents != null) {
@@ -6888,9 +7129,11 @@ public class MainActivity extends AppCompatActivity {
 
         List<String> schoolOptions = new ArrayList<>();
         schoolOptions.add("Tất cả đơn vị / trường");
-        schoolOptions.add("NTTU (ĐH Nguyễn Tất Thành)");
-        schoolOptions.add("HUTECH (ĐH Công nghệ TP.HCM)");
-        schoolOptions.add("UEF (ĐH Kinh tế - Tài chính)");
+        for (SchoolProfile.SchoolType st : SchoolProfile.SchoolType.values()) {
+            if (st != SchoolProfile.SchoolType.DEFAULT) {
+                schoolOptions.add(st.getCode() + " • " + st.getShortDisplayName());
+            }
+        }
         schoolOptions.add("Khác / Ngoài trường");
 
         ArrayAdapter<String> schoolAdapter = new ArrayAdapter<>(this, R.layout.item_chart_spinner, schoolOptions);
@@ -7040,19 +7283,32 @@ public class MainActivity extends AppCompatActivity {
         // 2. Lọc theo Trường / Đơn vị
         int schoolFilterPos = spnChartSchoolFilter != null ? spnChartSchoolFilter.getSelectedItemPosition() : 0;
         List<EventModel> filtered = new ArrayList<>();
+        SchoolProfile.SchoolType[] definedSchools = java.util.Arrays.stream(SchoolProfile.SchoolType.values())
+                .filter(st -> st != SchoolProfile.SchoolType.DEFAULT)
+                .toArray(SchoolProfile.SchoolType[]::new);
+        int totalDefined = definedSchools.length;
+
         for (EventModel em : timeFiltered) {
             String sc = em.getSchoolCode();
-            if (sc == null) sc = "";
+            if (sc == null || sc.isEmpty()) sc = "OTHER";
+
             if (schoolFilterPos == 0) {
                 filtered.add(em);
-            } else if (schoolFilterPos == 1) {
-                if ("NTTU".equalsIgnoreCase(sc)) filtered.add(em);
-            } else if (schoolFilterPos == 2) {
-                if ("HUTECH".equalsIgnoreCase(sc)) filtered.add(em);
-            } else if (schoolFilterPos == 3) {
-                if ("UEF".equalsIgnoreCase(sc)) filtered.add(em);
-            } else if (schoolFilterPos == 4) {
-                if (!"NTTU".equalsIgnoreCase(sc) && !"HUTECH".equalsIgnoreCase(sc) && !"UEF".equalsIgnoreCase(sc)) {
+            } else if (schoolFilterPos >= 1 && schoolFilterPos <= totalDefined) {
+                SchoolProfile.SchoolType targetSchool = definedSchools[schoolFilterPos - 1];
+                if (targetSchool.getCode().equalsIgnoreCase(sc)) {
+                    filtered.add(em);
+                }
+            } else if (schoolFilterPos > totalDefined) {
+                // "Khác / Ngoài trường"
+                boolean isDefined = false;
+                for (SchoolProfile.SchoolType st : definedSchools) {
+                    if (st.getCode().equalsIgnoreCase(sc)) {
+                        isDefined = true;
+                        break;
+                    }
+                }
+                if (!isDefined) {
                     filtered.add(em);
                 }
             } else {
@@ -7076,6 +7332,7 @@ public class MainActivity extends AppCompatActivity {
         int incidentEvents = 0;
         long estimatedIncome = 0;
         int completedPeriods = 0;
+        int completedPaidPeriods = 0;
         Set<String> cleanSchoolNames = new LinkedHashSet<>();
         String todayIso = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
 
@@ -7113,9 +7370,12 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            if (em.isTeachingEvent() && isCompleted) {
-                long customRate = getCustomPayRate(this, scode != null ? scode : "OTHER", sc != null && sc != SchoolProfile.SchoolType.DEFAULT ? sc.getDefaultPayRate() : 100000);
+            if (em.isIncomeEligible() && isCompleted) {
+                String targetSchoolCode = (sc != null && sc != SchoolProfile.SchoolType.DEFAULT) ? sc.getCode() : (scode != null ? scode : "OTHER");
+                long defaultRate = (sc != null && sc != SchoolProfile.SchoolType.DEFAULT) ? sc.getDefaultPayRate() : 100000;
+                long customRate = getCustomPayRate(this, targetSchoolCode, defaultRate);
                 estimatedIncome += (pCount * customRate);
+                completedPaidPeriods += pCount;
             }
 
             String nat = em.getScheduleCategory();
@@ -7165,7 +7425,7 @@ public class MainActivity extends AppCompatActivity {
             tvKpiIncome.setText(formatter.format(estimatedIncome) + " VNĐ");
         }
         if (tvKpiIncomeSub != null) {
-            tvKpiIncomeSub.setText("Đã tính " + completedPeriods + " tiết đã dạy. (Đơn giá tham khảo)");
+            tvKpiIncomeSub.setText("Đã tính " + completedPaidPeriods + " tiết được hưởng thù lao. (Đơn giá tham khảo)");
         }
 
         // 4. Quét phát hiện ngày chạy đa trường
@@ -7766,14 +8026,27 @@ public class MainActivity extends AppCompatActivity {
         pieChartShift.invalidate();
     }
 
-    private long getCustomPayRate(Context context, String schoolCode, long defaultRate) {
+    private long getCustomPayRate(Context context, String schoolCode, long fallbackDefault) {
+        if (schoolCode == null || schoolCode.trim().isEmpty()) schoolCode = "OTHER";
+        SchoolProfile.SchoolType sc = SchoolProfile.detectSchool(schoolCode);
+        long defaultRate = (sc != SchoolProfile.SchoolType.DEFAULT) ? sc.getDefaultPayRate() : (fallbackDefault > 0 ? fallbackDefault : 100000);
         android.content.SharedPreferences prefs = context.getSharedPreferences("lectuplan_income_prefs", Context.MODE_PRIVATE);
-        return prefs.getLong("pay_rate_" + schoolCode, defaultRate);
+        String key = "pay_rate_" + schoolCode.trim().toUpperCase(Locale.getDefault());
+        long val = prefs.getLong(key, -1);
+        if (val <= 0 || (val == 100000 && sc != SchoolProfile.SchoolType.DEFAULT && !prefs.contains(key + "_custom_set"))) {
+            return defaultRate;
+        }
+        return val;
     }
 
     private void setCustomPayRate(Context context, String schoolCode, long rate) {
+        if (schoolCode == null || schoolCode.trim().isEmpty()) return;
+        String key = "pay_rate_" + schoolCode.trim().toUpperCase(Locale.getDefault());
         android.content.SharedPreferences prefs = context.getSharedPreferences("lectuplan_income_prefs", Context.MODE_PRIVATE);
-        prefs.edit().putLong("pay_rate_" + schoolCode, rate).apply();
+        prefs.edit()
+                .putLong(key, rate)
+                .putBoolean(key + "_custom_set", true)
+                .apply();
     }
 
     private void showEditIncomeRatesDialog() {
@@ -7820,11 +8093,9 @@ public class MainActivity extends AppCompatActivity {
                 inputMap.clear();
                 for (int i = 0; i < schoolList.size(); i++) {
                     String code = schoolList.get(i);
-                    long currentRate = getCustomPayRate(MainActivity.this, code, 100000);
                     SchoolProfile.SchoolType sc = SchoolProfile.detectSchool(code);
-                    if (sc != SchoolProfile.SchoolType.DEFAULT && currentRate == 100000) {
-                        currentRate = getCustomPayRate(MainActivity.this, code, sc.getDefaultPayRate());
-                    }
+                    long defaultRate = (sc != SchoolProfile.SchoolType.DEFAULT) ? sc.getDefaultPayRate() : 100000;
+                    long currentRate = getCustomPayRate(MainActivity.this, code, defaultRate);
 
                     LinearLayout row = new LinearLayout(MainActivity.this);
                     row.setOrientation(LinearLayout.HORIZONTAL);
@@ -7958,6 +8229,23 @@ public class MainActivity extends AppCompatActivity {
         TextView tvEmpty = view.findViewById(R.id.tvDrillDownEmpty);
         RecyclerView rv = view.findViewById(R.id.rvDrillDownEvents);
         ImageButton btnClose = view.findViewById(R.id.btnDrillDownClose);
+        TextView btnDrillDownScrollTop = view.findViewById(R.id.btnDrillDownScrollTop);
+        TextView btnDrillDownScrollBottom = view.findViewById(R.id.btnDrillDownScrollBottom);
+
+        if (btnDrillDownScrollTop != null) {
+            btnDrillDownScrollTop.setOnClickListener(v -> {
+                if (rv != null && rv.getAdapter() != null && rv.getAdapter().getItemCount() > 0) {
+                    rv.smoothScrollToPosition(0);
+                }
+            });
+        }
+        if (btnDrillDownScrollBottom != null) {
+            btnDrillDownScrollBottom.setOnClickListener(v -> {
+                if (rv != null && rv.getAdapter() != null && rv.getAdapter().getItemCount() > 0) {
+                    rv.smoothScrollToPosition(rv.getAdapter().getItemCount() - 1);
+                }
+            });
+        }
 
         tvTitle.setText(title);
         int count = events != null ? events.size() : 0;

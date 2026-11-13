@@ -22,32 +22,17 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="12dp">
+            android:layout_marginBottom="4dp">
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/tvDrillDownTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/tvDrillDownTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="CHI TIẾT DANH SÁCH LỊCH"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/text_primary" />
-
-                <TextView
-                    android:id="@+id/tvDrillDownSub"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="Danh sách các buổi phù hợp với tiêu chí đã chọn"
-                    android:textSize="12sp"
-                    android:textColor="@color/text_secondary" />
-            </LinearLayout>
+                android:text="CHI TIẾT DANH SÁCH LỊCH"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary" />
 
             <ImageButton
                 android:id="@+id/btnDrillDownClose"
@@ -57,6 +42,53 @@
                 android:src="@android:drawable/ic_menu_close_clear_cancel"
                 app:tint="@color/text_tertiary"
                 android:contentDescription="Đóng" />
+        </LinearLayout>
+
+        <!-- Subtitle + Nút cuộn nhanh -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp">
+
+            <TextView
+                android:id="@+id/tvDrillDownSub"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Danh sách các buổi phù hợp với tiêu chí đã chọn"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary" />
+
+            <TextView
+                android:id="@+id/btnDrillDownScrollTop"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:background="@drawable/bg_search_input"
+                android:gravity="center"
+                android:paddingHorizontal="8dp"
+                android:text="⬆️ Lên đầu"
+                android:textColor="@color/accent_blue"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginEnd="6dp" />
+
+            <TextView
+                android:id="@+id/btnDrillDownScrollBottom"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:background="@drawable/bg_search_input"
+                android:gravity="center"
+                android:paddingHorizontal="8dp"
+                android:text="⬇️ Cuối trang"
+                android:textColor="@color/accent_blue"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true" />
         </LinearLayout>
 
         <!-- Danh sách sự kiện -->

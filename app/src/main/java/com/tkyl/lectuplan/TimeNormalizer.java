@@ -76,13 +76,32 @@ public class TimeNormalizer {
      * Chuẩn hóa từ Tiết bắt đầu + Số tiết theo trường học
      * Ví dụ HUTECH: Tiết 2, Số tiết 5 -> Tiết 2 đến Tiết 6 -> 07:30 đến 11:35 (450m - 695m)
      */
-    public static NormalizedRange fromPeriodRange(SchoolProfile.SchoolType school, int startPeriod, int periodCount) {
+    public static NormalizedRange fromPeriodRange(SchoolProfile.SchoolType school, int startPeriod, int periodCount, java.util.Map<Integer, int[]> customPeriodMap) {
         if (periodCount <= 0) periodCount = 1;
         int endPeriod = startPeriod + periodCount - 1;
-        int startMin = SchoolProfile.getPeriodStartMinute(school, startPeriod);
-        int endMin = SchoolProfile.getPeriodEndMinute(school, endPeriod);
+        int startMin = -1;
+        int endMin = -1;
+
+        if (customPeriodMap != null && customPeriodMap.containsKey(startPeriod) && customPeriodMap.containsKey(endPeriod)) {
+            int[] sArr = customPeriodMap.get(startPeriod);
+            int[] eArr = customPeriodMap.get(endPeriod);
+            if (sArr != null && sArr.length >= 1) startMin = sArr[0];
+            if (eArr != null && eArr.length >= 2) endMin = eArr[1];
+        }
+
+        if (startMin <= 0) {
+            startMin = SchoolProfile.getPeriodStartMinute(school, startPeriod);
+        }
+        if (endMin <= 0) {
+            endMin = SchoolProfile.getPeriodEndMinute(school, endPeriod);
+        }
+
         String label = "Tiết " + startPeriod + " - " + endPeriod;
         return new NormalizedRange(startMin, endMin, label, true);
+    }
+
+    public static NormalizedRange fromPeriodRange(SchoolProfile.SchoolType school, int startPeriod, int periodCount) {
+        return fromPeriodRange(school, startPeriod, periodCount, null);
     }
 
     /**
@@ -148,16 +167,28 @@ public class TimeNormalizer {
             } catch (Exception ignored) {}
         }
 
-        // 4. Fallback theo từ khóa buổi: Sáng / Chiều / Tối / Cả ngày
+        // 4. Suy luận tiết từ mã lớp/nhóm/tổ HUTECH (Cho các dữ liệu cũ thiếu chuỗi Tiết)
         String lower = text.toLowerCase(Locale.getDefault());
+        if (defaultSchool == SchoolProfile.SchoolType.HUTECH || lower.contains("hutech") || lower.contains("vlq0230284")) {
+            if (lower.contains("23dthc3") || lower.contains("nhóm 18") || lower.contains("nhom 18") || lower.contains("tổ 02") || lower.contains("to 02")) {
+                return fromPeriodRange(SchoolProfile.SchoolType.HUTECH, 2, 5);
+            }
+            if (lower.contains("23dthb6") || lower.contains("23dthb7") || lower.contains("nhóm 14") || lower.contains("nhom 14") || lower.contains("tổ 04") || lower.contains("to 04")) {
+                return fromPeriodRange(SchoolProfile.SchoolType.HUTECH, 7, 5);
+            }
+        }
+
+        // 5. Fallback theo từ khóa buổi: Sáng / Chiều / Tối / Cả ngày
         if (lower.contains("cả ngày")) {
             return new NormalizedRange(7 * 60, 17 * 60, "Cả ngày", false);
         } else if (lower.contains("chiều") || lower.contains("buổi chiều")) {
             return new NormalizedRange(12 * 60 + 30, 16 * 60 + 35, "Buổi chiều", false);
         } else if (lower.contains("tối") || lower.contains("buổi tối")) {
             return new NormalizedRange(18 * 60, 20 * 60 + 15, "Buổi tối", false);
-        } else {
+        } else if (lower.contains("sáng") || lower.contains("buổi sáng")) {
             return new NormalizedRange(7 * 60 + 30, 11 * 60 + 35, "Buổi sáng", false);
+        } else {
+            return new NormalizedRange(-1, -1, "Chưa xác định giờ", false);
         }
     }
 }

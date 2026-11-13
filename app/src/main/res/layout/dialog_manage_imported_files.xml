@@ -43,14 +43,51 @@
                 app:tint="@color/nav_item_unselected_tint" />
         </LinearLayout>
 
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Danh sách các tệp hiện đang có lịch trình trong ứng dụng. Bạn có thể xóa sạch mọi nội dung đã nhập từ bất kỳ tệp nào."
-            android:textSize="12sp"
-            android:textColor="@color/text_secondary"
-            android:layout_marginBottom="12dp"
-            android:lineSpacingExtra="2dp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Danh sách các tệp hiện đang có lịch trình trong ứng dụng."
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:lineSpacingExtra="2dp" />
+
+            <TextView
+                android:id="@+id/btnManageFilesScrollTop"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:background="@drawable/bg_search_input"
+                android:gravity="center"
+                android:paddingHorizontal="8dp"
+                android:text="⬆️ Lên đầu"
+                android:textColor="@color/accent_blue"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginEnd="4dp" />
+
+            <TextView
+                android:id="@+id/btnManageFilesScrollBottom"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:background="@drawable/bg_search_input"
+                android:gravity="center"
+                android:paddingHorizontal="8dp"
+                android:text="⬇️ Cuối trang"
+                android:textColor="@color/accent_blue"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
 
         <!-- Danh sách file cuộn -->
         <FrameLayout

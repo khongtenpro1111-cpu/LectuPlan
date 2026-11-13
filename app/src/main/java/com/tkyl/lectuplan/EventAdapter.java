@@ -101,9 +101,11 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
         for (int i = 0; i < list.size(); i++) {
             EventModel e1 = list.get(i);
             if (e1.getId() <= 0) continue; 
+            if (e1.getStartMin() <= 0 || e1.getEndMin() <= 0) continue;
             for (int j = i + 1; j < list.size(); j++) {
                 EventModel e2 = list.get(j);
                 if (e2.getId() <= 0) continue;
+                if (e2.getStartMin() <= 0 || e2.getEndMin() <= 0) continue;
                 if (e1.getDate() == null || e2.getDate() == null) continue;
                 if (!e1.getDate().equals(e2.getDate())) break; 
                 
@@ -290,13 +292,12 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
 
             String orgText = bd.organizer;
             String badgeSuffix = extractSourceBadgeSuffix(orgText);
-            SchoolProfile.SchoolType school = SchoolProfile.detectSchool(event.getTitle() + " " + orgText);
+            String schoolTag = extractSchoolOrUnitTag(event.getTitle(), orgText);
             String category = event.getScheduleCategory();
             boolean isTeaching = EventModel.CAT_TEACHING.equals(category);
 
             // Phân loại chuẩn 4 nhóm: Lịch dạy/học, Lịch sự kiện, Lịch phát sinh, Lịch khác(tự đặt tên)
             if (EventModel.CAT_TEACHING.equals(category)) {
-                String schoolTag = (school != SchoolProfile.SchoolType.DEFAULT) ? ("[" + school.getCode() + "] ") : "";
                 int blueColor = isNight ? Color.parseColor("#60A5FA") : Color.parseColor("#1D4ED8");
                 if (viewLeftAccentStrip != null) viewLeftAccentStrip.setBackgroundColor(blueColor);
                 holder.tvSemesterBadge.setText("👨‍🏫 " + schoolTag + EventModel.CAT_TEACHING + badgeSuffix);
@@ -306,14 +307,14 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
             } else if (EventModel.CAT_EVENT.equals(category)) {
                 int greenColor = isNight ? Color.parseColor("#34D399") : Color.parseColor("#059669");
                 if (viewLeftAccentStrip != null) viewLeftAccentStrip.setBackgroundColor(greenColor);
-                holder.tvSemesterBadge.setText("🏛️ " + EventModel.CAT_EVENT + badgeSuffix);
+                holder.tvSemesterBadge.setText("🏛️ " + schoolTag + EventModel.CAT_EVENT + badgeSuffix);
                 holder.tvSemesterBadge.setBackgroundColor(isNight ? Color.parseColor("#064E3B") : Color.parseColor("#D1FAE5"));
                 holder.tvSemesterBadge.setTextColor(greenColor);
 
             } else if (EventModel.CAT_INCIDENT.equals(category)) {
                 int amberColor = isNight ? Color.parseColor("#FBBF24") : Color.parseColor("#D97706");
                 if (viewLeftAccentStrip != null) viewLeftAccentStrip.setBackgroundColor(amberColor);
-                holder.tvSemesterBadge.setText("⚡ " + EventModel.CAT_INCIDENT + badgeSuffix);
+                holder.tvSemesterBadge.setText("⚡ " + schoolTag + EventModel.CAT_INCIDENT + badgeSuffix);
                 holder.tvSemesterBadge.setBackgroundColor(isNight ? Color.parseColor("#451A03") : Color.parseColor("#FEF3C7"));
                 holder.tvSemesterBadge.setTextColor(amberColor);
 
@@ -324,7 +325,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
                 String displayCat = (category != null && !category.trim().isEmpty() && !EventModel.LEGACY_CAT_MANUAL_OTHER.equals(category) && !EventModel.CAT_MANUAL_OTHER.equals(category))
                         ? category.trim()
                         : "Lịch khác";
-                holder.tvSemesterBadge.setText("📝 " + displayCat + badgeSuffix);
+                holder.tvSemesterBadge.setText("📝 " + schoolTag + displayCat + badgeSuffix);
                 holder.tvSemesterBadge.setBackgroundColor(isNight ? Color.parseColor("#3B0764") : Color.parseColor("#F3E8FF"));
                 holder.tvSemesterBadge.setTextColor(purpleColor);
             }
@@ -342,18 +343,25 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
                 }
             }
 
-            // Dòng 3: Tiết - CHỈ HIỂN THỊ NẾU LÀ SỰ KIỆN GIẢNG DẠY HOẶC PHÁT SINH CÓ TIẾT
+            // Dòng 3: Số Tiết - HIỂN THỊ RÕ RÀNG SỐ TIẾT NẾU LÀ LỊCH GIẢNG DẠY HOẶC PHÁT SINH
             if (holder.layoutRowPeriod != null) {
-                boolean canHavePeriod = EventModel.CAT_TEACHING.equals(category) || 
-                        (EventModel.CAT_INCIDENT.equals(category) && bd.period != null && !bd.period.isEmpty());
-                if (canHavePeriod && bd.period != null && !bd.period.isEmpty()) {
+                boolean isTeachingOrEvent = isTeaching || event.isTeachingEvent();
+                int inferredPeriods = MainActivity.extractPeriodsCount(event);
+                
+                if ((isTeachingOrEvent || inferredPeriods > 0) && (bd.period != null && !bd.period.isEmpty() || inferredPeriods > 0)) {
                     holder.layoutRowPeriod.setVisibility(View.VISIBLE);
                     if (holder.tvPeriodLabel != null) {
-                        holder.tvPeriodLabel.setText("Tiết:");
+                        holder.tvPeriodLabel.setText("Số tiết:");
                         holder.tvPeriodLabel.setTextColor(descTextColor);
                     }
                     if (holder.tvPeriod != null) {
-                        holder.tvPeriod.setText(bd.period);
+                        String periodText;
+                        if (bd.period != null && !bd.period.isEmpty()) {
+                            periodText = inferredPeriods > 0 ? (inferredPeriods + " tiết (Tiết " + bd.period + ")") : ("Tiết " + bd.period);
+                        } else {
+                            periodText = inferredPeriods + " tiết (quy đổi " + bd.time + ")";
+                        }
+                        holder.tvPeriod.setText(periodText);
                         holder.tvPeriod.setTextColor(titleTextColor);
                     }
                 } else {
@@ -434,29 +442,49 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
                 }
             }
 
-            // Dòng 8: Dòng hiển thị cảnh báo trùng lịch trực tiếp
+            // Dòng 8: Dòng hiển thị cảnh báo trùng lịch trực tiếp với thời gian trùng chi tiết
             if (holder.layoutConflictDetails != null) {
                 boolean hasConflict = conflictedEventIds.contains(event.getId());
                 if (hasConflict) {
-                    List<String> conflicts = new ArrayList<>();
+                    StringBuilder conflictSb = new StringBuilder();
+                    int conflictCount = 0;
                     for (EventModel other : eventList) {
                         if (other.getId() != event.getId() && other.getId() > 0 
+                            && event.getStartMin() > 0 && event.getEndMin() > 0
+                            && other.getStartMin() > 0 && other.getEndMin() > 0
                             && event.getDate() != null && event.getDate().equals(other.getDate())) {
-                            if (event.getStartMin() < other.getEndMin() && event.getEndMin() > other.getStartMin()) {
+                            
+                            int overlapStart = Math.max(event.getStartMin(), other.getStartMin());
+                            int overlapEnd = Math.min(event.getEndMin(), other.getEndMin());
+                            
+                            if (overlapStart < overlapEnd) {
+                                conflictCount++;
+                                int overlapDuration = overlapEnd - overlapStart;
+                                String overlapTimeStr = TimeNormalizer.minuteToTimeString(overlapStart) + " - " + TimeNormalizer.minuteToTimeString(overlapEnd);
+                                
+                                String durStr;
+                                int h = overlapDuration / 60;
+                                int m = overlapDuration % 60;
+                                if (h > 0 && m > 0) {
+                                    durStr = h + " tiếng " + m + " phút";
+                                } else if (h > 0) {
+                                    durStr = h + " tiếng";
+                                } else {
+                                    durStr = m + " phút";
+                                }
+                                
                                 String cleanOtherTitle = EventModel.cleanDisplayTitle(other.getTitle());
-                                conflicts.add(cleanOtherTitle);
+                                if (conflictSb.length() > 0) conflictSb.append("\n");
+                                conflictSb.append("• Khung trùng: ").append(overlapTimeStr)
+                                          .append(" (").append(durStr).append(")\n")
+                                          .append("  ↳ Với: ").append(cleanOtherTitle);
                             }
                         }
                     }
-                    if (!conflicts.isEmpty()) {
+                    if (conflictCount > 0) {
                         holder.layoutConflictDetails.setVisibility(View.VISIBLE);
-                        StringBuilder sb = new StringBuilder();
-                        for (int i = 0; i < conflicts.size(); i++) {
-                            sb.append(conflicts.get(i));
-                            if (i < conflicts.size() - 1) sb.append(", ");
-                        }
                         if (holder.tvConflictDetails != null) {
-                            holder.tvConflictDetails.setText("Trùng thời gian với: " + sb.toString());
+                            holder.tvConflictDetails.setText(conflictSb.toString());
                         }
                     } else {
                         holder.layoutConflictDetails.setVisibility(View.GONE);
@@ -485,6 +513,29 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
             return " • 🖼️ Ảnh OCR";
         } else if (lower.contains("txt") || lower.contains("csv")) {
             return " • 📃 Text/CSV";
+        }
+        return "";
+    }
+
+    private String extractSchoolOrUnitTag(String title, String organizer) {
+        SchoolProfile.SchoolType school = SchoolProfile.detectSchool((title != null ? title : "") + " " + (organizer != null ? organizer : ""));
+        if (school != SchoolProfile.SchoolType.DEFAULT) {
+            return "[" + school.getCode() + "] ";
+        }
+        if (organizer != null && !organizer.trim().isEmpty()) {
+            String org = organizer.trim();
+            if (org.startsWith("[") && org.contains("]")) {
+                int endIdx = org.indexOf("]");
+                String tagContent = org.substring(1, endIdx).trim();
+                if (!tagContent.isEmpty()) {
+                    return "[" + tagContent + "] ";
+                }
+            }
+            String cleanOrg = org.replaceAll("(?i)\\b(lịch nhập thủ công|tài liệu|phần mềm|excel|pdf|word|slide|ảnh ocr|txt|csv)\\b.*", "").trim();
+            if (cleanOrg.startsWith("•")) cleanOrg = cleanOrg.substring(1).trim();
+            if (!cleanOrg.isEmpty() && cleanOrg.length() <= 20) {
+                return "[" + cleanOrg + "] ";
+            }
         }
         return "";
     }

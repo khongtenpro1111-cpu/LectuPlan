@@ -40,7 +40,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="Phiên bản v1.1.2"
+                android:text="Phiên bản v1.1.3"
                 android:textColor="#E0E7FF"
                 android:textSize="13sp" />
         </LinearLayout>
@@ -48,7 +48,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="🌟 BỘ CẢI TIẾN &amp; TÍNH NĂNG MỚI TRONG v1.1.2:"
+            android:text="🌟 BỘ CẢI TIẾN &amp; TÍNH NĂNG MỚI TRONG v1.1.3:"
             android:textColor="@color/accent_purple"
             android:textSize="14sp"
             android:textStyle="bold"
@@ -71,7 +71,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="1. 📝 Tùy chỉnh Lịch tiếp SV (Office Hours): Cho phép tự do chỉnh sửa thời gian, tiêu đề, ngày, lời nhắn và nội dung tin nhắn gửi đính kèm trước khi xuất thiệp ảnh."
+                    android:text="1. 🏫 Cấu hình Trường học &amp; Tiết giảng: Hỗ trợ cấu hình mốc thời gian tiết học đa dạng theo từng trường (NTTU, HUTECH, UEF...)."
                     android:textSize="13.5sp"
                     android:textColor="@color/text_primary"
                     android:layout_marginBottom="10dp" />
@@ -79,7 +79,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="2. 📢 Bổ sung nút 'Báo SV' toàn diện: Xuất hiện tại tất cả các mắt xích thời gian trống (Dòng chảy liên tục, Phân tích rảnh 7 ngày, Trang chủ)."
+                    android:text="2. 📊 Phân tích &amp; Gợi ý Thông minh: Nâng cấp bộ phân tích khung giờ rảnh, tìm slot trống thông minh, Drilldown biểu đồ và báo cáo chi tiết."
                     android:textSize="13.5sp"
                     android:textColor="@color/text_primary"
                     android:layout_marginBottom="10dp" />
@@ -87,7 +87,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="3. 🛡️ Cơ chế Chống tràn Thiệp ảnh: Tự động co dãn cỡ chữ, bộ đếm 220 ký tự trực quan và tự động cắt chữ '...' nếu lời nhắn vượt quá khung thiệp."
+                    android:text="3. ⚡ Tối ưu Bộ đọc Lịch tự động: Nâng cấp UniversalScheduleParser &amp; Thư mời giảng Parser xử lý chuẩn xác dữ liệu PDF/Excel."
                     android:textSize="13.5sp"
                     android:textColor="@color/text_primary"
                     android:layout_marginBottom="10dp" />
@@ -95,7 +95,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="4. ⚡ Nâng cao Trải nghiệm &amp; Hiệu năng: Tối ưu bộ chọn ngày giờ, nâng cao độ mượt mà khi tương tác và chia sẻ ứng dụng."
+                    android:text="4. 🎨 Cải tiến Thẻ sự kiện &amp; Thiệp chia sẻ: Thiết kế thẻ sự kiện mới, quản lý file nhập linh hoạt và bổ sung bộ Unit Test tự động."
                     android:textSize="13.5sp"
                     android:textColor="@color/text_primary"
                     android:layout_marginBottom="10dp" />

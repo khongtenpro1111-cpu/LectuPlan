@@ -110,6 +110,44 @@
                 app:cornerRadius="8dp" />
         </LinearLayout>
 
+        <!-- Nút cuộn nhanh Lên đầu / Cuối trang -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end"
+            android:layout_marginBottom="6dp">
+
+            <TextView
+                android:id="@+id/btnTimelineScrollTop"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:background="@drawable/bg_search_input"
+                android:gravity="center"
+                android:paddingHorizontal="10dp"
+                android:text="⬆️ Lên đầu"
+                android:textColor="@color/accent_blue"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginEnd="6dp" />
+
+            <TextView
+                android:id="@+id/btnTimelineScrollBottom"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:background="@drawable/bg_search_input"
+                android:gravity="center"
+                android:paddingHorizontal="10dp"
+                android:text="⬇️ Cuối trang"
+                android:textColor="@color/accent_blue"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+
         <!-- Thước đo Dòng chảy Thời gian (Continuous Timeline Stream) -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvTimelineStream"

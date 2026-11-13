@@ -9,14 +9,26 @@ import java.util.Locale;
 public class SchoolProfile {
 
     public enum SchoolType {
-        HUTECH("HUTECH", "Trường Đại học Công nghệ TP.HCM", "#EA580C", 115000), // Cam HUTECH
         NTTU("NTTU", "Trường Đại học Nguyễn Tất Thành", "#1D4ED8", 120000),      // Xanh đậm NTTU
+        HUTECH("HUTECH", "Trường Đại học Công nghệ TP.HCM", "#EA580C", 115000), // Cam HUTECH
         UEF("UEF", "Trường Đại học Kinh tế - Tài chính TP.HCM", "#0284C7", 130000), // Xanh ngọc UEF
         UEH("UEH", "Đại học Kinh tế TP.HCM", "#059669", 150000),                 // Xanh lá UEH
         HCMUT("HCMUT", "Trường Đại học Bách Khoa - ĐHQG-HCM", "#0284C7", 160000), // Xanh dương Bách Khoa
         VLU("VLU", "Trường Đại học Văn Lang", "#DC2626", 140000),                // Đỏ Văn Lang
         TDTU("TDTU", "Trường Đại học Tôn Đức Thắng", "#2563EB", 125000),         // Xanh Tôn Đức Thắng
         HCMUTE("HCMUTE", "Trường Đại học Sư phạm Kỹ thuật TP.HCM", "#7C3AED", 135000), // Tím SPKT
+        IUH("IUH", "Trường Đại học Công nghiệp TP.HCM", "#166534", 120000),      // Xanh sẫm IUH
+        SGU("SGU", "Trường Đại học Sài Gòn", "#1E40AF", 120000),                 // Xanh dương SGU
+        HCMUS("HCMUS", "Trường Đại học Khoa học Tự nhiên - ĐHQG-HCM", "#0369A1", 125000), // Xanh biển KHTN
+        USSH("USSH", "Trường ĐH Khoa học Xã hội & Nhân văn - ĐHQG-HCM", "#991B1B", 120000), // Đỏ sẫm KHXH&NV
+        UIT("UIT", "Trường Đại học Công nghệ Thông tin - ĐHQG-HCM", "#2563EB", 130000), // Xanh dương UIT
+        IU("IU", "Trường Đại học Quốc tế - ĐHQG-HCM", "#0D9488", 140000),        // Xanh ngọc IU
+        HUFLIT("HUFLIT", "Trường Đại học Ngoại ngữ - Tin học TP.HCM", "#B45309", 125000), // Vàng cam HUFLIT
+        OU("OU", "Trường Đại học Mở TP.HCM", "#047857", 120000),                // Xanh lục Mở
+        UAH("UAH", "Trường Đại học Kiến trúc TP.HCM", "#B91C1C", 130000),        // Đỏ Kiến trúc
+        FTU("FTU", "Trường Đại học Ngoại thương", "#BE123C", 135000),            // Hồng đỏ FTU
+        NEU("NEU", "Trường Đại học Kinh tế Quốc dân", "#1D4ED8", 135000),        // Xanh NEU
+        HUST("HUST", "Đại học Bách khoa Hà Nội", "#B91C1C", 140000),             // Đỏ HUST
         DEFAULT("OTHER", "Cơ sở / Trường khác", "#475569", 100000);
 
         private final String code;
@@ -35,40 +47,124 @@ public class SchoolProfile {
         public String getDisplayName() { return displayName; }
         public String getPrimaryColor() { return primaryColor; }
         public long getDefaultPayRate() { return defaultPayRate; }
+
+        public String getShortDisplayName() {
+            switch (this) {
+                case NTTU: return "ĐH Nguyễn Tất Thành";
+                case HUTECH: return "ĐH Công nghệ TP.HCM";
+                case UEF: return "ĐH Kinh tế - Tài chính";
+                case UEH: return "ĐH Kinh tế TP.HCM";
+                case HCMUT: return "ĐH Bách Khoa";
+                case VLU: return "ĐH Văn Lang";
+                case TDTU: return "ĐH Tôn Đức Thắng";
+                case HCMUTE: return "ĐH SPKT TP.HCM";
+                case IUH: return "ĐH Công nghiệp TP.HCM";
+                case SGU: return "ĐH Sài Gòn";
+                case HCMUS: return "ĐH KHTN";
+                case USSH: return "ĐH KHXH&NV";
+                case UIT: return "ĐH Công nghệ Thông tin";
+                case IU: return "ĐH Quốc tế";
+                case HUFLIT: return "ĐH Ngoại ngữ - Tin học";
+                case OU: return "ĐH Mở TP.HCM";
+                case UAH: return "ĐH Kiến trúc TP.HCM";
+                case FTU: return "ĐH Ngoại thương";
+                case NEU: return "ĐH Kinh tế Quốc dân";
+                case HUST: return "ĐH Bách khoa Hà Nội";
+                default: return displayName;
+            }
+        }
     }
 
     /**
      * Nhận diện trường dựa trên text trong văn bản, tiêu đề hoặc đơn vị
      */
     public static SchoolType detectSchool(String text) {
-        if (text == null) return SchoolType.DEFAULT;
+        if (text == null || text.trim().isEmpty()) return SchoolType.DEFAULT;
         String lower = text.toLowerCase(Locale.getDefault());
-        if (lower.contains("hutech") || lower.contains("công nghệ tp.hcm") || lower.contains("đại học công nghệ tphcm")) {
-            return SchoolType.HUTECH;
-        }
+
+        // NTTU
         if (lower.contains("nttu") || lower.contains("nguyễn tất thành") || lower.contains("nguyen tat thanh")
                 || lower.matches("(?s).*\\b(l\\.?\\d{3}|l2\\.?\\d{3}|e-learning\\s*\\d*)\\b.*")
                 || (lower.contains("trang chủ") && lower.contains("lịch học") && lower.contains("điểm danh"))) {
             return SchoolType.NTTU;
         }
+        // HUTECH
+        if (lower.contains("hutech") || lower.contains("công nghệ tp.hcm") || lower.contains("đại học công nghệ tphcm") || lower.contains("cong nghe tphcm")) {
+            return SchoolType.HUTECH;
+        }
+        // UEF
         if (lower.contains("uef") || lower.contains("kinh tế tài chính") || lower.contains("kinh te tai chinh")) {
             return SchoolType.UEF;
         }
-        if (lower.contains("ueh") || lower.contains("kinh tế tp") || lower.contains("đại học kinh tế tp")) {
+        // UEH
+        if (lower.contains("ueh") || lower.contains("kinh tế tp") || lower.contains("đại học kinh tế tp") || lower.contains("kinh te tphcm")) {
             return SchoolType.UEH;
         }
-        if (lower.contains("bách khoa") || lower.contains("bach khoa") || lower.contains("hcmut")) {
+        // HCMUT (Bách Khoa TP.HCM)
+        if (lower.contains("hcmut") || lower.contains("bách khoa") || lower.contains("bach khoa")) {
             return SchoolType.HCMUT;
         }
-        if (lower.contains("văn lang") || lower.contains("van lang") || lower.contains("vlu")) {
+        // VLU (Văn Lang)
+        if (lower.contains("vlu") || lower.contains("văn lang") || lower.contains("van lang")) {
             return SchoolType.VLU;
         }
-        if (lower.contains("tôn đức thắng") || lower.contains("ton duc thang") || lower.contains("tdtu")) {
+        // TDTU (Tôn Đức Thắng)
+        if (lower.contains("tdtu") || lower.contains("tôn đức thắng") || lower.contains("ton duc thang")) {
             return SchoolType.TDTU;
         }
-        if (lower.contains("sư phạm kỹ thuật") || lower.contains("spkt") || lower.contains("hcmute")) {
+        // HCMUTE (Sư phạm Kỹ thuật TP.HCM)
+        if (lower.contains("hcmute") || lower.contains("spkt") || lower.contains("sư phạm kỹ thuật") || lower.contains("su pham ky thuat")) {
             return SchoolType.HCMUTE;
         }
+        // IUH (Công nghiệp TP.HCM)
+        if (lower.contains("iuh") || lower.contains("công nghiệp tp") || lower.contains("cong nghiep tp") || lower.contains("đại học công nghiệp")) {
+            return SchoolType.IUH;
+        }
+        // SGU (Sài Gòn)
+        if (lower.contains("sgu") || lower.contains("sài gòn") || lower.contains("sai gon")) {
+            return SchoolType.SGU;
+        }
+        // HCMUS (Khoa học Tự nhiên)
+        if (lower.contains("hcmus") || lower.contains("khtn") || lower.contains("khoa học tự nhiên") || lower.contains("khoa hoc tu nhien")) {
+            return SchoolType.HCMUS;
+        }
+        // USSH (Khoa học Xã hội & Nhân văn)
+        if (lower.contains("ussh") || lower.contains("khxhnv") || lower.contains("nhân văn") || lower.contains("nhan van")) {
+            return SchoolType.USSH;
+        }
+        // UIT (Công nghệ Thông tin - ĐHQG)
+        if (lower.contains("uit") || lower.contains("công nghệ thông tin đhqg")) {
+            return SchoolType.UIT;
+        }
+        // IU (Đại học Quốc tế)
+        if (lower.contains("hcmiu") || lower.contains("đại học quốc tế") || lower.contains("dai hoc quoc te")) {
+            return SchoolType.IU;
+        }
+        // HUFLIT (Ngoại ngữ - Tin học)
+        if (lower.contains("huflit") || lower.contains("ngoại ngữ tin học") || lower.contains("ngoai ngu tin hoc")) {
+            return SchoolType.HUFLIT;
+        }
+        // OU (Đại học Mở)
+        if (lower.contains("hcmcou") || lower.contains("đại học mở") || lower.contains("dai hoc mo")) {
+            return SchoolType.OU;
+        }
+        // UAH (Kiến trúc)
+        if (lower.contains("uah") || lower.contains("kiến trúc") || lower.contains("kien truc")) {
+            return SchoolType.UAH;
+        }
+        // FTU (Ngoại thương)
+        if (lower.contains("ftu") || lower.contains("ngoại thương") || lower.contains("ngoai thuong")) {
+            return SchoolType.FTU;
+        }
+        // NEU (Kinh tế Quốc dân)
+        if (lower.contains("neu") || lower.contains("kinh tế quốc dân") || lower.contains("kinh te quoc dan")) {
+            return SchoolType.NEU;
+        }
+        // HUST (Bách khoa Hà Nội)
+        if (lower.contains("hust") || lower.contains("bách khoa hà nội")) {
+            return SchoolType.HUST;
+        }
+
         return SchoolType.DEFAULT;
     }
 

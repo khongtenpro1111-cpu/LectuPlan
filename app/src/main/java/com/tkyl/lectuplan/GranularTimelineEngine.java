@@ -304,7 +304,7 @@ public class GranularTimelineEngine {
         if (rawTitle == null) return "";
         String clean = EventModel.cleanDisplayTitle(rawTitle);
         return clean
-                .replaceAll("(?i)\\[hutech\\]|\\[nttu\\]|\\[uef\\]", "")
+                .replaceAll("(?i)\\[[a-z0-9_-]+\\]", "")
                 .replaceAll("(?i)\\b(thứ\\s+\\w+|tiết\\s+[:0-9\\s-–]+|ngày\\s+[:0-9/.-]+)\\b", "")
                 .replaceAll("\\s+", " ")
                 .trim();

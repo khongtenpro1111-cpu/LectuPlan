@@ -367,6 +367,36 @@
                         android:textStyle="bold" />
 
                     <TextView
+                        android:id="@+id/btnScrollTop"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_search_input"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="4dp"
+                        android:text="⬆️ Đầu"
+                        android:textColor="@color/accent_blue"
+                        android:textSize="11.5sp"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:layout_marginEnd="4dp" />
+
+                    <TextView
+                        android:id="@+id/btnScrollBottom"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_search_input"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="4dp"
+                        android:text="⬇️ Cuối"
+                        android:textColor="@color/accent_blue"
+                        android:textSize="11.5sp"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
                         android:id="@+id/btnEnableMultiSelect"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -395,16 +425,21 @@
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
         <!-- TAB 2: LỊCH BIỂU (Day / Week / Month Interactive Calendar View - Tối ưu hóa RecyclerView độc lập không lag) -->
-        <LinearLayout
+        <androidx.core.widget.NestedScrollView
             android:id="@+id/layoutAlarmTab"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
             android:visibility="invisible"
+            android:fillViewport="true"
             android:paddingHorizontal="16dp"
             android:paddingTop="12dp"
-            android:paddingBottom="8dp"
+            android:paddingBottom="140dp"
             android:clipToPadding="false">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -644,6 +679,36 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/btnTab2ScrollTop"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_search_input"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp"
+                    android:text="⬆️ Đầu"
+                    android:textColor="@color/accent_blue"
+                    android:textSize="11.5sp"
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginEnd="4dp" />
+
+                <TextView
+                    android:id="@+id/btnTab2ScrollBottom"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_search_input"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp"
+                    android:text="⬇️ Cuối"
+                    android:textColor="@color/accent_blue"
+                    android:textSize="11.5sp"
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginEnd="6dp" />
+
+                <TextView
                     android:id="@+id/btnTab2EnableMultiSelect"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -661,12 +726,12 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvTab2Events"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:clipToPadding="false"
-                android:paddingBottom="96dp" />
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false" />
 
-        </LinearLayout>
+            </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
 
         <!-- TAB 3: BIỂU ĐỒ & PHÂN TÍCH THỐNG KÊ LỊCH TRÌNH -->
         <androidx.core.widget.NestedScrollView
@@ -753,7 +818,9 @@
                                 android:layout_width="0dp"
                                 android:layout_height="match_parent"
                                 android:layout_weight="1"
-                                android:spinnerMode="dropdown" />
+                                android:spinnerMode="dropdown"
+                                android:popupBackground="@drawable/bg_spinner_popup_rounded"
+                                android:popupElevation="8dp" />
                         </LinearLayout>
 
                         <!-- Row 2: Chọn Trường / Đơn vị -->
@@ -779,7 +846,9 @@
                                 android:layout_width="0dp"
                                 android:layout_height="match_parent"
                                 android:layout_weight="1"
-                                android:spinnerMode="dropdown" />
+                                android:spinnerMode="dropdown"
+                                android:popupBackground="@drawable/bg_spinner_popup_rounded"
+                                android:popupElevation="8dp" />
                         </LinearLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -1640,7 +1709,7 @@
             android:fillViewport="true"
             android:paddingHorizontal="20dp"
             android:paddingTop="18dp"
-            android:paddingBottom="96dp"
+            android:paddingBottom="150dp"
             android:clipToPadding="false">
 
             <LinearLayout
@@ -1682,39 +1751,23 @@
                             android:textStyle="bold"
                             android:textColor="#F59E0B" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="Tự động tắt chuông (Rung/Không làm phiền) khi bắt đầu ca học. Yêu cầu cấp quyền Không làm phiền."
-                            android:textSize="13sp"
-                            android:textColor="@color/text_secondary" />
-
                         <com.google.android.material.switchmaterial.SwitchMaterial
                             android:id="@+id/swAutoDnd"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
+                            android:layout_marginTop="8dp"
                             android:text="🔇 Tự động Tắt Chuông khi đứng lớp"
                             android:textColor="@color/text_primary"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:text="Tự động Check-in lấy tọa độ GPS khi tới giờ giảng dạy để làm minh chứng."
-                            android:textSize="13sp"
-                            android:textColor="@color/text_secondary" />
+                            android:textSize="13.5sp" />
 
                         <com.google.android.material.switchmaterial.SwitchMaterial
                             android:id="@+id/swAutoCheckin"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:text="📍 Tự động Check-in GPS"
+                            android:layout_marginTop="4dp"
+                            android:text="📍 Tự động Check-in GPS minh chứng"
                             android:textColor="@color/text_primary"
-                            android:textSize="14sp" />
+                            android:textSize="13.5sp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -1733,57 +1786,63 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="18dp">
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="16dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
                             android:text="🎨 CHỦ ĐỀ GIAO DIỆN"
                             android:textSize="15sp"
                             android:textStyle="bold"
                             android:textColor="@color/accent_purple" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="Tùy chọn hiển thị giao diện theo hệ thống, chế độ sáng hoặc chế độ tối."
-                            android:textSize="13sp"
-                            android:textColor="@color/text_secondary" />
 
                         <RadioGroup
                             android:id="@+id/rgThemeMode"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
-                            android:orientation="vertical">
+                            android:orientation="horizontal">
 
                             <com.google.android.material.radiobutton.MaterialRadioButton
                                 android:id="@+id/rbThemeSystem"
-                                android:layout_width="match_parent"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:text="📱 Mặc định theo hệ thống"
+                                android:layout_weight="1"
+                                android:text="📱 Hệ thống"
                                 android:textColor="@color/text_primary"
-                                android:textSize="14sp"
-                                android:paddingStart="6dp" />
+                                android:textSize="12sp"
+                                android:maxLines="1"
+                                android:ellipsize="end"
+                                android:paddingStart="0dp"
+                                android:paddingEnd="0dp" />
 
                             <com.google.android.material.radiobutton.MaterialRadioButton
                                 android:id="@+id/rbThemeLight"
-                                android:layout_width="match_parent"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:text="☀️ Chế độ Sáng (Light mode)"
+                                android:layout_weight="1"
+                                android:text="☀️ Sáng"
                                 android:textColor="@color/text_primary"
-                                android:textSize="14sp"
-                                android:paddingStart="6dp" />
+                                android:textSize="12sp"
+                                android:maxLines="1"
+                                android:ellipsize="end"
+                                android:paddingStart="0dp"
+                                android:paddingEnd="0dp" />
 
                             <com.google.android.material.radiobutton.MaterialRadioButton
                                 android:id="@+id/rbThemeDark"
-                                android:layout_width="match_parent"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:text="🌙 Chế độ Tối (Dark mode)"
+                                android:layout_weight="1"
+                                android:text="🌙 Tối"
                                 android:textColor="@color/text_primary"
-                                android:textSize="14sp"
-                                android:paddingStart="6dp" />
+                                android:textSize="12sp"
+                                android:maxLines="1"
+                                android:ellipsize="end"
+                                android:paddingStart="0dp"
+                                android:paddingEnd="0dp" />
                         </RadioGroup>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -1803,57 +1862,63 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="18dp">
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="16dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
                             android:text="🔤 CỠ CHỮ &amp; HIỂN THỊ TOÀN APP"
                             android:textSize="15sp"
                             android:textStyle="bold"
                             android:textColor="@color/accent_purple" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="Điều chỉnh kích thước chữ hiển thị cho toàn bộ ứng dụng."
-                            android:textSize="13sp"
-                            android:textColor="@color/text_secondary" />
 
                         <RadioGroup
                             android:id="@+id/rgFontSizeMode"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
-                            android:orientation="vertical">
+                            android:orientation="horizontal">
 
                             <com.google.android.material.radiobutton.MaterialRadioButton
                                 android:id="@+id/rbFontSmall"
-                                android:layout_width="match_parent"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:text="🔤 Cỡ chữ Nhỏ (Compact)"
+                                android:layout_weight="1"
+                                android:text="🔤 Nhỏ"
                                 android:textColor="@color/text_primary"
-                                android:textSize="14sp"
-                                android:paddingStart="6dp" />
+                                android:textSize="12sp"
+                                android:maxLines="1"
+                                android:ellipsize="end"
+                                android:paddingStart="0dp"
+                                android:paddingEnd="0dp" />
 
                             <com.google.android.material.radiobutton.MaterialRadioButton
                                 android:id="@+id/rbFontMedium"
-                                android:layout_width="match_parent"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:text="🔤 Cỡ chữ Vừa (Mặc định)"
+                                android:layout_weight="1"
+                                android:text="🔤 Vừa"
                                 android:textColor="@color/text_primary"
-                                android:textSize="14sp"
-                                android:paddingStart="6dp" />
+                                android:textSize="12sp"
+                                android:maxLines="1"
+                                android:ellipsize="end"
+                                android:paddingStart="0dp"
+                                android:paddingEnd="0dp" />
 
                             <com.google.android.material.radiobutton.MaterialRadioButton
                                 android:id="@+id/rbFontLarge"
-                                android:layout_width="match_parent"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:text="🔤 Cỡ chữ Lớn (Dễ đọc)"
+                                android:layout_weight="1"
+                                android:text="🔤 Lớn"
                                 android:textColor="@color/text_primary"
-                                android:textSize="14sp"
-                                android:paddingStart="6dp" />
+                                android:textSize="12sp"
+                                android:maxLines="1"
+                                android:ellipsize="end"
+                                android:paddingStart="0dp"
+                                android:paddingEnd="0dp" />
                         </RadioGroup>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -2251,32 +2316,9 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="LectuPlan là trợ lý số đắc lực dành riêng cho Giảng viên, giúp tối ưu hóa thời gian, quản lý lịch trình giảng dạy và công việc thông minh."
+                            android:text="LectuPlan là trợ lý số đắc lực cho Giảng viên, giúp quản lý lịch trình giảng dạy và tự động hóa công việc."
                             android:textSize="13sp"
-                            android:textColor="@color/text_secondary" />
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:background="@color/border_default"
-                            android:layout_marginVertical="12dp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="✨ Các tính năng nổi bật:"
-                            android:textSize="13.5sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/text_primary"
-                            android:layout_marginBottom="6dp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="• 📅 Quản lý Thời khóa biểu &amp; Lịch dạy linh hoạt.\n• 📄 Đọc &amp; trích xuất lịch tự động từ Thơ mời giảng / File.\n• ⏰ Báo thức thông minh chỉ kêu khi có lịch dạy.\n• 📊 Thống kê giờ dạy, thu nhập &amp; báo cáo trực quan.\n• 🗑️ Tự động dọn dẹp dữ liệu &amp; lịch sử cũ."
-                            android:textSize="12.5sp"
                             android:textColor="@color/text_secondary"
-                            android:lineSpacingExtra="4dp"
                             android:layout_marginBottom="12dp" />
 
                         <!-- Nút Mở Giới Thiệu Chi Tiết Toàn Bộ App -->
@@ -2313,7 +2355,7 @@
                     android:id="@+id/tvFooterVersion"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="LectuPlan v1.1.1 • Ứng dụng Quản lý Lịch giảng dạy"
+                    android:text="LectuPlan v1.1.3 • Ứng dụng Quản lý Lịch giảng dạy"
                     android:textSize="12sp"
                     android:gravity="center"
                     android:textColor="@color/text_tertiary"

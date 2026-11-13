@@ -328,11 +328,19 @@ public class LectuPlanEngineTest {
     @Test
     public void testMultiSchoolRecognitionAndConflictDetection() {
         // 1. Kiểm tra nhận diện đa trường đại học
+        assertEquals(SchoolProfile.SchoolType.NTTU, SchoolProfile.detectSchool("Trường Đại học Nguyễn Tất Thành - NTTU"));
+        assertEquals(SchoolProfile.SchoolType.HUTECH, SchoolProfile.detectSchool("Trường ĐH Công nghệ TP.HCM - HUTECH"));
+        assertEquals(SchoolProfile.SchoolType.UEF, SchoolProfile.detectSchool("Trường ĐH Kinh tế - Tài chính TP.HCM - UEF"));
         assertEquals(SchoolProfile.SchoolType.UEH, SchoolProfile.detectSchool("Đại học Kinh tế TP.HCM - Cơ sở B"));
         assertEquals(SchoolProfile.SchoolType.HCMUT, SchoolProfile.detectSchool("Trường ĐH Bách Khoa ĐHQG"));
         assertEquals(SchoolProfile.SchoolType.VLU, SchoolProfile.detectSchool("Trường Đại học Văn Lang - CS3 Đặng Thùy Trâm"));
         assertEquals(SchoolProfile.SchoolType.TDTU, SchoolProfile.detectSchool("Đại học Tôn Đức Thắng Q7"));
         assertEquals(SchoolProfile.SchoolType.HCMUTE, SchoolProfile.detectSchool("ĐH Sư phạm Kỹ thuật TP.HCM"));
+        assertEquals(SchoolProfile.SchoolType.IUH, SchoolProfile.detectSchool("Trường Đại học Công nghiệp TP.HCM - IUH"));
+        assertEquals(SchoolProfile.SchoolType.SGU, SchoolProfile.detectSchool("Trường Đại học Sài Gòn - SGU"));
+        assertEquals(SchoolProfile.SchoolType.HCMUS, SchoolProfile.detectSchool("Đại học Khoa học Tự nhiên - KHTN"));
+        assertEquals(SchoolProfile.SchoolType.USSH, SchoolProfile.detectSchool("ĐH Khoa học Xã hội và Nhân văn - USSH"));
+        assertEquals(SchoolProfile.SchoolType.UIT, SchoolProfile.detectSchool("Trường ĐH Công nghệ Thông tin - UIT"));
 
         // 2. Kiểm tra nhận diện cơ sở trường khác nhau (Campus Buffer)
         CampusBufferHelper.CampusInfo vluCs3 = CampusBufferHelper.detectCampus("Phòng A-101 Đặng Thùy Trâm", "VLU");
@@ -956,6 +964,41 @@ public class LectuPlanEngineTest {
         // 3. Kiểm tra cleanDisplayTitle không làm cụt tên hoặc để sót ký tự rác
         assertEquals("Test1", EventModel.cleanDisplayTitle("Test1 - Phòng E1-04 [07:30 - 11:35]"));
         assertEquals("Test1", EventModel.cleanDisplayTitle("Test1 - Phòng L2.503"));
+    }
+
+    @Test
+    public void testConflictDetection_NoFalsePositives_AndExactOverlaps() {
+        // 1. Kiểm tra 2 sự kiện cùng ngày nhưng KHÔNG có giờ cụ thể -> KHÔNG ĐƯỢC báo trùng lịch
+        EventModel noTime1 = new EventModel(1, 1, "Thực hành lập trình Web (23DTHC3)", "2026-05-14", "Khoa CNTT", "HK2", 2026, 20);
+        EventModel noTime2 = new EventModel(2, 2, "Thực hành lập trình Web (23DTHB6)", "2026-05-14", "Khoa CNTT", "HK2", 2026, 20);
+
+        // Đảm bảo cả 2 sự kiện không có giờ thì startMin <= 0
+        assertTrue("Sự kiện không có giờ cụ thể không được có startMin > 0", noTime1.getStartMin() <= 0);
+        assertTrue("Sự kiện không có giờ cụ thể không được có startMin > 0", noTime2.getStartMin() <= 0);
+
+        // 2. Kiểm tra ca sáng (07:30 - 11:35) và ca chiều (12:30 - 16:35) cùng ngày -> KHÔNG trùng lịch (nghỉ trưa 55p)
+        EventModel morning = new EventModel(3, 3, "Thực hành lập trình Web (23DTHC3) - Phòng E1-04.06/1 | Tiết 2-6 [07:30 - 11:35]", "2026-05-14", "[HUTECH] Khoa CNTT", "HK2", 2026, 20);
+        EventModel afternoon = new EventModel(4, 4, "Thực hành lập trình Web (23DTHB6) - Phòng E1-04.06/2 | Tiết 7-11 [12:30 - 16:35]", "2026-05-14", "[HUTECH] Khoa CNTT", "HK2", 2026, 20);
+
+        assertEquals("07:30", morning.getStartTime());
+        assertEquals("11:35", morning.getEndTime());
+        assertEquals("12:30", afternoon.getStartTime());
+        assertEquals("16:35", afternoon.getEndTime());
+
+        boolean morningAfternoonOverlap = morning.getStartMin() < afternoon.getEndMin() && morning.getEndMin() > afternoon.getStartMin();
+        assertFalse("Ca sáng và ca chiều không được đánh dấu đè giờ nhau", morningAfternoonOverlap);
+
+        // 3. Kiểm tra 2 sự kiện thực sự đè giờ nhau (07:30 - 11:35 và 09:00 - 11:00) -> PHẢI trùng lịch
+        EventModel overlap1 = new EventModel(5, 5, "Thực hành lập trình Web | Tiết 2-6 [07:30 - 11:35]", "2026-05-14", "Khoa CNTT", "HK2", 2026, 20);
+        EventModel overlap2 = new EventModel(6, 6, "Họp Hội đồng Đánh giá [09:00 - 11:00]", "2026-05-14", "Khoa CNTT", "HK2", 2026, 20);
+
+        assertEquals(450, overlap1.getStartMin()); // 07:30
+        assertEquals(695, overlap1.getEndMin());   // 11:35
+        assertEquals(540, overlap2.getStartMin()); // 09:00
+        assertEquals(660, overlap2.getEndMin());   // 11:00
+
+        boolean isRealOverlap = overlap1.getStartMin() < overlap2.getEndMin() && overlap1.getEndMin() > overlap2.getStartMin();
+        assertTrue("Hai sự kiện đè giờ nhau thực sự phải được gắn cờ trùng lịch", isRealOverlap);
     }
 }
 

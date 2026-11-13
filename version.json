@@ -1,8 +1,8 @@
 {
-  "latest_version_code": 4,
-  "latest_version_name": "1.1.2",
+  "latest_version_code": 5,
+  "latest_version_name": "1.1.3",
   "apk_url": "https://github.com/khongtenpro1111-cpu/LectuPlan/raw/main/LectuPlan.apk",
   "apk_download_url": "https://github.com/khongtenpro1111-cpu/LectuPlan/raw/main/LectuPlan.apk",
-  "release_notes": "• ✨ Chỉnh sửa thông tin & thời gian linh hoạt trước khi tạo thiệp Lịch tiếp SV (Office Hours).\n• 📢 Bổ sung nút 'Báo SV' ở tất cả các vị trí thời gian trống trên toàn bộ ứng dụng.\n• 🛡️ Cơ chế co dãn chữ & cắt chữ tự động chống tràn thiệp ảnh chia sẻ.\n• 🚀 Nâng cao trải nghiệm người dùng & hiệu năng ứng dụng.",
+  "release_notes": "• 🏫 Hỗ trợ cấu hình Trường học & Khung giờ Tiết học đa dạng (NTTU, HUTECH, UEF...).\n• 📊 Nâng cấp Giao diện & Dialog: Phân tích Khung giờ trống, Tìm Slot thông minh, Báo cáo File & Drilldown biểu đồ.\n• ⚡ Tối ưu Bộ phân tích Lịch (UniversalScheduleParser & ThumoiGiangParser) nhận diện chuẩn xác mọi định dạng.\n• 🎨 Tùy chỉnh Thiệp Office Hours, Thẻ sự kiện & Thông báo mượt mà hơn.\n• 🛠️ Bổ sung bộ Unit Test tự động đảm bảo tính chính xác của dữ liệu.",
   "force_update": false
 }

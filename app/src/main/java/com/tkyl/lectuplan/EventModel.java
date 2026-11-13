@@ -74,10 +74,17 @@ public class EventModel {
         SchoolProfile.SchoolType sc = SchoolProfile.detectSchool((title != null ? title : "") + " " + (organizer != null ? organizer : ""));
         this.schoolCode = sc.getCode();
         TimeNormalizer.NormalizedRange range = TimeNormalizer.parseFromText((title != null ? title : "") + " " + (organizer != null ? organizer : ""), sc);
-        this.startTime = range.startTimeStr;
-        this.endTime = range.endTimeStr;
-        this.startMin = range.startMin;
-        this.endMin = range.endMin;
+        if (range != null && range.startMin > 0 && range.endMin > 0) {
+            this.startTime = range.startTimeStr;
+            this.endTime = range.endTimeStr;
+            this.startMin = range.startMin;
+            this.endMin = range.endMin;
+        } else {
+            this.startTime = "";
+            this.endTime = "";
+            this.startMin = -1;
+            this.endMin = -1;
+        }
 
         CampusBufferHelper.CampusInfo cInfo = CampusBufferHelper.detectCampus((title != null ? title : "") + " " + (organizer != null ? organizer : ""), schoolCode);
         this.campus = cInfo.campusName;
@@ -96,10 +103,10 @@ public class EventModel {
     public int getYear() { return year; }
     public int getWeek() { return week; }
 
-    public String getStartTime() { return startTime != null ? startTime : "07:30"; }
-    public String getEndTime() { return endTime != null ? endTime : "11:35"; }
-    public int getStartMin() { return startMin > 0 ? startMin : 450; }
-    public int getEndMin() { return endMin > 0 ? endMin : 695; }
+    public String getStartTime() { return startTime != null ? startTime : ""; }
+    public String getEndTime() { return endTime != null ? endTime : ""; }
+    public int getStartMin() { return startMin; }
+    public int getEndMin() { return endMin; }
     public String getSchoolCode() {
         if (!isTeachingEvent()) return "OTHER";
         return (schoolCode != null && !schoolCode.trim().isEmpty()) ? schoolCode : "OTHER";
@@ -187,6 +194,31 @@ public class EventModel {
         return false;
     }
 
+    /**
+     * Xác định xem lịch/sự kiện này có được tính thù lao / thu nhập hay không.
+     * Tự động loại trừ các lịch ghi chú "không thù lao", "không lương", "miễn phí", "nghỉ dạy", "hủy tiết", "dự giờ"...
+     */
+    public boolean isIncomeEligible() {
+        String t = (title != null ? title : "").toLowerCase(java.util.Locale.getDefault());
+        String o = (organizer != null ? organizer : "").toLowerCase(java.util.Locale.getDefault());
+        String combined = t + " " + o;
+
+        if (combined.contains("không thù lao") || combined.contains("không lương")
+                || combined.contains("không tính thù lao") || combined.contains("không tính lương")
+                || combined.contains("miễn phí") || combined.contains("nghỉ dạy")
+                || combined.contains("nghỉ học") || combined.contains("hủy tiết") || combined.contains("hủy lớp")
+                || combined.contains("dự giờ") || combined.contains("sinh hoạt lớp")
+                || combined.contains("họp bộ môn") || combined.contains("họp khoa")) {
+            return false;
+        }
+
+        if (combined.contains("có tính thù lao") || combined.contains("có thù lao") || combined.contains("tính lương")) {
+            return true;
+        }
+
+        return isTeachingEvent();
+    }
+
     public void setStartTime(String startTime) { this.startTime = startTime; }
     public void setEndTime(String endTime) { this.endTime = endTime; }
     public void setStartMin(int startMin) { this.startMin = startMin; }
@@ -236,8 +268,16 @@ public class EventModel {
 
         String rawTitle = event.getTitle() != null ? event.getTitle().trim() : "";
         bd.organizer = event.getOrganizer() != null ? event.getOrganizer().trim() : "";
-        bd.time = (event.getStartTime() != null && event.getEndTime() != null)
-                ? (event.getStartTime() + " - " + event.getEndTime()) : "";
+
+        String st = event.getStartTime() != null ? event.getStartTime().trim() : "";
+        String et = event.getEndTime() != null ? event.getEndTime().trim() : "";
+        if (!st.isEmpty() && !et.isEmpty()) {
+            bd.time = st + " - " + et;
+        } else if (!st.isEmpty()) {
+            bd.time = st;
+        } else {
+            bd.time = "";
+        }
 
         if (event.getId() < 0) {
             bd.title = cleanDisplayTitle(rawTitle);

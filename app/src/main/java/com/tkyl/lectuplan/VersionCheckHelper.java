@@ -48,7 +48,7 @@ public class VersionCheckHelper {
             PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
             return pInfo.versionName;
         } catch (PackageManager.NameNotFoundException e) {
-            return "1.1.1";
+            return "1.1.3";
         }
     }
 
@@ -131,8 +131,8 @@ public class VersionCheckHelper {
                     in.close();
 
                     JSONObject json = new JSONObject(response.toString());
-                    int remoteVersionCode = json.optInt("latest_version_code", 4);
-                    String remoteVersionName = json.optString("latest_version_name", "1.1.2");
+                    int remoteVersionCode = json.optInt("latest_version_code", 5);
+                    String remoteVersionName = json.optString("latest_version_name", "1.1.3");
                     String rawApkUrl = json.optString("apk_url", json.optString("apk_download_url", "https://github.com/khongtenpro1111-cpu/LectuPlan/raw/main/LectuPlan.apk"));
                     if (rawApkUrl.isEmpty()) {
                         rawApkUrl = "https://github.com/khongtenpro1111-cpu/LectuPlan/raw/main/LectuPlan.apk";
