@@ -206,11 +206,30 @@
                     android:lineSpacingExtra="5dp"
                     android:layout_marginBottom="16dp" />
 
-                <!-- Mục 8: Thông tin kỹ thuật & tác giả -->
+                <!-- Mục 8: Điểm mới & Nâng cấp trong Phiên bản v1.1.3 -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="8. ℹ️ Thông tin Kỹ thuật &amp; Tác giả"
+                    android:text="8. 🏫 Bộ Cải tiến &amp; Cấu hình Đa Trường học (v1.1.3)"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/accent_purple"
+                    android:layout_marginBottom="5dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• 🏫 Cấu hình Trường học &amp; Tiết giảng linh hoạt: Hỗ trợ cấu hình mốc thời gian tiết học đa dạng theo từng trường (NTTU, HUTECH, UEF...).\n• 📊 Phân tích Khung giờ rảnh &amp; Tìm Slot thông minh: Nâng cấp bộ gợi ý thời gian rảnh, báo cáo chi tiết file bóc tách và drilldown biểu đồ.\n• 🔇 Tùy chỉnh Âm thanh &amp; Phản hồi chuẩn xác: Vô hiệu hóa hoàn toàn âm thanh nhấp phím khi tắt trong Cài đặt, bảo đảm không phát ra tiếng bíp ngoài ý muốn.\n• 🎯 Căn chỉnh Giao diện Chuẩn Material 3: Đồng bộ cố định vị trí nút bấm Cuộn trang &amp; Thêm lịch trên mọi tab."
+                    android:textSize="14sp"
+                    android:textColor="@color/text_secondary"
+                    android:lineSpacingExtra="5dp"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Mục 9: Thông tin kỹ thuật & tác giả -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="9. ℹ️ Thông tin Kỹ thuật &amp; Tác giả"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
