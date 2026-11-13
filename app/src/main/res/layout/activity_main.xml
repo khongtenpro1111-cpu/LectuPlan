@@ -2372,16 +2372,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/fabAddEvent"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="28dp"
-        android:layout_marginBottom="10dp"
+        android:layout_alignEnd="@id/fabAddEvent"
+        android:layout_marginBottom="12dp"
         android:contentDescription="Lên đầu trang"
         android:src="@drawable/ic_arrow_upward"
         android:visibility="gone"
         app:backgroundTint="#FFFFFF"
         app:tint="#2563EB"
         app:elevation="4dp"
-        app:fabSize="mini" />
+        app:fabSize="normal" />
 
     <!-- Floating Action Button (+ Thủ công) -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton

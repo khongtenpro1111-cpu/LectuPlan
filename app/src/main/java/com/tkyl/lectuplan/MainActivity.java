@@ -6233,6 +6233,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void playSuccessSound() {
+        if (!SoundHelper.isSoundEnabled(this)) return;
         try {
             ToneGenerator toneGen = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 80);
             toneGen.startTone(ToneGenerator.TONE_PROP_BEEP, 150);
