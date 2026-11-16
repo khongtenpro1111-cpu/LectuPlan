@@ -9,49 +9,48 @@
     android:paddingTop="6dp"
     android:paddingBottom="2dp">
 
-    <!-- PHẦN 1: BADGE NGÀY THEO PHONG CÁCH TIMELINE (Thứ, ngày tháng năm (tuần)) -->
+    <!-- Timeline Date Header Badge (Shown once per group date) -->
     <LinearLayout
         android:id="@+id/layoutDateHeaderBadge"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:layout_marginStart="6dp"
-        android:layout_marginBottom="4dp">
+        android:layout_marginStart="4dp"
+        android:layout_marginBottom="6dp"
+        android:layout_marginTop="4dp">
 
-        <!-- Nhánh nối ngang timeline -->
         <View
             android:id="@+id/viewTimelineBranch"
-            android:layout_width="14dp"
-            android:layout_height="2.5dp"
-            android:background="#E11D48"
-            android:layout_marginEnd="6dp" />
+            android:layout_width="4dp"
+            android:layout_height="18dp"
+            android:background="#2563EB"
+            android:layout_marginEnd="8dp" />
 
-        <!-- Badge Ngày chi tiết: Thứ, ngày tháng năm (tuần) -->
         <TextView
             android:id="@+id/tvDateHeaderBadge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_timeline_date_pill"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="4dp"
-            android:text="Thứ Năm, 14/05/2026 (Tuần 20)"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp"
+            android:background="@null"
+            android:paddingHorizontal="0dp"
+            android:paddingVertical="0dp"
+            android:text="Thứ Năm, 19/11/2026"
+            android:textColor="#0F172A"
+            android:textSize="16.5sp"
             android:singleLine="true"
             android:maxLines="1"
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- PHẦN 2: THẺ NỘI DUNG SỰ KIỆN (MaterialCardView) -->
+    <!-- MAIN EVENT CARD ITEM -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardEventItem"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="2dp"
-        android:layout_marginBottom="6dp"
-        app:cardCornerRadius="14dp"
-        app:cardElevation="2dp"
+        android:layout_marginBottom="8dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp"
         app:strokeWidth="1dp"
         app:strokeColor="@color/border_default"
         app:cardBackgroundColor="@color/surface_card">
@@ -61,326 +60,235 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <!-- Dải màu nhấn bên trái (Vertical Left Accent Strip) -->
+            <!-- Left Vertical Accent Strip (width 4dp) -->
             <View
                 android:id="@+id/viewLeftAccentStrip"
-                android:layout_width="5dp"
+                android:layout_width="4dp"
                 android:layout_height="match_parent"
-                android:background="#059669" />
+                android:background="#2563EB"
+                android:visibility="visible" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="14dp">
+                android:orientation="horizontal"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="12dp"
+                android:gravity="top">
 
-                <!-- Dòng 1: Badge loại lịch / Trường + Nút Thao tác -->
+                <!-- LEFT COLUMN: Period & Time -->
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="95dp"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="8dp">
+                    android:orientation="vertical"
+                    android:gravity="top"
+                    android:layout_marginEnd="8dp">
 
                     <TextView
-                        android:id="@+id/tvSemesterBadge"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_chip_unselected"
-                        android:paddingHorizontal="10dp"
-                        android:paddingVertical="4dp"
-                        android:text="🟧 [HUTECH] Giảng dạy (Cố định)"
-                        android:textColor="#FB923C"
-                        android:textSize="11.5sp"
-                        android:textStyle="bold"
-                        android:singleLine="true"
-                        android:ellipsize="end"
-                        android:maxLines="1" />
-
-                    <LinearLayout
+                        android:id="@+id/tvPeriodLeft"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginStart="8dp">
+                        android:text="Tiết 13-15"
+                        android:textColor="#0F172A"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
 
-                        <!-- Giữ tvTimeBadge ẩn cho khả năng tương thích -->
-                        <TextView
-                            android:id="@+id/tvTimeBadge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:visibility="gone" />
-
-                        <TextView
-                            android:id="@+id/tvConflictBadge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:background="@drawable/bg_chip_selected"
-                            android:backgroundTint="#EF4444"
-                            android:paddingHorizontal="8dp"
-                            android:paddingVertical="3dp"
-                            android:layout_marginEnd="6dp"
-                            android:text="⚠️ TRÙNG LỊCH"
-                            android:textColor="#FFFFFF"
-                            android:textSize="11sp"
-                            android:textStyle="bold"
-                            android:visibility="gone" />
-
-                        <CheckBox
-                            android:id="@+id/cbSelect"
-                            android:layout_width="28dp"
-                            android:layout_height="28dp"
-                            android:visibility="gone" />
-
-                        <TextView
-                            android:id="@+id/btnShareFreeEvent"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="6dp"
-                            android:background="@drawable/bg_chip_unselected"
-                            android:backgroundTint="#EFF6FF"
-                            android:paddingHorizontal="8dp"
-                            android:paddingVertical="4dp"
-                            android:text="📢 Báo SV"
-                            android:textColor="#2563EB"
-                            android:textSize="11.5sp"
-                            android:textStyle="bold"
-                            android:visibility="gone"
-                            android:clickable="true"
-                            android:focusable="true" />
-
-                        <ImageButton
-                            android:id="@+id/btnEdit"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:background="?android:attr/selectableItemBackgroundBorderless"
-                            android:contentDescription="Sửa"
-                            android:src="@android:drawable/ic_menu_edit"
-                            app:tint="@color/nav_item_unselected_tint" />
-
-                        <ImageButton
-                            android:id="@+id/btnDelete"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:layout_marginStart="2dp"
-                            android:background="?android:attr/selectableItemBackgroundBorderless"
-                            android:contentDescription="Xóa"
-                            android:src="@android:drawable/ic_menu_delete"
-                            app:tint="#EF4444" />
-                    </LinearLayout>
+                    <TextView
+                        android:id="@+id/tvTimeLeft"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="18:00 - 20:30"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="13.5sp" />
                 </LinearLayout>
 
-                <!-- Bảng Key-Value Chi tiết lịch (Từng dòng riêng biệt) -->
+                <!-- RIGHT COLUMN: Course Title, Room & Class -->
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:orientation="vertical">
 
-                    <!-- Dòng 2: Tiêu đề -->
+                    <!-- Title (Max 2 lines, clean ellipsis) -->
                     <LinearLayout
-                        android:id="@+id/layoutRowTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:gravity="top"
-                        android:layout_marginBottom="5dp">
-
-                        <TextView
-                            android:id="@+id/tvTitleLabel"
-                            android:layout_width="85dp"
-                            android:layout_height="wrap_content"
-                            android:text="Tiêu đề:"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="13sp" />
+                        android:gravity="top">
 
                         <TextView
                             android:id="@+id/tvTitle"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Thực hành lập trình Web (23DTHC3)"
-                            android:textColor="@color/text_primary"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <!-- Dòng 3: Tiết -->
-                    <LinearLayout
-                        android:id="@+id/layoutRowPeriod"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="top"
-                        android:layout_marginBottom="4dp">
-
-                        <TextView
-                            android:id="@+id/tvPeriodLabel"
-                            android:layout_width="85dp"
-                            android:layout_height="wrap_content"
-                            android:text="Tiết:"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="13sp" />
-
-                        <TextView
-                            android:id="@+id/tvPeriod"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="2-6"
-                            android:textColor="@color/text_primary"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <!-- Dòng 4: Thời gian -->
-                    <LinearLayout
-                        android:id="@+id/layoutRowTime"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="top"
-                        android:layout_marginBottom="4dp">
-
-                        <TextView
-                            android:id="@+id/tvTimeLabel"
-                            android:layout_width="85dp"
-                            android:layout_height="wrap_content"
-                            android:text="Thời gian:"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="13sp" />
-
-                        <TextView
-                            android:id="@+id/tvTime"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="07:30 - 11:35"
-                            android:textColor="@color/accent_blue"
-                            android:textSize="13sp"
+                            android:text="Thực hành lập trình trên môi trường Windows"
+                            android:textColor="#0F172A"
+                            android:textSize="16.5sp"
                             android:textStyle="bold"
-                            android:fontFamily="monospace" />
-                    </LinearLayout>
+                            android:maxLines="2"
+                            android:ellipsize="end"
+                            android:lineSpacingExtra="2dp" />
 
-                    <!-- Dòng 5: Nhóm -->
-                    <LinearLayout
-                        android:id="@+id/layoutRowGroup"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="top"
-                        android:layout_marginBottom="4dp">
+                        <CheckBox
+                            android:id="@+id/cbSelect"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:visibility="gone" />
 
-                        <TextView
-                            android:id="@+id/tvGroupLabel"
-                            android:layout_width="85dp"
-                            android:layout_height="wrap_content"
-                            android:text="Nhóm:"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="13sp" />
-
-                        <TextView
-                            android:id="@+id/tvGroup"
+                        <ImageButton
+                            android:id="@+id/btnEdit"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="18/Tổ 02 - 24 SV"
-                            android:textColor="@color/text_primary"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
+                            android:layout_height="0dp"
+                            android:visibility="gone" />
+
+                        <ImageButton
+                            android:id="@+id/btnDelete"
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:visibility="gone" />
                     </LinearLayout>
 
-                    <!-- Dòng 6: Phòng -->
+                    <!-- Location Row: Phòng: A7 -->
                     <LinearLayout
                         android:id="@+id/layoutRowRoom"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:gravity="top"
-                        android:layout_marginBottom="4dp">
+                        android:gravity="center_vertical"
+                        android:layout_marginTop="5dp">
 
                         <TextView
                             android:id="@+id/tvRoomLabel"
-                            android:layout_width="85dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Phòng:"
+                            android:text="Phòng: "
                             android:textColor="@color/text_secondary"
-                            android:textSize="13sp" />
+                            android:textSize="14sp" />
 
                         <TextView
                             android:id="@+id/tvRoom"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="E1-04.06/1"
-                            android:textColor="@color/text_primary"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
+                            android:text="A7"
+                            android:textColor="#0F172A"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:maxLines="1"
+                            android:ellipsize="end" />
                     </LinearLayout>
 
-                    <!-- Dòng 7: Tổ chức / Cơ sở -->
+                    <!-- Class/Group Row: Nhóm: 18/Tổ 02 -->
                     <LinearLayout
-                        android:id="@+id/layoutRowOrganizer"
+                        android:id="@+id/layoutRowGroup"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:gravity="top"
-                        android:layout_marginBottom="2dp">
+                        android:gravity="center_vertical"
+                        android:layout_marginTop="3dp">
 
                         <TextView
-                            android:id="@+id/tvOrganizerLabel"
-                            android:layout_width="85dp"
+                            android:id="@+id/tvGroupLabel"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Tổ chức:"
+                            android:text="Nhóm: "
                             android:textColor="@color/text_secondary"
-                            android:textSize="13sp" />
+                            android:textSize="14sp" />
 
                         <TextView
-                            android:id="@+id/tvOrganizer"
+                            android:id="@+id/tvGroup"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Khoa Công nghệ Thông tin"
-                            android:textColor="@color/text_primary"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
+                            android:text="HOCLAI_113"
+                            android:textColor="#0F172A"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:maxLines="1"
+                            android:ellipsize="end" />
                     </LinearLayout>
 
-                    <!-- Khung cảnh báo trùng lịch trực quan với chi tiết khoảng thời gian trùng -->
+                    <!-- Compatibility Rows -->
+                    <TextView
+                        android:id="@+id/tvSemesterBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/tvTimeBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/tvConflictBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/btnShareFreeEvent"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone" />
+
+                    <LinearLayout
+                        android:id="@+id/layoutRowTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone">
+                        <TextView android:id="@+id/tvTitleLabel" android:layout_width="0dp" android:layout_height="0dp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/layoutRowPeriod"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone">
+                        <TextView android:id="@+id/tvPeriodLabel" android:layout_width="0dp" android:layout_height="0dp" />
+                        <TextView android:id="@+id/tvPeriod" android:layout_width="0dp" android:layout_height="0dp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/layoutRowTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone">
+                        <TextView android:id="@+id/tvTimeLabel" android:layout_width="0dp" android:layout_height="0dp" />
+                        <TextView android:id="@+id/tvTime" android:layout_width="0dp" android:layout_height="0dp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/layoutRowOrganizer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone">
+                        <TextView android:id="@+id/tvOrganizerLabel" android:layout_width="0dp" android:layout_height="0dp" />
+                        <TextView android:id="@+id/tvOrganizer" android:layout_width="0dp" android:layout_height="0dp" />
+                    </LinearLayout>
+
                     <LinearLayout
                         android:id="@+id/layoutConflictDetails"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:layout_marginTop="8dp"
-                        android:layout_marginBottom="4dp"
-                        android:background="@drawable/bg_search_input"
-                        android:backgroundTint="#FEF2F2"
-                        android:paddingHorizontal="10dp"
-                        android:paddingVertical="8dp"
+                        android:layout_marginTop="6dp"
+                        android:background="#FEF2F2"
+                        android:padding="6dp"
                         android:visibility="gone">
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="🚨 CẢNH BÁO TRÙNG THỜI GIAN:"
-                            android:textColor="#DC2626"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:layout_marginBottom="4dp" />
-
                         <TextView
                             android:id="@+id/tvConflictDetails"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="• Trùng từ 07:30 - 11:35..."
-                            android:textColor="#991B1B"
-                            android:textSize="12.5sp"
-                            android:lineSpacingExtra="3dp"
-                            android:textStyle="bold" />
+                            android:textColor="#DC2626"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:maxLines="2"
+                            android:ellipsize="end" />
                     </LinearLayout>
 
-                    <!-- Dòng ẩn tương thích: layoutDateRow, tvDate, tvStt -->
                     <LinearLayout
                         android:id="@+id/layoutDateRow"
                         android:layout_width="wrap_content"
@@ -389,6 +297,7 @@
                         <TextView android:id="@+id/tvDateLabel" android:layout_width="0dp" android:layout_height="0dp" />
                         <TextView android:id="@+id/tvDate" android:layout_width="0dp" android:layout_height="0dp" />
                     </LinearLayout>
+
                     <TextView android:id="@+id/tvStt" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
 
                 </LinearLayout>

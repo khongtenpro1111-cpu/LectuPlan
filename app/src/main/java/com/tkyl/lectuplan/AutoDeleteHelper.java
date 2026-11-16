@@ -42,10 +42,10 @@ public class AutoDeleteHelper {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         long time = prefs.getLong(KEY_LAST_CLEANUP, 0);
         if (time == 0) {
-            return "🕒 Lần dọn gần nhất: Chưa dọn dẹp";
+            return "Lần dọn gần nhất: Chưa dọn dẹp";
         }
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm - dd/MM/yyyy", Locale.getDefault());
-        return "🕒 Lần dọn gần nhất: " + sdf.format(new Date(time));
+        return "Lần dọn gần nhất: " + sdf.format(new Date(time));
     }
 
     public static String getRetentionText(int months) {

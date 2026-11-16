@@ -24,12 +24,13 @@
             android:gravity="center_vertical"
             android:layout_marginBottom="12dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🗑️"
-                android:textSize="26sp"
-                android:layout_marginEnd="10dp" />
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_delete"
+                app:tint="#EF4444"
+                android:layout_marginEnd="10dp"
+                android:contentDescription="Xóa" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -71,7 +72,7 @@
                 android:id="@+id/tvDeleteEventCount"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="⚠️ Phát hiện có 24 buổi / lịch trình trong ứng dụng được nhập từ tệp này.\n\nBạn có muốn xóa sạch toàn bộ nội dung của tệp này khỏi ứng dụng không?"
+                android:text="Phát hiện có 24 buổi / lịch trình trong ứng dụng được nhập từ tệp này.\n\nBạn có muốn xóa sạch toàn bộ nội dung của tệp này khỏi ứng dụng không?"
                 android:textSize="13sp"
                 android:textColor="@color/tab_header_title"
                 android:lineSpacingExtra="3dp" />
@@ -85,7 +86,7 @@
             android:minHeight="48dp"
             android:paddingVertical="10dp"
             android:paddingHorizontal="14dp"
-            android:text="🔴 Xóa tệp &amp; toàn bộ lịch trình đã nhập"
+            android:text="Xóa tệp &amp; toàn bộ lịch trình đã nhập"
             android:textColor="#FFFFFF"
             android:textSize="13sp"
             android:textStyle="bold"
@@ -101,7 +102,7 @@
             android:minHeight="44dp"
             android:paddingVertical="8dp"
             android:paddingHorizontal="14dp"
-            android:text="📄 Chỉ xóa nhật ký lịch sử (Giữ lại lịch)"
+            android:text="Chỉ xóa nhật ký lịch sử (Giữ lại lịch)"
             android:textColor="@color/text_primary"
             android:textSize="12.5sp"
             app:cornerRadius="12dp"

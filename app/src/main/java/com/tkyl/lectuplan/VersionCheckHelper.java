@@ -31,7 +31,7 @@ public class VersionCheckHelper {
     private static final String PREF_VERSION = "lectuplan_version_prefs";
     private static final String KEY_LAST_VERSION_CODE = "key_last_version_code";
 
-    // 🌐 ĐƯỜNG DẪN CẤU HÌNH KIỂM TRA BẢN CẬP NHẬT TRỰC TUYẾN
+    // ĐƯỜNG DẪN CẤU HÌNH KIỂM TRA BẢN CẬP NHẬT TRỰC TUYẾN
     public static final String DEFAULT_UPDATE_CONFIG_URL = "https://raw.githubusercontent.com/khongtenpro1111-cpu/LectuPlan/main/version.json";
 
     public static int getCurrentVersionCode(Context context) {
@@ -106,7 +106,7 @@ public class VersionCheckHelper {
      */
     public static void checkForUpdatesManual(Activity activity) {
         SoundHelper.playFeedback(activity, null);
-        Toast.makeText(activity, "🔍 Đang kết nối máy chủ kiểm tra bản cập nhật...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(activity, "Đang kết nối máy chủ kiểm tra bản cập nhật...", Toast.LENGTH_SHORT).show();
         checkRemoteUpdateAsync(activity, true);
     }
 
@@ -176,7 +176,7 @@ public class VersionCheckHelper {
         final String downloadUrl = targetUrl;
 
         AlertDialog.Builder builder = new AlertDialog.Builder(activity)
-                .setTitle("🚀 ĐÃ CÓ BẢN CẬP NHẬT MỚI (v" + newVersionName + ")")
+                .setTitle("ĐÃ CÓ BẢN CẬP NHẬT MỚI (v" + newVersionName + ")")
                 .setMessage("Phiên bản LectuPlan v" + newVersionName + " đã có sẵn với các cải tiến:\n\n" + notes + "\n\nBạn có muốn tải bản cập nhật về ngay không?")
                 .setPositiveButton("TẢI VỀ CẬP NHẬT", (dialog, which) -> {
                     try {
@@ -199,7 +199,7 @@ public class VersionCheckHelper {
     private static void showAlreadyLatestDialog(Activity activity) {
         String currentVer = getCurrentVersionName(activity);
         new AlertDialog.Builder(activity)
-                .setTitle("🎉 ỨNG DỤNG ĐÃ Ở PHIÊN BẢN MỚI NHẤT")
+                .setTitle("ỨNG DỤNG ĐÃ Ở PHIÊN BẢN MỚI NHẤT")
                 .setMessage("Bạn đang sử dụng phiên bản LectuPlan v" + currentVer + " mới nhất.\n\nToàn bộ bộ 5 tính năng cao cấp (Gợi ý Khung giờ Trống, Auto DND, Check-in GPS, Dự toán Thu nhập, Thiệp Office Hours, Ghi âm giọng nói) đã sẵn sàng phục vụ bạn!")
                 .setPositiveButton("Xem các tính năng mới", (dialog, which) -> {
                     showWhatsNewDialog(activity, getCurrentVersionCode(activity));

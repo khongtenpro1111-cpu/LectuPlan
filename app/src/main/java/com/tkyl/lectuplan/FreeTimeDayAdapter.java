@@ -66,12 +66,12 @@ public class FreeTimeDayAdapter extends RecyclerView.Adapter<FreeTimeDayAdapter.
 
         if (holder.tvMorningDetail != null) {
             String morning = item.getMorningDetail();
-            holder.tvMorningDetail.setText(morning != null && !morning.isEmpty() ? morning : "🟢 Trống cả buổi sáng (07:00 - 11:30)");
+            holder.tvMorningDetail.setText(morning != null && !morning.isEmpty() ? morning : "Trống cả buổi sáng (07:00 - 11:30)");
         }
 
         if (holder.tvAfternoonDetail != null) {
             String afternoon = item.getAfternoonDetail();
-            holder.tvAfternoonDetail.setText(afternoon != null && !afternoon.isEmpty() ? afternoon : "🟢 Trống cả buổi chiều (13:00 - 17:00)");
+            holder.tvAfternoonDetail.setText(afternoon != null && !afternoon.isEmpty() ? afternoon : "Trống cả buổi chiều (13:00 - 17:00)");
         }
 
         if (holder.btnShareFreeDay != null) {

@@ -10,7 +10,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="🗓️ CHỌN THÁNG VÀ NĂM"
+        android:text="CHỌN THÁNG VÀ NĂM"
         android:textSize="17sp"
         android:textStyle="bold"
         android:textColor="@color/tab_header_title"
@@ -97,7 +97,7 @@
             android:text="Áp dụng"
             android:textStyle="bold"
             android:textColor="#FFFFFF"
-            android:backgroundTint="#7C3AED" />
+            android:backgroundTint="#2563EB" />
     </LinearLayout>
 
 </LinearLayout>

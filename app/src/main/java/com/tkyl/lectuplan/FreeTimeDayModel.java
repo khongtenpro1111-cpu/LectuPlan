@@ -3,7 +3,7 @@ package com.tkyl.lectuplan;
 public class FreeTimeDayModel {
     private String dateIso;          // yyyy-MM-dd
     private String dayTitle;         // e.g. "Thứ Hai (26/10/2026)"
-    private String statusBadge;      // e.g. "🟢 TRỐNG CẢ NGÀY"
+    private String statusBadge;      // e.g. "TRỐNG CẢ NGÀY"
     private String statusColor;      // e.g. "#15803D"
     private String statusBgColor;    // e.g. "#DCFCE7"
     private String morningDetail;    // Detail text for Morning

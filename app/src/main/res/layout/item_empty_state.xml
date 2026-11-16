@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:paddingHorizontal="24dp"
+    android:paddingTop="36dp"
+    android:paddingBottom="48dp">
+
+    <!-- Folder Illustration -->
+    <ImageView
+        android:id="@+id/ivEmptyIllustration"
+        android:layout_width="140dp"
+        android:layout_height="110dp"
+        android:src="@drawable/ic_empty_folder"
+        android:contentDescription="Không có dữ liệu"
+        android:layout_marginBottom="18dp" />
+
+    <!-- Centered Empty Text -->
+    <TextView
+        android:id="@+id/tvEmptyMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Không có dữ liệu vào thứ sáu, 20/11/2026"
+        android:textColor="#475569"
+        android:textSize="15sp"
+        android:lineSpacingExtra="4dp" />
+
+</LinearLayout>

@@ -108,7 +108,7 @@ public class FileHistoryAdapter extends RecyclerView.Adapter<FileHistoryAdapter.
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         FileHistoryModel item = historyList.get(position);
         holder.tvFileName.setText(item.getFileName());
-        holder.tvTime.setText("🕒 " + item.getTimestamp());
+        holder.tvTime.setText(item.getTimestamp());
 
         String typeStr = item.getFileType() != null ? item.getFileType() : "NHẬP FILE";
         String lowerType = typeStr.toLowerCase(Locale.getDefault());
@@ -119,28 +119,28 @@ public class FileHistoryAdapter extends RecyclerView.Adapter<FileHistoryAdapter.
                 == android.content.res.Configuration.UI_MODE_NIGHT_YES;
 
         if (isExport) {
-            holder.tvIcon.setText(lowerName.endsWith(".pdf") ? "📄" : "📊");
-            holder.tvBadge.setText("📊 " + typeStr + " • " + item.getRecordCount() + " mục");
+            holder.tvIcon.setText(lowerName.endsWith(".pdf") ? "PDF" : "XLS");
+            holder.tvBadge.setText(typeStr + " • " + item.getRecordCount() + " mục");
             holder.tvBadge.setBackgroundColor(isNight ? Color.parseColor("#1E3A8A") : Color.parseColor("#DBEAFE"));
             holder.tvBadge.setTextColor(isNight ? Color.parseColor("#93C5FD") : Color.parseColor("#1D4ED8"));
         } else if (lowerType.contains("viết tay") || lowerType.contains("ghi tay")) {
-            holder.tvIcon.setText("✍️");
-            holder.tvBadge.setText("✍️ " + typeStr + " • " + item.getRecordCount() + " mục");
+            holder.tvIcon.setText("OCR");
+            holder.tvBadge.setText(typeStr + " • " + item.getRecordCount() + " mục");
             holder.tvBadge.setBackgroundColor(isNight ? Color.parseColor("#3B0764") : Color.parseColor("#EDE9FE"));
             holder.tvBadge.setTextColor(isNight ? Color.parseColor("#C4B5FD") : Color.parseColor("#6D28D9"));
         } else {
             if (lowerName.endsWith(".pdf")) {
-                holder.tvIcon.setText("📄");
+                holder.tvIcon.setText("PDF");
             } else if (lowerName.endsWith(".pptx") || lowerName.endsWith(".ppt")) {
-                holder.tvIcon.setText("📽️");
+                holder.tvIcon.setText("PPT");
             } else if (lowerName.endsWith(".docx") || lowerName.endsWith(".doc")) {
-                holder.tvIcon.setText("📝");
+                holder.tvIcon.setText("DOC");
             } else if (lowerName.endsWith(".png") || lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg")) {
-                holder.tvIcon.setText("🖼️");
+                holder.tvIcon.setText("IMG");
             } else {
-                holder.tvIcon.setText("📊");
+                holder.tvIcon.setText("XLS");
             }
-            holder.tvBadge.setText("📥 " + typeStr + " • " + item.getRecordCount() + " mục");
+            holder.tvBadge.setText(typeStr + " • " + item.getRecordCount() + " mục");
             holder.tvBadge.setBackgroundColor(isNight ? Color.parseColor("#064E3B") : Color.parseColor("#DCFCE7"));
             holder.tvBadge.setTextColor(isNight ? Color.parseColor("#6EE7B7") : Color.parseColor("#15803D"));
         }
@@ -225,7 +225,7 @@ public class FileHistoryAdapter extends RecyclerView.Adapter<FileHistoryAdapter.
             });
         }
 
-        // Bấm nút "👁️ Mở file" sẽ mở bằng ứng dụng đọc file bên ngoài
+        // Bấm nút "Mở file" sẽ mở bằng ứng dụng đọc file bên ngoài
         if (holder.btnOpenFile != null) {
             holder.btnOpenFile.setOnClickListener(v -> {
                 if (isMultiSelectMode) {

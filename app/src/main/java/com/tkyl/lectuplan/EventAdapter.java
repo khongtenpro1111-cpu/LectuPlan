@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -62,6 +63,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
         void onDeleteClick(EventModel event);
         void onEditClick(EventModel event);
         void onSelectionChanged(int selectedCount);
+        default void onItemClick(EventModel event) { onEditClick(event); }
     }
 
     public EventAdapter(List<EventModel> eventList, OnEventClickListener listener) {
@@ -150,9 +152,27 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
         return new ArrayList<>(selectedEventIds);
     }
 
+    private static final int TYPE_ITEM = 0;
+    private static final int TYPE_EMPTY = 1;
+
+    @Override
+    public int getItemViewType(int position) {
+        if (eventList != null && position >= 0 && position < eventList.size()) {
+            EventModel e = eventList.get(position);
+            if (e != null && e.getId() < 0) {
+                return TYPE_EMPTY;
+            }
+        }
+        return TYPE_ITEM;
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == TYPE_EMPTY) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_empty_state, parent, false);
+            return new ViewHolder(view);
+        }
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_event_item, parent, false);
         return new ViewHolder(view);
     }
@@ -160,6 +180,21 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         EventModel event = eventList.get(position);
+
+        if (getItemViewType(position) == TYPE_EMPTY) {
+            if (holder.tvEmptyMessage != null) {
+                if (event.getId() == -100 && event.getDate() != null && !event.getDate().trim().isEmpty()) {
+                    holder.tvEmptyMessage.setText(EventModel.formatEmptyDayTitle(event.getDate().trim()));
+                } else if (event.getId() == -200 || (event.getTitle() != null && event.getTitle().toLowerCase().contains("tuần"))) {
+                    holder.tvEmptyMessage.setText("Không có dữ liệu trong tuần này");
+                } else if (event.getTitle() != null && !event.getTitle().trim().isEmpty()) {
+                    holder.tvEmptyMessage.setText(event.getTitle().trim());
+                } else {
+                    holder.tvEmptyMessage.setText("Không có dữ liệu");
+                }
+            }
+            return;
+        }
 
         // Kiểm tra xem lịch này có cùng ngày với lịch liền trước không (Nếu cùng ngày thì chỉ cần 1 badge thời gian phía trên)
         boolean isFirstOfDay = true;
@@ -202,6 +237,25 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
 
         EventFieldBreakdown bd = parseEventDetails(event);
 
+        if (holder.tvPeriodLeft != null) {
+            if (bd.period != null && !bd.period.trim().isEmpty()) {
+                holder.tvPeriodLeft.setText("Tiết " + bd.period.trim());
+            } else if (bd.time != null && !bd.time.trim().isEmpty()) {
+                holder.tvPeriodLeft.setText(bd.time.trim());
+            } else {
+                holder.tvPeriodLeft.setText("Sự kiện");
+            }
+        }
+
+        if (holder.tvTimeLeft != null) {
+            if (bd.time != null && !bd.time.trim().isEmpty() && bd.period != null && !bd.period.trim().isEmpty()) {
+                holder.tvTimeLeft.setText(bd.time.trim());
+                holder.tvTimeLeft.setVisibility(View.VISIBLE);
+            } else {
+                holder.tvTimeLeft.setVisibility(View.GONE);
+            }
+        }
+
         if (isFreeSlot) {
             if (viewLeftAccentStrip != null) viewLeftAccentStrip.setBackgroundColor(COLOR_FREE_STRIP);
             if (holder.cardEventItem != null) {
@@ -211,7 +265,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
             if (holder.tvTimeBadge != null) {
                 holder.tvTimeBadge.setVisibility(View.GONE);
             }
-            holder.tvSemesterBadge.setText("💡 Lịch trống");
+            holder.tvSemesterBadge.setText("Lịch trống");
             holder.tvSemesterBadge.setBackgroundColor(isNight ? Color.parseColor("#065F46") : COLOR_FREE_BADGE_BG);
             holder.tvSemesterBadge.setTextColor(isNight ? Color.parseColor("#6EE7B7") : COLOR_FREE_TEXT);
 
@@ -300,21 +354,21 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
             if (EventModel.CAT_TEACHING.equals(category)) {
                 int blueColor = isNight ? Color.parseColor("#60A5FA") : Color.parseColor("#1D4ED8");
                 if (viewLeftAccentStrip != null) viewLeftAccentStrip.setBackgroundColor(blueColor);
-                holder.tvSemesterBadge.setText("👨‍🏫 " + schoolTag + EventModel.CAT_TEACHING + badgeSuffix);
+                holder.tvSemesterBadge.setText(schoolTag + EventModel.CAT_TEACHING + badgeSuffix);
                 holder.tvSemesterBadge.setBackgroundColor(isNight ? Color.parseColor("#172554") : Color.parseColor("#DBEAFE"));
                 holder.tvSemesterBadge.setTextColor(blueColor);
 
             } else if (EventModel.CAT_EVENT.equals(category)) {
                 int greenColor = isNight ? Color.parseColor("#34D399") : Color.parseColor("#059669");
                 if (viewLeftAccentStrip != null) viewLeftAccentStrip.setBackgroundColor(greenColor);
-                holder.tvSemesterBadge.setText("🏛️ " + schoolTag + EventModel.CAT_EVENT + badgeSuffix);
+                holder.tvSemesterBadge.setText(schoolTag + EventModel.CAT_EVENT + badgeSuffix);
                 holder.tvSemesterBadge.setBackgroundColor(isNight ? Color.parseColor("#064E3B") : Color.parseColor("#D1FAE5"));
                 holder.tvSemesterBadge.setTextColor(greenColor);
 
             } else if (EventModel.CAT_INCIDENT.equals(category)) {
                 int amberColor = isNight ? Color.parseColor("#FBBF24") : Color.parseColor("#D97706");
                 if (viewLeftAccentStrip != null) viewLeftAccentStrip.setBackgroundColor(amberColor);
-                holder.tvSemesterBadge.setText("⚡ " + schoolTag + EventModel.CAT_INCIDENT + badgeSuffix);
+                holder.tvSemesterBadge.setText(schoolTag + EventModel.CAT_INCIDENT + badgeSuffix);
                 holder.tvSemesterBadge.setBackgroundColor(isNight ? Color.parseColor("#451A03") : Color.parseColor("#FEF3C7"));
                 holder.tvSemesterBadge.setTextColor(amberColor);
 
@@ -325,7 +379,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
                 String displayCat = (category != null && !category.trim().isEmpty() && !EventModel.LEGACY_CAT_MANUAL_OTHER.equals(category) && !EventModel.CAT_MANUAL_OTHER.equals(category))
                         ? category.trim()
                         : "Lịch khác";
-                holder.tvSemesterBadge.setText("📝 " + schoolTag + displayCat + badgeSuffix);
+                holder.tvSemesterBadge.setText(schoolTag + displayCat + badgeSuffix);
                 holder.tvSemesterBadge.setBackgroundColor(isNight ? Color.parseColor("#3B0764") : Color.parseColor("#F3E8FF"));
                 holder.tvSemesterBadge.setTextColor(purpleColor);
             }
@@ -338,7 +392,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
                     holder.tvTitleLabel.setTextColor(descTextColor);
                 }
                 if (holder.tvTitle != null) {
-                    holder.tvTitle.setText(bd.title);
+                    holder.tvTitle.setText(EventModel.cleanDisplayTitle(bd.title));
                     holder.tvTitle.setTextColor(titleTextColor);
                 }
             }
@@ -391,11 +445,11 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
                 if (bd.group != null && !bd.group.isEmpty()) {
                     holder.layoutRowGroup.setVisibility(View.VISIBLE);
                     if (holder.tvGroupLabel != null) {
-                        holder.tvGroupLabel.setText("Nhóm:");
+                        holder.tvGroupLabel.setText("Nhóm: ");
                         holder.tvGroupLabel.setTextColor(descTextColor);
                     }
                     if (holder.tvGroup != null) {
-                        holder.tvGroup.setText(bd.group);
+                        holder.tvGroup.setText(EventModel.cleanDisplayTitle(bd.group));
                         holder.tvGroup.setTextColor(titleTextColor);
                     }
                 } else {
@@ -408,12 +462,14 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
                 if (bd.room != null && !bd.room.trim().isEmpty()) {
                     holder.layoutRowRoom.setVisibility(View.VISIBLE);
                     String cleanRoom = bd.room.replaceAll("(?i)^(?:phòng|room|địa\\s*điểm)\\s*[:=–-]?\\s*", "").trim();
+                    cleanRoom = EventModel.cleanDisplayTitle(cleanRoom);
+                    cleanRoom = cleanRoom.replaceAll("(?i)\\s*•\\s*.*\\.pdf", "").replaceAll("(?i)\\s*\\(nhắc việc tự động\\)", "").trim();
                     if (cleanRoom.isEmpty()) cleanRoom = bd.room.trim();
 
                     if (holder.tvRoomLabel != null) {
                         boolean isClassroom = EventModel.CAT_TEACHING.equals(category)
                                 || cleanRoom.matches("(?i).*[ERABCUL]\\d?[-–.0-9/]+.*");
-                        holder.tvRoomLabel.setText(isClassroom ? "Phòng:" : "Địa điểm:");
+                        holder.tvRoomLabel.setText(isClassroom ? "Phòng: " : "Địa điểm: ");
                         holder.tvRoomLabel.setTextColor(descTextColor);
                     }
                     if (holder.tvRoom != null) {
@@ -474,6 +530,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
                                 }
                                 
                                 String cleanOtherTitle = EventModel.cleanDisplayTitle(other.getTitle());
+                                if (cleanOtherTitle.length() > 35) {
+                                    cleanOtherTitle = cleanOtherTitle.substring(0, 35) + "...";
+                                }
                                 if (conflictSb.length() > 0) conflictSb.append("\n");
                                 conflictSb.append("• Khung trùng: ").append(overlapTimeStr)
                                           .append(" (").append(durStr).append(")\n")
@@ -502,17 +561,17 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
         if (organizer == null) return "";
         String lower = organizer.toLowerCase(Locale.getDefault());
         if (lower.contains("excel") || lower.contains(".xlsx") || lower.contains(".xls")) {
-            return " • 📊 Excel";
+            return " • Excel";
         } else if (lower.contains("pdf")) {
-            return " • 📄 PDF";
+            return " • PDF";
         } else if (lower.contains("powerpoint") || lower.contains("pptx") || lower.contains("slide")) {
-            return " • 📽️ PPTX";
+            return " • PPTX";
         } else if (lower.contains("word") || lower.contains("docx")) {
-            return " • 📝 Word";
+            return " • Word";
         } else if (lower.contains("ocr") || lower.contains("ảnh")) {
-            return " • 🖼️ Ảnh OCR";
+            return " • Ảnh OCR";
         } else if (lower.contains("txt") || lower.contains("csv")) {
-            return " • 📃 Text/CSV";
+            return " • Text/CSV";
         }
         return "";
     }
@@ -578,7 +637,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
                 notifyItemChanged(position);
                 if (listener != null) listener.onSelectionChanged(selectedEventIds.size());
             } else {
-                if (listener != null) listener.onEditClick(event);
+                if (listener != null) listener.onItemClick(event);
             }
         };
 
@@ -686,9 +745,16 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
 
         LinearLayout layoutDateRow;
         TextView tvDate, tvDateLabel, tvStt;
+        TextView tvPeriodLeft, tvTimeLeft;
+        TextView tvEmptyMessage;
+        ImageView ivEmptyIllustration;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            tvEmptyMessage = itemView.findViewById(R.id.tvEmptyMessage);
+            ivEmptyIllustration = itemView.findViewById(R.id.ivEmptyIllustration);
+            tvPeriodLeft = itemView.findViewById(R.id.tvPeriodLeft);
+            tvTimeLeft = itemView.findViewById(R.id.tvTimeLeft);
             layoutDateHeaderBadge = itemView.findViewById(R.id.layoutDateHeaderBadge);
             tvDateHeaderBadge = itemView.findViewById(R.id.tvDateHeaderBadge);
             viewTimelineBranch = itemView.findViewById(R.id.viewTimelineBranch);

@@ -5,10 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardCornerRadius="22dp"
-    app:cardElevation="8dp"
+    app:cardElevation="0dp"
     app:strokeWidth="1dp"
     app:strokeColor="@color/border_default"
-    app:cardBackgroundColor="@color/surface_card">
+    app:cardBackgroundColor="#FFFFFF">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -17,16 +17,29 @@
         android:padding="22dp"
         android:gravity="center_horizontal">
 
-        <!-- Icon Emoji Circle Badge -->
-        <TextView
-            android:id="@+id/tvDialogConfirmIcon"
+        <!-- Icon Badge (No Emoji) -->
+        <FrameLayout
             android:layout_width="54dp"
             android:layout_height="54dp"
-            android:background="#FEE2E2"
-            android:gravity="center"
-            android:text="🗑️"
-            android:textSize="26sp"
-            android:layout_marginBottom="14dp" />
+            android:background="@drawable/bg_chip_unselected"
+            android:backgroundTint="#FEE2E2"
+            android:layout_marginBottom="14dp">
+
+            <ImageView
+                android:id="@+id/ivDialogConfirmIcon"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_delete"
+                app:tint="#DC2626"
+                android:contentDescription="Xác nhận" />
+
+            <TextView
+                android:id="@+id/tvDialogConfirmIcon"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+        </FrameLayout>
 
         <!-- Tiêu đề Dialog -->
         <TextView
@@ -47,7 +60,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="Bạn có chắc chắn muốn thực hiện thao tác này?"
-            android:textSize="13sp"
+            android:textSize="13.5sp"
             android:textColor="@color/text_secondary"
             android:lineSpacingExtra="3dp"
             android:layout_marginBottom="22dp" />
@@ -62,32 +75,26 @@
             <Button
                 android:id="@+id/btnDialogConfirmCancel"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:minHeight="46dp"
+                android:layout_height="48dp"
                 android:layout_weight="1"
                 android:text="Hủy"
                 android:textColor="@color/text_secondary"
                 android:backgroundTint="@color/surface_card_secondary"
-                android:textSize="13sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
-                android:paddingVertical="8dp"
-                android:paddingHorizontal="4dp"
                 app:cornerRadius="12dp" />
 
             <Button
                 android:id="@+id/btnDialogConfirmAction"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:minHeight="46dp"
+                android:layout_height="48dp"
                 android:layout_weight="1.4"
                 android:layout_marginStart="10dp"
-                android:text="🔴 Xác nhận xóa"
+                android:text="Xác nhận xóa"
                 android:textColor="#FFFFFF"
                 android:backgroundTint="#DC2626"
-                android:textSize="13sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
-                android:paddingVertical="8dp"
-                android:paddingHorizontal="6dp"
                 app:cornerRadius="12dp" />
         </LinearLayout>
 

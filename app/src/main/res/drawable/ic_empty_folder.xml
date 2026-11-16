@@ -1,0 +1,49 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="140dp"
+    android:height="110dp"
+    android:viewportWidth="140"
+    android:viewportHeight="110">
+
+  <!-- Background decorative lines -->
+  <path
+      android:pathData="M20,40 L35,40 M105,40 L120,40 M10,65 L22,65 M118,65 L130,65"
+      android:strokeWidth="3"
+      android:strokeColor="#E2E8F0"
+      android:strokeLineCap="round"/>
+
+  <!-- Back folder panel -->
+  <path
+      android:fillColor="#F1F5F9"
+      android:strokeColor="#CBD5E1"
+      android:strokeWidth="2.5"
+      android:strokeLineJoin="round"
+      android:pathData="M35,28 L58,28 C61,28 63,30 65,33 L69,38 L105,38 C110,38 114,42 114,47 L114,80 C114,85 110,89 105,89 L35,89 C30,89 26,85 26,80 L26,37 C26,32 30,28 35,28 Z"/>
+
+  <!-- Front folder panel -->
+  <path
+      android:fillColor="#FFFFFF"
+      android:strokeColor="#94A3B8"
+      android:strokeWidth="2.5"
+      android:strokeLineJoin="round"
+      android:pathData="M30,42 L110,42 C114,42 117,45 117,49 L112,83 C111,87 108,90 104,90 L26,90 C22,90 19,87 18,83 L13,49 C13,45 16,42 20,42 Z"/>
+
+  <!-- Cute sad eyes (simple dots) -->
+  <path
+      android:fillColor="#94A3B8"
+      android:pathData="M54,63 A3.5,3.5 0 1,1 54,62.9 Z M76,63 A3.5,3.5 0 1,1 76,62.9 Z"/>
+
+  <!-- Gentle soft sad mouth -->
+  <path
+      android:pathData="M60,73 C63,70 67,70 70,73"
+      android:strokeWidth="2.5"
+      android:strokeColor="#94A3B8"
+      android:strokeLineCap="round"
+      android:fillColor="#00000000"/>
+
+  <!-- Bottom platform line -->
+  <path
+      android:pathData="M25,98 L115,98"
+      android:strokeWidth="2"
+      android:strokeColor="#E2E8F0"
+      android:strokeLineCap="round"/>
+</vector>

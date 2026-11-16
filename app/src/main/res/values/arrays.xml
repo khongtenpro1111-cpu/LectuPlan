@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="school_codes">
+        <item>Nhà trường</item>
+        <item>NTTU</item>
+        <item>HUTECH</item>
+        <item>UEF</item>
+        <item>UEH</item>
+        <item>VLU</item>
+        <item>TDTU</item>
+        <item>HCMUT</item>
+        <item>HCMUTE</item>
+        <item>IUH</item>
+        <item>SGU</item>
+    </string-array>
+</resources>

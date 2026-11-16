@@ -143,6 +143,11 @@ import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
 
+    private List<EventModel> currentExportConfigList = new ArrayList<>();
+    private String currentExportConfigTitle = "BÁO CÁO LỊCH TRÌNH VÀ CÔNG VIỆC";
+    private String currentExportConfigAuthor = "";
+    private String currentExportConfigDept = "";
+
     private DatabaseHelper dbHelper;
     private EventAdapter adapter;
     private FileHistoryAdapter fileHistoryAdapter;
@@ -864,8 +869,8 @@ public class MainActivity extends AppCompatActivity {
         if (btnImportPdfTab != null) btnImportPdfTab.setOnClickListener(v -> pdfPickerLauncher.launch("application/pdf"));
         if (btnImportOcrTab != null) btnImportOcrTab.setOnClickListener(v -> imagePickerLauncher.launch("image/*"));
 
-        if (btnExportExcelTab != null) btnExportExcelTab.setOnClickListener(v -> startExportExcelProcess());
-        if (btnExportPdfTab != null) btnExportPdfTab.setOnClickListener(v -> exportPdfReportProcess());
+        if (btnExportExcelTab != null) btnExportExcelTab.setOnClickListener(v -> showExportConfigDialog(true));
+        if (btnExportPdfTab != null) btnExportPdfTab.setOnClickListener(v -> showExportConfigDialog(false));
 
         setupCustomBottomNav();
         setupThemeSettings();
@@ -3227,37 +3232,23 @@ public class MainActivity extends AppCompatActivity {
         SimpleDateFormat sdfVn = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         String currentDateStr = sdfVn.format(new Date());
         List<String> extractedSummaries = new ArrayList<>();
+        List<EventModel> stagingList = new ArrayList<>();
 
         // 1. Thư mời giảng có cấu trúc thời khóa biểu đại học chuyên sâu (kỳ học nhiều tuần)
         try {
             ThumoiGiangParser.ParseResult pResult = ThumoiGiangParser.parseInvitationDocument(fullText);
             if (pResult != null && !pResult.generatedEvents.isEmpty()) {
-                    android.database.sqlite.SQLiteDatabase writableDb = dbHelper.getWritableDatabase();
-                    writableDb.beginTransaction();
-                    try {
-                        for (ThumoiGiangParser.GeneratedClassEvent gEv : pResult.generatedEvents) {
-                            String orgWithFile = (gEv.organizer != null ? gEv.organizer : "");
-                            if (fileName != null && !fileName.trim().isEmpty() && !orgWithFile.contains(fileName.trim())) {
-                                orgWithFile = orgWithFile + " • " + fileName.trim();
-                            }
-                            String healedTitle = ThumoiGiangParser.healVietnameseText(gEv.title);
-                            dbHelper.insertEvent(stt++, healedTitle, gEv.dateIso, orgWithFile);
-                            extractedSummaries.add("[" + gEv.dateIso + "] " + healedTitle);
-                            count++;
+                    for (ThumoiGiangParser.GeneratedClassEvent gEv : pResult.generatedEvents) {
+                        String orgWithFile = (gEv.organizer != null ? gEv.organizer : "");
+                        if (fileName != null && !fileName.trim().isEmpty() && !orgWithFile.contains(fileName.trim())) {
+                            orgWithFile = orgWithFile + " • " + fileName.trim();
                         }
-                        dbHelper.normalizeSttNumbers();
-                        writableDb.setTransactionSuccessful();
-                    } finally {
-                        writableDb.endTransaction();
+                        String healedTitle = ThumoiGiangParser.healVietnameseText(gEv.title);
+                        stagingList.add(new EventModel(0, stt++, healedTitle, gEv.dateIso, orgWithFile, "HK1", Calendar.getInstance().get(Calendar.YEAR), 1));
+                        extractedSummaries.add("[" + gEv.dateIso + "] " + healedTitle);
+                        count++;
                     }
-
-                    String historyBadgeType = "LỊCH DẠY (" + getFileExtensionLabel(fileName).toUpperCase(Locale.getDefault()) + ")";
-                    dbHelper.addFileHistory(fileName, historyBadgeType, count);
-                    refreshFileHistory();
-                    playSuccessSound();
-                    refreshData();
-                    refreshTab2CalendarEvents();
-                    showFileAnalysisReportDialog(fileName, activeFormatLabel, "Bóc tách Thư mời giảng (Tự động rải lịch từng tuần & kiểm tra ngày lễ)", isHandwritten, count, extractedSummaries);
+                    showStagingImportDialog(stagingList, fileName, activeFormatLabel, isHandwritten, "Bóc tách Thư mời giảng (Tự động rải lịch từng tuần & kiểm tra ngày lễ)");
                     return;
                 }
         } catch (Exception ignored) {}
@@ -3266,30 +3257,13 @@ public class MainActivity extends AppCompatActivity {
         try {
             List<UniversalScheduleParser.ParsedScheduleEvent> parsedEvents = UniversalScheduleParser.parseDocument(fullText, fileName);
             if (parsedEvents != null && !parsedEvents.isEmpty()) {
-                android.database.sqlite.SQLiteDatabase writableDb = dbHelper.getWritableDatabase();
-                writableDb.beginTransaction();
-                try {
-                    for (UniversalScheduleParser.ParsedScheduleEvent pEv : parsedEvents) {
-                        String healedTitle = ThumoiGiangParser.healVietnameseText(pEv.title);
-                        dbHelper.insertEvent(stt++, healedTitle, pEv.dateIso, pEv.organizer);
-                        extractedSummaries.add("[" + pEv.dateIso + "] " + healedTitle);
-                        count++;
-                    }
-                    dbHelper.normalizeSttNumbers();
-                    writableDb.setTransactionSuccessful();
-                } finally {
-                    writableDb.endTransaction();
+                for (UniversalScheduleParser.ParsedScheduleEvent pEv : parsedEvents) {
+                    String healedTitle = ThumoiGiangParser.healVietnameseText(pEv.title);
+                    stagingList.add(new EventModel(0, stt++, healedTitle, pEv.dateIso, pEv.organizer, "HK1", Calendar.getInstance().get(Calendar.YEAR), 1));
+                    extractedSummaries.add("[" + pEv.dateIso + "] " + healedTitle);
+                    count++;
                 }
-
-                String historyBadgeType = isHandwritten
-                        ? "LỊCH BIỂU (VIẾT TAY • " + getFileExtensionLabel(fileName).toUpperCase(Locale.getDefault()) + ")"
-                        : "LỊCH BIỂU (" + getFileExtensionLabel(fileName).toUpperCase(Locale.getDefault()) + ")";
-                dbHelper.addFileHistory(fileName, historyBadgeType, count);
-                refreshFileHistory();
-                playSuccessSound();
-                refreshData();
-                refreshTab2CalendarEvents();
-                showFileAnalysisReportDialog(fileName, activeFormatLabel, "Bóc tách Thẻ Lịch học & Thời khóa biểu chuẩn xác 100% (Khử hoàn toàn nhiễu giao diện)", isHandwritten, count, extractedSummaries);
+                showStagingImportDialog(stagingList, fileName, activeFormatLabel, isHandwritten, "Bóc tách Thẻ Lịch học & Thời khóa biểu chuẩn xác 100% (Khử hoàn toàn nhiễu giao diện)");
                 return;
             }
         } catch (Exception e) {
@@ -3297,8 +3271,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         String[] lines = fullText.split("\\r?\\n");
-        android.database.sqlite.SQLiteDatabase writableDb = dbHelper.getWritableDatabase();
-        writableDb.beginTransaction();
         try {
             for (String line : lines) {
                 String lineTrim = line.replaceAll("\\s+", " ").trim();
@@ -3422,30 +3394,20 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     String title = cleanedLine;
-                    dbHelper.insertEvent(stt++, title, currentDateStr, organizer);
+                    stagingList.add(new EventModel(0, stt++, title, currentDateStr, organizer, "HK1", Calendar.getInstance().get(Calendar.YEAR), 1));
                     extractedSummaries.add("[" + currentDateStr + "] " + title);
                     count++;
                 }
             }
-            dbHelper.normalizeSttNumbers();
-            writableDb.setTransactionSuccessful();
         } finally {
-            writableDb.endTransaction();
+            // Not writing to db directly anymore here
         }
 
         if (count == 0 && docType == DocumentType.CV_OR_PROFILE) {
             extractedSummaries.add("ℹ️ Tài liệu được nhận diện là Hồ sơ/CV cá nhân. Ứng dụng đã bảo vệ lịch biểu bằng cách không tự động tạo lịch dạy hay gán tiết từ các thông tin lý lịch cá nhân tĩnh.");
         }
 
-        String historyBadgeType = isHandwritten ? "NHẬP FILE (VIẾT TAY • " + getFileExtensionLabel(fileName).toUpperCase(Locale.getDefault()) + ")"
-                : "NHẬP FILE (" + getFileExtensionLabel(fileName).toUpperCase(Locale.getDefault()) + ")";
-        dbHelper.addFileHistory(fileName, historyBadgeType, count);
-        refreshFileHistory();
-        playSuccessSound();
-        refreshData();
-        refreshTab2CalendarEvents();
-
-        showFileAnalysisReportDialog(fileName, activeFormatLabel, activeExtractionMethod, isHandwritten, count, extractedSummaries);
+        showStagingImportDialog(stagingList, fileName, activeFormatLabel, isHandwritten, activeExtractionMethod);
     }
 
     // Tự động tách dòng văn bản dài theo độ rộng cột để in PDF đầy đủ 100% nội dung (không bao giờ cắt "..." )
@@ -3525,7 +3487,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void exportPdfReportProcess() {
         try {
-            List<EventModel> list = dbHelper.searchEvents("", "Tất cả HK", "Tất cả Năm");
+            List<EventModel> list = new ArrayList<>(currentExportConfigList);
             if (list == null || list.isEmpty()) {
                 Toast.makeText(this, "Không có lịch biểu nào để xuất báo cáo PDF!", Toast.LENGTH_SHORT).show();
                 return;
@@ -3544,13 +3506,13 @@ public class MainActivity extends AppCompatActivity {
             paint.setColor(Color.parseColor("#1E3A8A"));
             paint.setTextSize(15f);
             paint.setFakeBoldText(true);
-            canvas.drawText("BÁO CÁO ĐẦY ĐỦ LỊCH GIẢNG DẠY & NỘI DUNG TÀI LIỆU", 30, 42, paint);
+            canvas.drawText(currentExportConfigTitle, 30, 42, paint);
 
             paint.setColor(Color.parseColor("#64748B"));
             paint.setTextSize(9.5f);
             paint.setFakeBoldText(false);
             String printDate = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(new Date());
-            canvas.drawText("Ứng dụng LectuPlan • Ngày lập báo cáo: " + printDate + " • Tổng số: " + list.size() + " mục (Hiển thị đầy đủ 100%)", 30, 60, paint);
+            canvas.drawText("Họ tên: " + currentExportConfigAuthor + " • Đơn vị: " + currentExportConfigDept + " • Ngày lập: " + printDate, 30, 60, paint);
 
             paint.setColor(Color.parseColor("#CBD5E1"));
             paint.setStrokeWidth(1f);
@@ -4983,9 +4945,8 @@ public class MainActivity extends AppCompatActivity {
             int count = 0;
             int autoStt = 1;
             List<String> extractedSummaries = new ArrayList<>();
+            List<EventModel> stagingList = new ArrayList<>();
 
-            android.database.sqlite.SQLiteDatabase writableDb = dbHelper.getWritableDatabase();
-            writableDb.beginTransaction();
             try {
                 for (int s = 0; s < workbook.getNumberOfSheets(); s++) {
                     Sheet sheet = workbook.getSheetAt(s);
@@ -5122,38 +5083,89 @@ public class MainActivity extends AppCompatActivity {
                             if (stt <= 0) stt = autoStt;
                             autoStt++;
                             String orgWithSource = (rawOrg.isEmpty() ? "Nhà trường" : rawOrg) + " (📊 Excel • " + fileName + ")";
-                            dbHelper.insertEvent(stt, rawTitle, cleanDate, orgWithSource);
+                            stagingList.add(new EventModel(0, stt, rawTitle, cleanDate, orgWithSource, "HK1", Calendar.getInstance().get(Calendar.YEAR), 1));
                             extractedSummaries.add("[" + cleanDate + "] " + rawTitle + " — " + (rawOrg.isEmpty() ? "Nhà trường" : rawOrg));
                             count++;
                         }
                     }
                 }
-                dbHelper.normalizeSttNumbers();
-                writableDb.setTransactionSuccessful();
             } finally {
-                writableDb.endTransaction();
+                // Not writing to db directly anymore here
             }
 
             workbook.close();
             is.close();
 
-            String extUpper = getFileExtensionLabel(fileName).toUpperCase(Locale.getDefault());
-            dbHelper.addFileHistory(fileName, "NHẬP FILE (EXCEL " + extUpper + ")", count);
-            refreshFileHistory();
-
-            playSuccessSound();
-            refreshData();
-            refreshTab2CalendarEvents();
-            showFileAnalysisReportDialog(
-                    fileName,
-                    "📊 Bảng tính Microsoft Excel (" + getFileExtensionLabel(fileName) + ")",
-                    "Apache POI WorkbookFactory (Nhận diện Header, Ô gộp & Công thức)",
-                    false,
-                    count,
-                    extractedSummaries);
+            showStagingImportDialog(stagingList, fileName, "Bảng tính Microsoft Excel", false, "Bóc tách dữ liệu bảng Excel");
         } catch (Exception e) {
             Toast.makeText(this, "Lỗi đọc file Excel: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void showExportConfigDialog(boolean isExcel) {
+        Dialog dialog = new Dialog(this, android.R.style.Theme_Light_NoTitleBar_Fullscreen);
+        dialog.setContentView(R.layout.dialog_export_config);
+
+        ImageButton btnClose = dialog.findViewById(R.id.btnCloseExportConfig);
+        Button btnDoExport = dialog.findViewById(R.id.btnDoExport);
+        EditText etTitle = dialog.findViewById(R.id.etExportTitle);
+        EditText etAuthor = dialog.findViewById(R.id.etExportAuthor);
+        EditText etDept = dialog.findViewById(R.id.etExportDepartment);
+        androidx.recyclerview.widget.RecyclerView rvEvents = dialog.findViewById(R.id.rvExportEvents);
+
+        android.content.SharedPreferences prefs = getSharedPreferences("ExportPrefs", MODE_PRIVATE);
+        etAuthor.setText(prefs.getString("export_author", ""));
+        etDept.setText(prefs.getString("export_dept", ""));
+
+        List<EventModel> allEvents = dbHelper.searchEvents("", "Tất cả HK", "Tất cả Năm");
+        List<EventModel> stagingList = new ArrayList<>();
+        for (EventModel ev : allEvents) {
+            if (ev.getId() >= 0) {
+                ev.setSelectedForImport(true);
+                stagingList.add(ev);
+            }
+        }
+
+        StagingEventAdapter stagingAdapter = new StagingEventAdapter(stagingList, (position, event) -> {
+            showEditStagingEventDialog(event, position, null, dialog);
+        }, null);
+        rvEvents.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
+        rvEvents.setAdapter(stagingAdapter);
+
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+
+        btnDoExport.setOnClickListener(v -> {
+            prefs.edit()
+                .putString("export_author", etAuthor.getText().toString().trim())
+                .putString("export_dept", etDept.getText().toString().trim())
+                .apply();
+
+            currentExportConfigTitle = etTitle.getText().toString().trim();
+            if (currentExportConfigTitle.isEmpty()) currentExportConfigTitle = "BÁO CÁO LỊCH TRÌNH VÀ CÔNG VIỆC";
+            currentExportConfigAuthor = etAuthor.getText().toString().trim();
+            currentExportConfigDept = etDept.getText().toString().trim();
+
+            currentExportConfigList.clear();
+            for (EventModel ev : stagingList) {
+                if (ev.isSelectedForImport()) {
+                    currentExportConfigList.add(ev);
+                }
+            }
+
+            if (currentExportConfigList.isEmpty()) {
+                Toast.makeText(this, "Bạn chưa chọn mục nào để xuất!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            dialog.dismiss();
+            if (isExcel) {
+                startExportExcelProcess();
+            } else {
+                exportPdfReportProcess();
+            }
+        });
+        
+        dialog.show();
     }
 
     private void startExportExcelProcess() {
@@ -5266,14 +5278,14 @@ public class MainActivity extends AppCompatActivity {
             Row titleRow = sheet.createRow(0);
             titleRow.setHeightInPoints(30);
             Cell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue("BÁO CÁO ĐẦY ĐỦ LỊCH GIẢNG DẠY & NỘI DUNG TÀI LIỆU");
+            titleCell.setCellValue(currentExportConfigTitle);
             titleCell.setCellStyle(titleStyle);
 
             Row subTitleRow = sheet.createRow(1);
             subTitleRow.setHeightInPoints(20);
             Cell subTitleCell = subTitleRow.createCell(0);
             String printDate = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(new Date());
-            subTitleCell.setCellValue("Xuất từ ứng dụng LectuPlan • Ngày lập báo cáo: " + printDate + " • Tổng số: " + list.size() + " mục");
+            subTitleCell.setCellValue("Họ tên: " + currentExportConfigAuthor + " | Đơn vị: " + currentExportConfigDept + " | Ngày lập báo cáo: " + printDate + " | Tổng số: " + list.size() + " mục");
             subTitleCell.setCellStyle(subTitleStyle);
 
             String[] headers = {
@@ -5440,7 +5452,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void writeExcelToUri(Uri uri) {
         try {
-            List<EventModel> list = dbHelper.searchEvents("", "Tất cả HK", "Tất cả Năm");
+            List<EventModel> list = new ArrayList<>(currentExportConfigList);
             if (list == null || list.isEmpty()) {
                 Toast.makeText(this, "Không có lịch biểu nào để xuất file Excel!", Toast.LENGTH_SHORT).show();
                 return;
@@ -5488,7 +5500,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void exportToExcelDownloadsFolder(String fileName) {
         try {
-            List<EventModel> list = dbHelper.searchEvents("", "Tất cả HK", "Tất cả Năm");
+            List<EventModel> list = new ArrayList<>(currentExportConfigList);
             if (list == null || list.isEmpty()) {
                 Toast.makeText(this, "Không có lịch biểu nào để xuất file Excel!", Toast.LENGTH_SHORT).show();
                 return;
@@ -8298,5 +8310,181 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    private void showStagingImportDialog(List<EventModel> stagingList, String fileName, String formatLabel, boolean isHandwritten, String extractionMethod) {
+        if (stagingList == null || stagingList.isEmpty()) {
+            Toast.makeText(this, "Không tìm thấy dữ liệu hợp lệ trong file!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Dialog dialog = new Dialog(this, android.R.style.Theme_Light_NoTitleBar_Fullscreen);
+        dialog.setContentView(R.layout.dialog_staging_import);
+
+        TextView tvStagingTotalCount = dialog.findViewById(R.id.tvStagingTotalCount);
+        ImageButton btnCloseStaging = dialog.findViewById(R.id.btnCloseStaging);
+        Button btnAddRowStaging = dialog.findViewById(R.id.btnAddRowStaging);
+        Button btnConfirmImportStaging = dialog.findViewById(R.id.btnConfirmImportStaging);
+        CheckBox cbSelectAllStaging = dialog.findViewById(R.id.cbSelectAllStaging);
+        androidx.recyclerview.widget.RecyclerView rvStagingEvents = dialog.findViewById(R.id.rvStagingEvents);
+        
+        Spinner spStagingSchool = dialog.findViewById(R.id.spStagingSchool);
+        Spinner spStagingCategory = dialog.findViewById(R.id.spStagingCategory);
+        Button btnApplyBulk = dialog.findViewById(R.id.btnApplyBulk);
+
+        ArrayAdapter<CharSequence> schoolAdapter = ArrayAdapter.createFromResource(this, R.array.school_codes, android.R.layout.simple_spinner_item);
+        schoolAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spStagingSchool.setAdapter(schoolAdapter);
+
+        ArrayAdapter<String> catAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new String[]{EventModel.CAT_TEACHING, EventModel.CAT_EVENT, EventModel.CAT_INCIDENT, EventModel.CAT_MANUAL_OTHER});
+        catAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spStagingCategory.setAdapter(catAdapter);
+
+        tvStagingTotalCount.setText(stagingList.size() + " mục");
+        
+        for (EventModel ev : stagingList) {
+            ev.setSelectedForImport(!ev.hasMissingDateTime());
+        }
+
+        StagingEventAdapter adapter = new StagingEventAdapter(stagingList, (position, event) -> {
+            showEditStagingEventDialog(event, position, null, dialog);
+        }, () -> {
+            int selectedCount = 0;
+            for (EventModel e : stagingList) if (e.isSelectedForImport()) selectedCount++;
+            btnConfirmImportStaging.setText("Xác nhận nhập (" + selectedCount + ")");
+            cbSelectAllStaging.setOnCheckedChangeListener(null);
+            cbSelectAllStaging.setChecked(selectedCount == stagingList.size());
+            cbSelectAllStaging.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                for (EventModel e : stagingList) e.setSelectedForImport(isChecked);
+                // We need to notify adapter here. Since we can't access adapter easily from here without effectively making it final, let's just do it.
+            });
+        });
+        
+        // Fix the listener cross-reference:
+        cbSelectAllStaging.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            for (EventModel e : stagingList) e.setSelectedForImport(isChecked);
+            adapter.notifyDataSetChanged();
+            int sCount = isChecked ? stagingList.size() : 0;
+            btnConfirmImportStaging.setText("Xác nhận nhập (" + sCount + ")");
+        });
+
+        rvStagingEvents.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
+        rvStagingEvents.setAdapter(adapter);
+
+        int initialSelectedCount = 0;
+        for (EventModel e : stagingList) if (e.isSelectedForImport()) initialSelectedCount++;
+        btnConfirmImportStaging.setText("Xác nhận nhập (" + initialSelectedCount + ")");
+
+        btnCloseStaging.setOnClickListener(v -> dialog.dismiss());
+
+        btnAddRowStaging.setOnClickListener(v -> {
+            EventModel newEv = new EventModel(0, 0, "", new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()), "", "HK1", Calendar.getInstance().get(Calendar.YEAR), 1);
+            newEv.setSelectedForImport(true);
+            stagingList.add(newEv);
+            adapter.notifyItemInserted(stagingList.size() - 1);
+            rvStagingEvents.scrollToPosition(stagingList.size() - 1);
+            tvStagingTotalCount.setText(stagingList.size() + " mục");
+            
+            int sCount = 0;
+            for (EventModel e : stagingList) if (e.isSelectedForImport()) sCount++;
+            btnConfirmImportStaging.setText("Xác nhận nhập (" + sCount + ")");
+        });
+        
+        btnApplyBulk.setOnClickListener(v -> {
+            String selectedSchool = spStagingSchool.getSelectedItem().toString();
+            String selectedCat = spStagingCategory.getSelectedItem().toString();
+            for (EventModel ev : stagingList) {
+                if (ev.isSelectedForImport()) {
+                    ev.setSchoolCode(selectedSchool);
+                    ev.setCategory(selectedCat);
+                }
+            }
+            adapter.notifyDataSetChanged();
+            Toast.makeText(this, "Đã áp dụng cho các dòng được chọn", Toast.LENGTH_SHORT).show();
+        });
+
+        btnConfirmImportStaging.setOnClickListener(v -> {
+            int count = 0;
+            List<String> extractedSummaries = new ArrayList<>();
+            android.database.sqlite.SQLiteDatabase writableDb = dbHelper.getWritableDatabase();
+            writableDb.beginTransaction();
+            try {
+                int stt = 1;
+                for (EventModel ev : stagingList) {
+                    if (ev.isSelectedForImport() && !ev.hasMissingDateTime()) {
+                        dbHelper.insertEvent(stt++, ev.getTitle(), ev.getDate(), ev.getOrganizer(), ev.getCategory() != null ? ev.getCategory() : EventModel.CAT_TEACHING);
+                        extractedSummaries.add("[" + ev.getDate() + "] " + ev.getTitle());
+                        count++;
+                    }
+                }
+                dbHelper.normalizeSttNumbers();
+                writableDb.setTransactionSuccessful();
+            } finally {
+                writableDb.endTransaction();
+            }
+
+            if (count > 0) {
+                String historyBadgeType = isHandwritten
+                        ? "LỊCH BIỂU (VIẾT TAY • " + getFileExtensionLabel(fileName).toUpperCase(Locale.getDefault()) + ")"
+                        : "NHẬP FILE (" + getFileExtensionLabel(fileName).toUpperCase(Locale.getDefault()) + ")";
+                dbHelper.addFileHistory(fileName, historyBadgeType, count);
+                refreshFileHistory();
+                playSuccessSound();
+                refreshData();
+                refreshTab2CalendarEvents();
+                showFileAnalysisReportDialog(fileName, formatLabel, extractionMethod, isHandwritten, count, extractedSummaries);
+            }
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+
+    private void showEditStagingEventDialog(EventModel event, int position, StagingEventAdapter adapter, Dialog parentDialog) {
+        Dialog editDialog = new Dialog(this);
+        editDialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+        editDialog.setContentView(R.layout.dialog_staging_edit_event);
+        editDialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        
+        EditText etTitle = editDialog.findViewById(R.id.etEditStagingTitle);
+        EditText etDate = editDialog.findViewById(R.id.etEditStagingDate);
+        EditText etStartTime = editDialog.findViewById(R.id.etEditStagingStartTime);
+        EditText etEndTime = editDialog.findViewById(R.id.etEditStagingEndTime);
+        EditText etRoom = editDialog.findViewById(R.id.etEditStagingRoom);
+        ImageButton btnDate = editDialog.findViewById(R.id.btnPickStagingDate);
+        Button btnSave = editDialog.findViewById(R.id.btnSaveEditStaging);
+        Button btnCancel = editDialog.findViewById(R.id.btnCancelEditStaging);
+        
+        etTitle.setText(event.getTitle());
+        etDate.setText(event.getDate());
+        etStartTime.setText(event.getStartTime());
+        etEndTime.setText(event.getEndTime());
+        etRoom.setText(event.getRoom());
+        
+        btnDate.setOnClickListener(v -> {
+            Calendar cal = Calendar.getInstance();
+            new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+                etDate.setText(String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, dayOfMonth));
+            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show();
+        });
+        
+        btnCancel.setOnClickListener(v -> editDialog.dismiss());
+        
+        btnSave.setOnClickListener(v -> {
+            event.setTitle(etTitle.getText().toString());
+            event.setDate(etDate.getText().toString());
+            event.setStartTime(etStartTime.getText().toString());
+            event.setEndTime(etEndTime.getText().toString());
+            event.setRoom(etRoom.getText().toString());
+            // Need to notify adapter here. We'll do it manually.
+            if (parentDialog != null && parentDialog.isShowing()) {
+                androidx.recyclerview.widget.RecyclerView rv = parentDialog.findViewById(R.id.rvStagingEvents);
+                if (rv != null && rv.getAdapter() != null) {
+                    rv.getAdapter().notifyItemChanged(position);
+                }
+            }
+            editDialog.dismiss();
+        });
+        
+        editDialog.show();
+    }
 
 }

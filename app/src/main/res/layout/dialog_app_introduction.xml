@@ -29,7 +29,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="📖 GIỚI THIỆU CHI TIẾT LECTUPLAN"
+                android:text="GIỚI THIỆU CHI TIẾT LECTUPLAN"
                 android:textSize="17sp"
                 android:textStyle="bold"
                 android:textColor="@color/tab_header_title" />
@@ -67,7 +67,7 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/bg_search_input"
                     android:padding="12dp"
-                    android:text="🎓 Trợ lý số chuyên nghiệp dành riêng cho Giảng viên."
+                    android:text="Trợ lý số chuyên nghiệp dành riêng cho Giảng viên."
                     android:textColor="@color/accent_blue"
                     android:textSize="14sp"
                     android:textStyle="bold"
@@ -77,7 +77,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="1. 🌟 Tổng quan về Ứng dụng"
+                    android:text="1. Tổng quan về Ứng dụng"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
@@ -96,7 +96,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="2. 📅 Quản lý Thời khóa biểu &amp; Lịch giảng"
+                    android:text="2. Quản lý Thời khóa biểu &amp; Lịch giảng"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
@@ -115,7 +115,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="3. 📄 Trích xuất Tự động từ Thư mời giảng &amp; File"
+                    android:text="3. Trích xuất Tự động từ Thư mời giảng &amp; File"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
@@ -134,7 +134,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="4. ⏰ Báo thức &amp; Nhắc lịch thông minh"
+                    android:text="4. Báo thức &amp; Nhắc lịch thông minh"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
@@ -153,7 +153,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="5. 📊 Thống kê Trực quan &amp; Dự toán Thu nhập"
+                    android:text="5. Thống kê Trực quan &amp; Dự toán Thu nhập"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
@@ -172,7 +172,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="6. 🗑️ Tự động Dọn dẹp &amp; Tối ưu Dung lượng"
+                    android:text="6. Tự động Dọn dẹp &amp; Tối ưu Dung lượng"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
@@ -191,7 +191,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="7. ✨ Bộ 5 Tính năng Sáng tạo &amp; Tự động hóa Mới"
+                    android:text="7. Bộ 5 Tính năng Sáng tạo &amp; Tự động hóa Mới"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="#D97706"
@@ -200,7 +200,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="• ✨ Trợ lý Gợi ý Khung giờ Trống (Offline): Tự động tính toán, chấm điểm ưu tiên khe trống (trùng trường, tối ưu di chuyển) và tạo tin nhắn gửi sinh viên.\n• 🤖 Tự động Không Làm Phiền (DND) &amp; Check-in GPS: Tự động tắt chuông điện thoại khi bước vào ca học và mở lại khi tan ca. Lưu minh chứng tọa độ GPS khi tới trường.\n• 💰 Quản lý &amp; Dự toán Thu nhập Thỉnh giảng: Tự động nhân số tiết dạy với đơn giá từng trường. Cho phép cài đặt đơn giá riêng theo hợp đồng và thêm/xóa trường linh hoạt.\n• 🖼️ Chia sẻ Thiệp ảnh Office Hours: Tự động xuất hình ảnh vuông 1080x1080 chuyên nghiệp chứa lịch tiếp sinh viên để gửi qua Zalo/Facebook.\n• 🎙️ Ghi chú sau Buổi học bằng Giọng nói: Chuyển đổi giọng nói Tiếng Việt thành văn bản để lưu dặn dò ngay khi tan ca dạy."
+                    android:text="• Trợ lý Gợi ý Khung giờ Trống (Offline): Tự động tính toán, chấm điểm ưu tiên khe trống (trùng trường, tối ưu di chuyển) và tạo tin nhắn gửi sinh viên.\n• Tự động Không Làm Phiền (DND) &amp; Check-in GPS: Tự động tắt chuông điện thoại khi bước vào ca học và mở lại khi tan ca. Lưu minh chứng tọa độ GPS khi tới trường.\n• Quản lý &amp; Dự toán Thu nhập Thỉnh giảng: Tự động nhân số tiết dạy với đơn giá từng trường. Cho phép cài đặt đơn giá riêng theo hợp đồng và thêm/xóa trường linh hoạt.\n• Chia sẻ Thiệp ảnh Office Hours: Tự động xuất hình ảnh vuông 1080x1080 chuyên nghiệp chứa lịch tiếp sinh viên để gửi qua Zalo/Facebook.\n• Ghi chú sau Buổi học bằng Giọng nói: Chuyển đổi giọng nói Tiếng Việt thành văn bản để lưu dặn dò ngay khi tan ca dạy."
                     android:textSize="14sp"
                     android:textColor="@color/text_secondary"
                     android:lineSpacingExtra="5dp"
@@ -210,7 +210,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="8. 🏫 Bộ Cải tiến &amp; Cấu hình Đa Trường học (v1.1.3)"
+                    android:text="8. Bộ Cải tiến &amp; Cấu hình Đa Trường học (v1.1.3)"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/accent_purple"
@@ -219,7 +219,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="• 🏫 Cấu hình Trường học &amp; Tiết giảng linh hoạt: Hỗ trợ cấu hình mốc thời gian tiết học đa dạng theo từng trường (NTTU, HUTECH, UEF...).\n• 📊 Phân tích Khung giờ rảnh &amp; Tìm Slot thông minh: Nâng cấp bộ gợi ý thời gian rảnh, báo cáo chi tiết file bóc tách và drilldown biểu đồ.\n• 🔇 Tùy chỉnh Âm thanh &amp; Phản hồi chuẩn xác: Vô hiệu hóa hoàn toàn âm thanh nhấp phím khi tắt trong Cài đặt, bảo đảm không phát ra tiếng bíp ngoài ý muốn.\n• 🎯 Căn chỉnh Giao diện Chuẩn Material 3: Đồng bộ cố định vị trí nút bấm Cuộn trang &amp; Thêm lịch trên mọi tab."
+                    android:text="• Cấu hình Trường học &amp; Tiết giảng linh hoạt: Hỗ trợ cấu hình mốc thời gian tiết học đa dạng theo từng trường (NTTU, HUTECH, UEF...).\n• Phân tích Khung giờ rảnh &amp; Tìm Slot thông minh: Nâng cấp bộ gợi ý thời gian rảnh, báo cáo chi tiết file bóc tách và drilldown biểu đồ.\n• Tùy chỉnh Âm thanh &amp; Phản hồi chuẩn xác: Vô hiệu hóa hoàn toàn âm thanh nhấp phím khi tắt trong Cài đặt, bảo đảm không phát ra tiếng bíp ngoài ý muốn.\n• Căn chỉnh Giao diện Chuẩn Material 3: Đồng bộ cố định vị trí nút bấm Cuộn trang &amp; Thêm lịch trên mọi tab."
                     android:textSize="14sp"
                     android:textColor="@color/text_secondary"
                     android:lineSpacingExtra="5dp"
@@ -229,7 +229,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="9. ℹ️ Thông tin Kỹ thuật &amp; Tác giả"
+                    android:text="9. Thông tin Kỹ thuật &amp; Tác giả"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
@@ -253,7 +253,7 @@
             android:id="@+id/btnCloseAppIntroBottom"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:text="✅ Đã hiểu &amp; Trải nghiệm ngay"
+            android:text="Đã hiểu &amp; Trải nghiệm ngay"
             android:textColor="#FFFFFF"
             android:backgroundTint="#2563EB"
             android:textSize="14.5sp"

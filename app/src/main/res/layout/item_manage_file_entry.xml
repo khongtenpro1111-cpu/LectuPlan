@@ -16,7 +16,7 @@
         android:layout_height="36dp"
         android:background="#DBEAFE"
         android:gravity="center"
-        android:text="📄"
+        android:text=""
         android:textSize="18sp" />
 
     <LinearLayout
@@ -42,7 +42,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="3dp"
-            android:text="⚠️ 24 lịch trình trong ứng dụng"
+            android:text="24 lịch trình trong ứng dụng"
             android:textColor="#DC2626"
             android:textSize="11.5sp"
             android:textStyle="bold" />

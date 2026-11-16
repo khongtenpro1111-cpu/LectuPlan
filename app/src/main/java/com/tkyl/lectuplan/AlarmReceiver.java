@@ -85,7 +85,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
             NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "LECTUPLAN_VOICE_MEMO")
                     .setSmallIcon(android.R.drawable.ic_btn_speak_now)
-                    .setContentTitle("🎙️ Dặn dò sau ca dạy " + (subjectTitle != null ? subjectTitle : ""))
+                    .setContentTitle("Dặn dò sau ca dạy " + (subjectTitle != null ? subjectTitle : ""))
                     .setContentText("Chạm vào đây để ghi âm dặn dò/ghi chú cho ca học tiếp theo!")
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setAutoCancel(true)

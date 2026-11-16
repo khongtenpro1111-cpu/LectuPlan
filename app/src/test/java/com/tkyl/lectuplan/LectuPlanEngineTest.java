@@ -455,7 +455,7 @@ public class LectuPlanEngineTest {
         assertEquals(EventModel.CAT_TEACHING, MainActivity.classifyEventNature(teachingEvent.getTitle(), teachingEvent.getOrganizer()));
 
         // 2. Dòng trích xuất từ CV / hồ sơ cá nhân: TUYỆT ĐỐI KHÔNG PHẢI TEACHING EVENT
-        EventModel cvWorkExp = new EventModel(2, 2, "Kinh nghiệm làm việc: Công ty CP Công nghệ ABC", "2026-05-14", "💼 Hồ sơ cá nhân • CV_NguyenVanA.pdf", "HK2", 2026, 20);
+        EventModel cvWorkExp = new EventModel(2, 2, "Kinh nghiệm làm việc: Công ty CP Công nghệ ABC", "2026-05-14", "Hồ sơ cá nhân • CV_NguyenVanA.pdf", "HK2", 2026, 20);
         assertFalse(cvWorkExp.isTeachingEvent());
         assertEquals("PERSONAL_TASK", cvWorkExp.getPriorityType());
         assertEquals(0, MainActivity.extractPeriodsCount(cvWorkExp)); // 0 Tiết!
@@ -463,7 +463,7 @@ public class LectuPlanEngineTest {
         assertEquals("OTHER", cvWorkExp.getSchoolCode());
 
         // 3. Dòng thông tin cá nhân trong CV (dù có nhắc đến trường ĐH Nguyễn Tất Thành)
-        EventModel cvEdu = new EventModel(3, 3, "Là sinh viên của Trường: Đại học Nguyễn Tất Thành - Năm thứ: 2", "2026-05-14", "💼 Hồ sơ cá nhân • CV_Profile.pdf", "HK2", 2026, 20);
+        EventModel cvEdu = new EventModel(3, 3, "Là sinh viên của Trường: Đại học Nguyễn Tất Thành - Năm thứ: 2", "2026-05-14", "Hồ sơ cá nhân • CV_Profile.pdf", "HK2", 2026, 20);
         assertFalse(cvEdu.isTeachingEvent());
         assertEquals(0, MainActivity.extractPeriodsCount(cvEdu));
         assertEquals(EventModel.CAT_MANUAL_OTHER, MainActivity.classifyEventNature(cvEdu.getTitle(), cvEdu.getOrganizer()));
@@ -581,13 +581,13 @@ public class LectuPlanEngineTest {
 
     @Test
     public void testFileEventRegexMatching() {
-        String testOrganizer = "📄 Tài liệu PDF Văn bản số (.pdf) • CV_Js_Trung_Kien_EN (1).pdf";
+        String testOrganizer = "Tài liệu PDF Văn bản số (.pdf) • CV_Js_Trung_Kien_EN (1).pdf";
         java.util.regex.Pattern p = java.util.regex.Pattern.compile("([a-zA-Z0-9_ -]+?(?:\\s*\\([0-9]+\\))?\\.(?:pdf|xlsx|xls|docx|pptx|jpg|jpeg|png|csv|txt))", java.util.regex.Pattern.CASE_INSENSITIVE);
         java.util.regex.Matcher m = p.matcher(testOrganizer);
         assertTrue(m.find());
         assertEquals("CV_Js_Trung_Kien_EN (1).pdf", m.group(1).trim());
 
-        String testOrganizer2 = "✍️ Ghi tay • ✍️ Ảnh chụp chữ ghi tay (.jpg) (1000026181.jpg)";
+        String testOrganizer2 = "Ghi tay • Ảnh chụp chữ ghi tay (.jpg) (1000026181.jpg)";
         java.util.regex.Matcher m2 = p.matcher(testOrganizer2);
         assertTrue(m2.find());
         assertEquals("1000026181.jpg", m2.group(1).trim());

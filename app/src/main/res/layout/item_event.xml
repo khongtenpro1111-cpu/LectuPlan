@@ -77,7 +77,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="📅 Ngày: 2026-10-26 (Tuần 44)"
+                android:text="Ngày: 2026-10-26 (Tuần 44)"
                 android:textSize="13sp"
                 android:textColor="@color/text_secondary" />
         </LinearLayout>
@@ -94,7 +94,7 @@
                 android:id="@+id/tvOrganizer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="👤 Ban Chủ nhiệm Khoa"
+                android:text="Ban Chủ nhiệm Khoa"
                 android:textSize="13sp"
                 android:textColor="@color/text_tertiary" />
         </LinearLayout>

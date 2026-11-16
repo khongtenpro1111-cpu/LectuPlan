@@ -31,9 +31,9 @@ public class AutoDndReceiver extends BroadcastReceiver {
             if (AutoDndHelper.isAutoDndEnabled(context)) {
                 AutoDndHelper.enableDnd(context);
                 AlarmReceiver.triggerSoundAndNotification(context,
-                    "🔇 Đã bật Không Làm Phiền",
+                    "Đã bật Không Làm Phiền",
                     "Đã bắt đầu ca học: " + title);
-                new DatabaseHelper(context).insertNotification("🔇 Đã bật Không Làm Phiền", "Đã bắt đầu ca học: " + title, "DND");
+                new DatabaseHelper(context).insertNotification("Đã bật Không Làm Phiền", "Đã bắt đầu ca học: " + title, "DND");
             }
             if (AutoDndHelper.isAutoCheckinEnabled(context)) {
                 performGpsCheckIn(context, eventId, title);
@@ -42,9 +42,9 @@ public class AutoDndReceiver extends BroadcastReceiver {
             if (AutoDndHelper.isAutoDndEnabled(context)) {
                 AutoDndHelper.disableDnd(context);
                 AlarmReceiver.triggerSoundAndNotification(context,
-                    "🔊 Đã khôi phục Chuông",
+                    "Đã khôi phục Chuông",
                     "Đã kết thúc ca học: " + title);
-                new DatabaseHelper(context).insertNotification("🔊 Đã khôi phục Chuông", "Đã kết thúc ca học: " + title, "DND");
+                new DatabaseHelper(context).insertNotification("Đã khôi phục Chuông", "Đã kết thúc ca học: " + title, "DND");
             }
             // Tự động bắn thông báo nhắc Giảng viên Ghi âm dặn dò sau ca dạy
             AlarmReceiver.triggerVoiceMemoNotification(context, title);
@@ -65,9 +65,9 @@ public class AutoDndReceiver extends BroadcastReceiver {
                     if (loc != null) {
                         String timeStr = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
                         AlarmReceiver.triggerSoundAndNotification(context,
-                            "📍 Check-in Thành Công",
+                            "Check-in Thành Công",
                             title + "\nTọa độ: " + loc.getLatitude() + ", " + loc.getLongitude());
-                        new DatabaseHelper(context).insertNotification("📍 Check-in Thành Công", title + "\nTọa độ: " + loc.getLatitude() + ", " + loc.getLongitude(), "CHECKIN");
+                        new DatabaseHelper(context).insertNotification("Check-in Thành Công", title + "\nTọa độ: " + loc.getLatitude() + ", " + loc.getLongitude(), "CHECKIN");
                     }
                 }
             } catch (Exception ignored) {}

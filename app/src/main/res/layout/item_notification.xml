@@ -52,7 +52,7 @@
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:text="🔇 Đã bật Không Làm Phiền"
+                    android:text="Đã bật Không Làm Phiền"
                     android:textColor="@color/text_primary"
                     android:textSize="13.5sp"
                     android:singleLine="true"

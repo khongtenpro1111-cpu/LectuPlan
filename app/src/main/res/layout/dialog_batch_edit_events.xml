@@ -5,10 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardCornerRadius="20dp"
-    app:cardElevation="6dp"
+    app:cardElevation="0dp"
     app:strokeWidth="1dp"
     app:strokeColor="@color/border_default"
-    app:cardBackgroundColor="@color/surface_card">
+    app:cardBackgroundColor="#FFFFFF">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -26,7 +26,7 @@
                 android:id="@+id/tvBatchDialogHeaderTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="✏️ CHỈNH SỬA HÀNG LOẠT"
+                android:text="CHỈNH SỬA HÀNG LOẠT"
                 android:textSize="17sp"
                 android:textStyle="bold"
                 android:textColor="@color/tab_header_title" />
@@ -182,7 +182,7 @@
                     android:layout_height="wrap_content"
                     android:minHeight="44dp"
                     android:layout_weight="1.5"
-                    android:text="💾 Lưu đồng loạt"
+                    android:text="Lưu đồng loạt"
                     android:textColor="#FFFFFF"
                     android:backgroundTint="#2563EB"
                     android:textSize="13sp"

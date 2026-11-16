@@ -1,5 +1,9 @@
 package com.tkyl.lectuplan;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,6 +34,9 @@ public class EventModel {
     private String campus;      // Thu Duc Campus (Khu E), Sai Gon Campus...
     private String room;        // E1-04.06/1
     private String priorityType;// FIXED_TEACHING, ACADEMIC_INCIDENT, PERSONAL_TASK
+    
+    // Thuộc tính dùng cho chế độ Staging Import / Export
+    private boolean selectedForImport = true;
 
     public EventModel(int id, int stt, String title, String date, String organizer, String semester, int year, int week) {
         this.id = id;
@@ -102,6 +109,17 @@ public class EventModel {
     public String getSemester() { return semester; }
     public int getYear() { return year; }
     public int getWeek() { return week; }
+    
+    public boolean isSelectedForImport() { return selectedForImport; }
+    public void setSelectedForImport(boolean selectedForImport) { this.selectedForImport = selectedForImport; }
+    
+    public void setTitle(String title) { this.title = title; }
+    public void setDate(String date) { this.date = date; }
+    public void setOrganizer(String organizer) { this.organizer = organizer; }
+    
+    public boolean hasMissingDateTime() {
+        return date == null || date.trim().isEmpty() || startTime == null || startTime.trim().isEmpty() || endTime == null || endTime.trim().isEmpty();
+    }
 
     public String getStartTime() { return startTime != null ? startTime : ""; }
     public String getEndTime() { return endTime != null ? endTime : ""; }
@@ -257,9 +275,35 @@ public class EventModel {
                 .replaceAll("(?i)\\s*\\(thời gian\\s*:[^)]*\\)", "")
                 .replaceAll("(?i)\\s*\\[\\d{1,2}:\\d{2}.*?\\]", "")
                 .replaceAll("(?i)\\s*\\|\\s*tiết\\b.*", "")
-                .replaceAll("(?i)\\s*-\\s*(?:phòng|room|địa\\s*điểm)\\b.*", "")
+                .replaceAll("(?i)\\s*[-–—]\\s*(?:phòng|room|địa\\s*điểm)\\b.*", "")
+                .replaceAll("(?i)\\s*-\\s*(?:phòng|room|địa\\s*điểm).*", "")
                 .trim();
         return clean.isEmpty() ? rawTitle : clean;
+    }
+
+    public static String formatEmptyDayTitle(String dateIso) {
+        if (dateIso == null || dateIso.trim().isEmpty()) return "Không có dữ liệu";
+        try {
+            SimpleDateFormat sdfIso = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            Date d = sdfIso.parse(dateIso.trim());
+            if (d != null) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(d);
+                String dowStr = "";
+                switch (cal.get(Calendar.DAY_OF_WEEK)) {
+                    case Calendar.MONDAY: dowStr = "thứ hai"; break;
+                    case Calendar.TUESDAY: dowStr = "thứ ba"; break;
+                    case Calendar.WEDNESDAY: dowStr = "thứ tư"; break;
+                    case Calendar.THURSDAY: dowStr = "thứ năm"; break;
+                    case Calendar.FRIDAY: dowStr = "thứ sáu"; break;
+                    case Calendar.SATURDAY: dowStr = "thứ bảy"; break;
+                    case Calendar.SUNDAY: dowStr = "chủ nhật"; break;
+                }
+                SimpleDateFormat sdfOut = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                return "Không có dữ liệu vào " + dowStr + ", " + sdfOut.format(d);
+            }
+        } catch (Exception ignored) {}
+        return "Không có dữ liệu vào " + dateIso;
     }
 
     public static EventFieldBreakdown parseEventDetails(EventModel event) {
@@ -280,7 +324,11 @@ public class EventModel {
         }
 
         if (event.getId() < 0) {
-            bd.title = cleanDisplayTitle(rawTitle);
+            if (event.getId() == -100 && event.getDate() != null && !event.getDate().trim().isEmpty()) {
+                bd.title = formatEmptyDayTitle(event.getDate());
+            } else {
+                bd.title = cleanDisplayTitle(rawTitle);
+            }
             return bd;
         }
 
@@ -351,18 +399,31 @@ public class EventModel {
         // 4. Trích xuất Tên môn học sạch + Tên Lớp (đảm bảo KHÔNG cắt cụt chữ của người dùng)
         String cleanTitle = rawTitle;
         if (bd.room != null && !bd.room.isEmpty()) {
-            int dashIdx = cleanTitle.toLowerCase(java.util.Locale.getDefault()).indexOf(" - " + bd.room.toLowerCase(java.util.Locale.getDefault()));
-            if (dashIdx > 0) {
-                cleanTitle = cleanTitle.substring(0, dashIdx).trim();
+            String roomLower = bd.room.toLowerCase(Locale.getDefault());
+            String titleLower = cleanTitle.toLowerCase(Locale.getDefault());
+
+            int matchIdx = -1;
+            String[] prefixes = new String[]{
+                    " - phòng " + roomLower, " – phòng " + roomLower, " — phòng " + roomLower,
+                    " - phòng: " + roomLower, " – phòng: " + roomLower, " — phòng: " + roomLower,
+                    " - room " + roomLower, " – room " + roomLower, " — room " + roomLower,
+                    " - địa điểm " + roomLower, " – địa điểm " + roomLower, " — địa điểm " + roomLower,
+                    " - " + roomLower, " – " + roomLower, " — " + roomLower
+            };
+            for (String prefix : prefixes) {
+                int idx = titleLower.indexOf(prefix);
+                if (idx > 0) {
+                    matchIdx = idx;
+                    break;
+                }
+            }
+
+            if (matchIdx > 0) {
+                cleanTitle = cleanTitle.substring(0, matchIdx).trim();
             } else {
-                int lastDash = cleanTitle.lastIndexOf(" - ");
-                if (lastDash > 0) {
-                    cleanTitle = cleanTitle.substring(0, lastDash).trim();
-                } else {
-                    int pipeIdx = cleanTitle.toLowerCase(java.util.Locale.getDefault()).indexOf(" | tiết");
-                    if (pipeIdx > 0) {
-                        cleanTitle = cleanTitle.substring(0, pipeIdx).trim();
-                    }
+                int pipeIdx = titleLower.indexOf(" | tiết");
+                if (pipeIdx > 0) {
+                    cleanTitle = cleanTitle.substring(0, pipeIdx).trim();
                 }
             }
         }

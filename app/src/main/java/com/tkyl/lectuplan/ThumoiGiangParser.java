@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  * - Tự động nhận diện trường (HUTECH, NTTU, UEF...)
  * - Bóc tách thông tin Giảng viên, Khoa, Đợt học / Học kỳ
  * - Bộ bóc tách bảng đa dòng (Multi-line Table Parsing & OCR Resilient) chống lỗi ngắt dòng
- * - Áp bảng quy đổi giờ theo trường (Tiết học ➔ start_time, end_time)
+ * - Áp bảng quy đổi giờ theo trường (Tiết học -> start_time, end_time)
  * - Trích xuất đầy đủ Nhóm, Tổ TH, Sĩ số, Phòng, Cơ sở (Campus)
  * - Tự động quét ngày nghỉ lễ động (không fix cứng năm)
  * - Tự động rải lịch từng tuần và cảnh báo các buổi học rơi vào ngày lễ cần xếp lịch dạy bù
@@ -219,7 +219,7 @@ public class ThumoiGiangParser {
                         sessionIndex++;
                     } else {
                         // CẢNH BÁO NGHỈ LỄ: Buổi học rơi vào ngày lễ, cần xếp lịch bù!
-                        String holidayNotice = "⚠️ Môn " + item.subjectName + " (" + item.className + ") ngày " + sdfVn.format(cal.getTime())
+                        String holidayNotice = "Môn " + item.subjectName + " (" + item.className + ") ngày " + sdfVn.format(cal.getTime())
                                 + " rơi vào ngày nghỉ lễ (" + dateIso + "). Bị khuyết 1 buổi (" + item.periodCount + " tiết) - Cần liên hệ Thư ký TKB xếp lịch bù!";
                         result.makeupWarnings.add(holidayNotice);
                     }
@@ -273,7 +273,7 @@ public class ThumoiGiangParser {
             examDeadline.dateIso = examDeadlineIso;
             examDeadline.timeRangeStr = "08:00 - 16:30";
             boolean isLabOnly = representative.subjectName.toLowerCase(Locale.getDefault()).contains("thực hành");
-            examDeadline.title = "📝 [HẠN CHÓT] Nộp đề thi kết thúc học phần môn " + representative.subjectName
+            examDeadline.title = "[HẠN CHÓT] Nộp đề thi kết thúc học phần môn " + representative.subjectName
                     + " (" + classSummary + ") về VP Khoa"
                     + (isLabOnly ? " [Học phần Thực hành: Báo cáo/Đánh giá bài tập lớn theo quy định BM]" : " [2 đề + 2 đáp án]");
             examDeadline.organizer = "[" + representative.school.getCode() + "] Văn phòng Khoa (Nhắc việc tự động)";
@@ -286,7 +286,7 @@ public class ThumoiGiangParser {
             GeneratedClassEvent gradeDeadline = new GeneratedClassEvent();
             gradeDeadline.dateIso = gradeDeadlineIso;
             gradeDeadline.timeRangeStr = "08:00 - 17:00";
-            gradeDeadline.title = "📊 [HẠN CHÓT] Công bố điểm quá trình & Nộp bảng điểm môn " + representative.subjectName
+            gradeDeadline.title = "[HẠN CHÓT] Công bố điểm quá trình & Nộp bảng điểm môn " + representative.subjectName
                     + " (" + classSummary + ") - Buổi học cuối cùng";
             gradeDeadline.organizer = "[" + representative.school.getCode() + "] Văn phòng Khoa (Nhắc việc tự động)";
             gradeDeadline.isDeadline = true;
@@ -304,7 +304,7 @@ public class ThumoiGiangParser {
             if (totalPeriods >= 8) {
                 // Tải trọng từ 8 tiết trở lên trong cùng 1 ngày
                 StringBuilder warnSb = new StringBuilder();
-                warnSb.append("⚠️ CẢNH BÁO TẢI TRỌNG CAO: ").append(dowName).append(" có ").append(totalPeriods)
+                warnSb.append("CẢNH BÁO TẢI TRỌNG CAO: ").append(dowName).append(" có ").append(totalPeriods)
                         .append(" tiết giảng dạy liên tục (");
                 if (dayItems != null) {
                     for (int i = 0; i < dayItems.size(); i++) {
@@ -356,16 +356,16 @@ public class ThumoiGiangParser {
 
             if (dayItems == null || dayItems.isEmpty()) {
                 if (dow == 8) {
-                    analysis.add("🟢 Chủ Nhật: TRỐNG 100% CẢ NGÀY (Rảnh từ 06:45 đến 21:45) • Nghỉ ngơi cuối tuần, sinh hoạt gia đình hoặc làm việc tự do.");
+                    analysis.add("Chủ Nhật: TRỐNG 100% CẢ NGÀY (Rảnh từ 06:45 đến 21:45) • Nghỉ ngơi cuối tuần, sinh hoạt gia đình hoặc làm việc tự do.");
                 } else {
-                    analysis.add("🟢 " + dowName + ": TRỐNG 100% CẢ NGÀY (Rảnh từ 06:45 đến 21:45 • Khả dụng trọn vẹn 15 giờ) ➔ SẴN SÀNG NHẬN TOÀN BỘ CA DẠY THỈNH GIẢNG, nghiên cứu khoa học hoặc chấm đồ án.");
+                    analysis.add(dowName + ": TRỐNG 100% CẢ NGÀY (Rảnh từ 06:45 đến 21:45 • Khả dụng trọn vẹn 15 giờ) -> SẴN SÀNG NHẬN TOÀN BỘ CA DẠY THỈNH GIẢNG, nghiên cứu khoa học hoặc chấm đồ án.");
                 }
             } else {
                 int totalPeriods = periodsPerDayOfWeek != null && periodsPerDayOfWeek.containsKey(dow) ? periodsPerDayOfWeek.get(dow) : 0;
                 Collections.sort(dayItems, (a, b) -> Integer.compare(a.startPeriod, b.startPeriod));
 
                 StringBuilder busySb = new StringBuilder();
-                busySb.append("🔴 ").append(dowName).append(": BẬN DẠY ").append(totalPeriods).append(" TIẾT (");
+                busySb.append(dowName).append(": BẬN DẠY ").append(totalPeriods).append(" TIẾT (");
 
                 int firstStartMin = -1;
                 int lastEndMin = -1;
@@ -385,7 +385,7 @@ public class ThumoiGiangParser {
                 if (firstStartMin > TimeNormalizer.DAY_START_MINUTE) {
                     int morningFree = firstStartMin - TimeNormalizer.DAY_START_MINUTE;
                     busySb.append("  • 06:45 - ").append(TimeNormalizer.minuteToTimeString(firstStartMin))
-                            .append(" (").append(morningFree).append(" phút): 🟢 Trống đầu ngày (Chuẩn bị giáo án, ăn sáng)\n");
+                            .append(" (").append(morningFree).append(" phút): Trống đầu ngày (Chuẩn bị giáo án, ăn sáng)\n");
                 }
 
                 // Chi tiết từng ca và khoảng nghỉ giữa ca
@@ -393,7 +393,7 @@ public class ThumoiGiangParser {
                     ParsedTeachingItem curr = dayItems.get(i);
                     TimeNormalizer.NormalizedRange currRange = TimeNormalizer.fromPeriodRange(school, curr.startPeriod, curr.periodCount);
                     busySb.append("  • ").append(currRange.startTimeStr).append(" - ").append(currRange.endTimeStr)
-                            .append(" (").append(curr.periodCount).append(" tiết): 🔴 Ca dạy [").append(curr.subjectName)
+                            .append(" (").append(curr.periodCount).append(" tiết): Ca dạy [").append(curr.subjectName)
                             .append(" - ").append(curr.className).append(" • Phòng ").append(curr.room).append("]\n");
 
                     if (i < dayItems.size() - 1) {
@@ -402,7 +402,7 @@ public class ThumoiGiangParser {
                         int gap = nextRange.startMin - currRange.endMin;
                         if (gap > 0) {
                             busySb.append("  • ").append(currRange.endTimeStr).append(" - ").append(nextRange.startTimeStr)
-                                    .append(" (").append(gap).append(" phút): 🟡 Nghỉ giữa ca tại chỗ (Ăn trưa, nghỉ ngơi • ĐÃ KHÓA, KHÔNG NHẬN VIỆC)\n");
+                                    .append(" (").append(gap).append(" phút): Nghỉ giữa ca tại chỗ (Ăn trưa, nghỉ ngơi • ĐÃ KHÓA, KHÔNG NHẬN VIỆC)\n");
                         }
                     }
                 }
@@ -411,7 +411,7 @@ public class ThumoiGiangParser {
                 if (lastEndMin < TimeNormalizer.DAY_END_MINUTE) {
                     int postFree = TimeNormalizer.DAY_END_MINUTE - lastEndMin;
                     busySb.append("  • ").append(TimeNormalizer.minuteToTimeString(lastEndMin)).append(" - 21:45 (")
-                            .append(postFree / 60).append("h").append(postFree % 60).append("p): 🟢 TRỐNG CHIỀU TỐI KHẢ DỤNG (Có thể nhận họp bộ môn Online, chấm thi)");
+                            .append(postFree / 60).append("h").append(postFree % 60).append("p): TRỐNG CHIỀU TỐI KHẢ DỤNG (Có thể nhận họp bộ môn Online, chấm thi)");
                 }
 
                 analysis.add(busySb.toString().trim());
@@ -506,7 +506,7 @@ public class ThumoiGiangParser {
     }
 
     /**
-     * Bóc tách bảng quy đổi Tiết học ➔ Giờ học trực tiếp từ văn bản (nếu tài liệu có in bảng giờ học ở chân trang)
+     * Bóc tách bảng quy đổi Tiết học -> Giờ học trực tiếp từ văn bản (nếu tài liệu có in bảng giờ học ở chân trang)
      */
     public static Map<Integer, int[]> parseCustomPeriodMap(String fullText) {
         Map<Integer, int[]> map = new HashMap<>();

@@ -57,7 +57,7 @@
                     android:background="#DCFCE7"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="3dp"
-                    android:text="🟢 Rảnh hoàn toàn"
+                    android:text="Rảnh hoàn toàn"
                     android:textColor="#16A34A"
                     android:textSize="11sp"
                     android:textStyle="bold" />
@@ -80,7 +80,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="📍 Phòng E1-04.06/1 (Thu Duc Campus) | Tiết 2 - 6"
+                android:text="Phòng E1-04.06/1 (Thu Duc Campus) | Tiết 2 - 6"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
@@ -124,7 +124,7 @@
                     android:background="#EFF6FF"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="4dp"
-                    android:text="📢 Báo SV"
+                    android:text="Báo SV"
                     android:textColor="#2563EB"
                     android:textSize="11sp"
                     android:textStyle="bold"

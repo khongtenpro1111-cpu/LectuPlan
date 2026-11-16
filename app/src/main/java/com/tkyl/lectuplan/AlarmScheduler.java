@@ -133,7 +133,7 @@ public class AlarmScheduler {
 
     public static String getCountdownText(Context context) {
         if (!isAlarmEnabled(context)) {
-            return "🔴 Báo thức đang TẮT";
+            return "Báo thức đang TẮT";
         }
 
         int hour = getAlarmHour(context);
@@ -158,11 +158,11 @@ public class AlarmScheduler {
         String dayStr = isTomorrow ? "Sáng mai" : "Hôm nay";
 
         if (diffHours == 0 && diffMinutes == 0) {
-            return "⏰ Chuẩn bị báo thức lúc " + timeStr;
+            return "Chuẩn bị báo thức lúc " + timeStr;
         } else if (diffHours == 0) {
-            return "⏳ Lần báo tiếp: " + timeStr + " (" + dayStr + " - còn " + diffMinutes + " phút)";
+            return "Lần báo tiếp: " + timeStr + " (" + dayStr + " - còn " + diffMinutes + " phút)";
         } else {
-            return "⏳ Lần báo tiếp: " + timeStr + " (" + dayStr + " - còn " + diffHours + "h" + (diffMinutes > 0 ? String.format(Locale.US, " %02dp", diffMinutes) : "") + ")";
+            return "Lần báo tiếp: " + timeStr + " (" + dayStr + " - còn " + diffHours + "h" + (diffMinutes > 0 ? String.format(Locale.US, " %02dp", diffMinutes) : "") + ")";
         }
     }
 }

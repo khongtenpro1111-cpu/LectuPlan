@@ -287,7 +287,7 @@ public class OfficeHoursShareHelper {
         dayPaint.setColor(Color.parseColor("#0F172A"));
         dayPaint.setTextSize(46);
         dayPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-        canvas.drawText("📅 " + dayDisplay, 120, 340, dayPaint);
+        canvas.drawText(dayDisplay, 120, 340, dayPaint);
 
         // Chữ Khung giờ
         TextPaint timePaint = new TextPaint();
@@ -295,7 +295,7 @@ public class OfficeHoursShareHelper {
         timePaint.setColor(Color.parseColor("#16A34A")); // Xanh lá
         timePaint.setTextSize(58);
         timePaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-        canvas.drawText("⏰ " + timeRangeStr, 120, 450, timePaint);
+        canvas.drawText(timeRangeStr, 120, 450, timePaint);
 
         // Đường kẻ phân cách nhạt
         Paint linePaint = new Paint();
@@ -335,7 +335,7 @@ public class OfficeHoursShareHelper {
         footerPaint.setTextSize(32);
         footerPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.ITALIC));
         footerPaint.setTextAlign(Paint.Align.CENTER);
-        canvas.drawText("✨ Tạo tự động bởi Trợ lý LectuPlan", width / 2f, height - 130, footerPaint);
+        canvas.drawText("Tạo tự động bởi Trợ lý LectuPlan", width / 2f, height - 130, footerPaint);
 
         // 5. Lưu ra file và Share
         try {

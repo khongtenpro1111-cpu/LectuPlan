@@ -70,17 +70,17 @@ public class SmartSlotAdapter extends RecyclerView.Adapter<SmartSlotAdapter.View
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         FoundSlot slot = list.get(position);
         holder.tvDayTitle.setText(slot.dayDisplay);
-        holder.tvTimeRange.setText("🟢 " + slot.timeRangeStr + " (" + slot.durationFormatted + ")");
+        holder.tvTimeRange.setText(slot.timeRangeStr + " (" + slot.durationFormatted + ")");
         
         String ctxText = slot.contextDesc != null ? slot.contextDesc : "Khả dụng nhận việc";
         if (slot.aiRecommendation != null && !slot.aiRecommendation.isEmpty()) {
-            ctxText += "\n💡 AI: " + slot.aiRecommendation;
+            ctxText += "\nGợi ý: " + slot.aiRecommendation;
         }
         holder.tvContext.setText(ctxText);
 
         if (slot.score > 0) {
             holder.tvAiScoreBadge.setVisibility(View.VISIBLE);
-            holder.tvAiScoreBadge.setText("✨ " + slot.score + "đ");
+            holder.tvAiScoreBadge.setText(slot.score + "đ");
             if (slot.score >= 120) {
                 holder.tvAiScoreBadge.setBackgroundResource(R.drawable.bg_ai_badge); // Vàng
             } else if (slot.score < 80) {

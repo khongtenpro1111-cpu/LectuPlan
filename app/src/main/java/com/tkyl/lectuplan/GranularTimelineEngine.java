@@ -15,7 +15,7 @@ public class GranularTimelineEngine {
 
     public static class DayTimelineSummary {
         public String dateIso;
-        public String dayHeaderTitle;        // 📅 THỨ NĂM, 14/05/2026
+        public String dayHeaderTitle;        // THỨ NĂM, 14/05/2026
         public String statsSummary;          // Tổng: 2 ca dạy - 1 sự kiện | Trống: 4 giờ 40 phút
         public int totalBusyCount;
         public int totalFreeMinutes;
@@ -33,12 +33,12 @@ public class GranularTimelineEngine {
         try {
             Date d = sdf.parse(dateIso);
             if (d != null) {
-                summary.dayHeaderTitle = "📅 " + dayFmt.format(d).toUpperCase(Locale.getDefault());
+                summary.dayHeaderTitle = dayFmt.format(d).toUpperCase(Locale.getDefault());
             } else {
-                summary.dayHeaderTitle = "📅 " + dateIso;
+                summary.dayHeaderTitle = dateIso;
             }
         } catch (Exception ignored) {
-            summary.dayHeaderTitle = "📅 " + dateIso;
+            summary.dayHeaderTitle = dateIso;
         }
 
         // 2. Chuyển đổi toàn bộ EventModel sang TimelineSlot loại BUSY_EVENT
@@ -101,10 +101,10 @@ public class GranularTimelineEngine {
                     TimelineSlot.SlotType.DEEP_FREE,
                     TimeNormalizer.DAY_START_MINUTE,
                     TimeNormalizer.DAY_END_MINUTE,
-                    "🟢 TRỐNG TOÀN BỘ NGÀY (Cả ngày rảnh rỗi)",
+                    "TRỐNG TOÀN BỘ NGÀY (Cả ngày rảnh rỗi)",
                     "Khung giờ hoạt động: 06:45 - 20:15 (" + formatMinutesToHourString(dayDuration) + ")",
                     "Gợi ý: Sẵn sàng nhận toàn bộ ca dạy thỉnh giảng, chấm khóa luận hoặc làm việc chuyên sâu.",
-                    "🟢 Rảnh cả ngày",
+                    "Rảnh cả ngày",
                     "#16A34A",
                     "#F0FDF4"
             );
@@ -126,10 +126,10 @@ public class GranularTimelineEngine {
             // Kiểm tra xung đột trùng giờ với ca trước (Conflict / Overlap Detection)
             if (i > 0 && currBusy.getStartMin() < pointer) {
                 TimelineSlot prevBusy = busySlots.get(i - 1);
-                currBusy.setBadgeText("🚨 XUNG ĐỘT TRÙNG GIỜ");
+                currBusy.setBadgeText("XUNG ĐỘT TRÙNG GIỜ");
                 currBusy.setColorHex("#DC2626");
                 currBusy.setBgHex("#FEF2F2");
-                currBusy.setSuggestion("⚠️ CẢNH BÁO XUNG ĐỘT: Bị trùng giờ với sự kiện trước [" + prevBusy.getTitle()
+                currBusy.setSuggestion("CẢNH BÁO XUNG ĐỘT: Bị trùng giờ với sự kiện trước [" + prevBusy.getTitle()
                         + " (" + TimeNormalizer.minuteToTimeString(prevBusy.getStartMin()) + " - " + TimeNormalizer.minuteToTimeString(prevBusy.getEndMin()) + ")]! Giảng viên cần xin đổi ca hoặc dời lịch.");
             }
 
@@ -143,10 +143,10 @@ public class GranularTimelineEngine {
                             TimelineSlot.SlotType.START_DAY_FREE,
                             pointer,
                             currBusy.getStartMin(),
-                            "🟢 TRỐNG ĐẦU NGÀY (" + formatDuration(gap) + ")",
+                            "TRỐNG ĐẦU NGÀY (" + formatDuration(gap) + ")",
                             "[" + TimeNormalizer.minuteToTimeString(pointer) + " - " + TimeNormalizer.minuteToTimeString(currBusy.getStartMin()) + "]",
                             "Gợi ý: Ăn sáng, chuẩn bị tài liệu giảng dạy, di chuyển sớm",
-                            "🟢 Rảnh đầu ngày",
+                            "Rảnh đầu ngày",
                             "#16A34A",
                             "#F0FDF4"
                     );
@@ -158,7 +158,7 @@ public class GranularTimelineEngine {
                     boolean isSame = CampusBufferHelper.isSameCampus(prevCampus, currCampus);
 
                     if (!isSame && gap >= 40) {
-                        // Khác cơ sở / khác trường ➔ Cần đệm di chuyển 45-60 phút
+                        // Khác cơ sở / khác trường -> Cần đệm di chuyển 45-60 phút
                         int travelMin = Math.min(gap, CampusBufferHelper.DEFAULT_TRAVEL_BUFFER_MINUTES);
                         int freeBeforeTravel = gap - travelMin;
 
@@ -167,10 +167,10 @@ public class GranularTimelineEngine {
                                     TimelineSlot.SlotType.MICRO_FREE,
                                     pointer,
                                     currBusy.getStartMin() - travelMin,
-                                    "🟡 NGHỈ NGẮN TRƯỚC GIỜ DI CHUYỂN (" + formatDuration(freeBeforeTravel) + ")",
+                                    "NGHỈ NGẮN TRƯỚC GIỜ DI CHUYỂN (" + formatDuration(freeBeforeTravel) + ")",
                                     "[" + TimeNormalizer.minuteToTimeString(pointer) + " - " + TimeNormalizer.minuteToTimeString(currBusy.getStartMin() - travelMin) + "]",
                                     "Gợi ý: Nghỉ ngơi tại chỗ, chuẩn bị phương tiện",
-                                    "🟡 Nghỉ ngắn",
+                                    "Nghỉ ngắn",
                                     "#CA8A04",
                                     "#FEFCE8"
                             );
@@ -183,10 +183,10 @@ public class GranularTimelineEngine {
                                 TimelineSlot.SlotType.TRAVEL_WARNING,
                                 currBusy.getStartMin() - travelMin,
                                 currBusy.getStartMin(),
-                                "🟠 ĐỆM DI CHUYỂN QUA CƠ SỞ KHÁC (" + travelMin + " phút: " + prevCampus.shortName + " ➔ " + currCampus.shortName + ")",
-                                "📍 Lộ trình: " + prevCampus.shortName + " sang " + currCampus.shortName,
-                                "⚠️ Đang chạy xe di chuyển ngoài đường - Tuyệt đối không thể nhận việc!",
-                                "🟠 Đệm di chuyển",
+                                "ĐỆM DI CHUYỂN QUA CƠ SỞ KHÁC (" + travelMin + " phút: " + prevCampus.shortName + " -> " + currCampus.shortName + ")",
+                                "Lộ trình: " + prevCampus.shortName + " sang " + currCampus.shortName,
+                                "Đang chạy xe di chuyển ngoài đường - Tuyệt đối không thể nhận việc!",
+                                "Đệm di chuyển",
                                 "#EA580C",
                                 "#FFF7ED"
                         );
@@ -200,11 +200,11 @@ public class GranularTimelineEngine {
                                     TimelineSlot.SlotType.DEEP_FREE,
                                     pointer,
                                     currBusy.getStartMin(),
-                                    isDeep ? "🟢 RẢNH HOÀN TOÀN (" + formatDuration(gap) + ")"
-                                           : "🟢 LỊCH TRỐNG KHẢ DỤNG (" + formatDuration(gap) + ")",
+                                    isDeep ? "RẢNH HOÀN TOÀN (" + formatDuration(gap) + ")"
+                                           : "LỊCH TRỐNG KHẢ DỤNG (" + formatDuration(gap) + ")",
                                     "[" + TimeNormalizer.minuteToTimeString(pointer) + " - " + TimeNormalizer.minuteToTimeString(currBusy.getStartMin()) + "]",
                                     "[+ Nhấn vào đây để chèn lịch phát sinh / Soạn đề thi]",
-                                    isDeep ? "🟢 Rảnh hoàn toàn" : "🟢 Trống khả dụng",
+                                    isDeep ? "Rảnh hoàn toàn" : "Trống khả dụng",
                                     "#16A34A",
                                     "#F0FDF4"
                             );
@@ -216,10 +216,10 @@ public class GranularTimelineEngine {
                                     TimelineSlot.SlotType.MICRO_FREE,
                                     pointer,
                                     currBusy.getStartMin(),
-                                    "🟡 NGHỈ GIỮA CA TẠI CHỖ (" + gap + " phút - Cùng cơ sở " + currCampus.shortName + ")",
+                                    "NGHỈ GIỮA CA TẠI CHỖ (" + gap + " phút - Cùng cơ sở " + currCampus.shortName + ")",
                                     "[" + TimeNormalizer.minuteToTimeString(pointer) + " - " + TimeNormalizer.minuteToTimeString(currBusy.getStartMin()) + "]",
                                     "Gợi ý: Ăn trưa, nghỉ ngơi, họp online nhanh (Không nhận lịch họp dài)",
-                                    "🟡 Nghỉ chuyển ca",
+                                    "Nghỉ chuyển ca",
                                     "#CA8A04",
                                     "#FEFCE8"
                             );
@@ -243,10 +243,10 @@ public class GranularTimelineEngine {
                         TimelineSlot.SlotType.END_DAY_FREE,
                         pointer,
                         TimeNormalizer.DAY_END_MINUTE,
-                        "🟢 TRỐNG CUỐI NGÀY (" + formatDuration(endGap) + ")",
+                        "TRỐNG CUỐI NGÀY (" + formatDuration(endGap) + ")",
                         "[" + TimeNormalizer.minuteToTimeString(pointer) + " - " + TimeNormalizer.minuteToTimeString(TimeNormalizer.DAY_END_MINUTE) + "]",
                         "Gợi ý: Thể thao, sinh hoạt gia đình hoặc làm việc tự do",
-                        "🟢 Rảnh cuối ngày",
+                        "Rảnh cuối ngày",
                         "#16A34A",
                         "#F0FDF4"
                 );
@@ -313,12 +313,12 @@ public class GranularTimelineEngine {
     private static String buildSubtitle(CampusBufferHelper.CampusInfo campus, TimeNormalizer.NormalizedRange range, EventModel ev) {
         StringBuilder sb = new StringBuilder();
         if (campus.room != null && !campus.room.isEmpty()) {
-            sb.append("📍 Phòng ").append(campus.room);
+            sb.append("Phòng ").append(campus.room);
             if (!campus.campusName.isEmpty()) {
                 sb.append(" (").append(campus.shortName).append(")");
             }
         } else if (!campus.campusName.isEmpty()) {
-            sb.append("📍 ").append(campus.campusName);
+            sb.append(campus.campusName);
         }
 
         if (range.isPeriodBased) {

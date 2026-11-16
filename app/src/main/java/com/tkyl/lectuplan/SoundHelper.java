@@ -217,12 +217,12 @@ public class SoundHelper {
     public static String getSoundStyleName(int style) {
         switch (style) {
             case STYLE_GENTLE_POP:
-                return "🎵 Tiếng Pop nhã nhặn";
+                return "Tiếng Pop nhã nhặn";
             case STYLE_LECTURE_CHIME:
-                return "🔔 Chuông nhẹ giảng đường";
+                return "Chuông nhẹ giảng đường";
             case STYLE_STANDARD_CLICK:
             default:
-                return "🔊 Phím bấm tiêu chuẩn";
+                return "Phím bấm tiêu chuẩn";
         }
     }
 

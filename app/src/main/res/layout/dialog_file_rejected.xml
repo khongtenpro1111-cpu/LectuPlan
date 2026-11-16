@@ -24,12 +24,13 @@
             android:gravity="center_vertical"
             android:layout_marginBottom="12dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🚫"
-                android:textSize="26sp"
-                android:layout_marginEnd="10dp" />
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_warning"
+                app:tint="#EF4444"
+                android:layout_marginEnd="10dp"
+                android:contentDescription="Từ chối" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -98,7 +99,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="✅ 👨‍🏫 Lịch dạy/học: Thư mời dạy, TKB, lịch giảng dạy"
+                android:text="• Lịch dạy/học: Thư mời dạy, TKB, lịch giảng dạy"
                 android:textSize="12sp"
                 android:textColor="@color/text_secondary"
                 android:layout_marginBottom="4dp" />
@@ -106,7 +107,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="✅ 🏛️ Lịch sự kiện: Thông báo trường gửi, lịch tuần, hội nghị"
+                android:text="• Lịch sự kiện: Thông báo trường gửi, lịch tuần, hội nghị"
                 android:textSize="12sp"
                 android:textColor="@color/text_secondary"
                 android:layout_marginBottom="4dp" />
@@ -114,7 +115,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="✅ ⚡ Lịch phát sinh: Dạy bù, đổi ca, coi thi, chấm thi"
+                android:text="• Lịch phát sinh: Dạy bù, đổi ca, coi thi, chấm thi"
                 android:textSize="12sp"
                 android:textColor="@color/text_secondary"
                 android:layout_marginBottom="4dp" />
@@ -122,7 +123,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="✅ 📝 Lịch nhập thủ công(khác): Thêm trực tiếp trong app"
+                android:text="• Lịch nhập thủ công (khác): Thêm trực tiếp trong app"
                 android:textSize="12sp"
                 android:textColor="@color/text_secondary"
                 android:layout_marginBottom="6dp" />
@@ -136,7 +137,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="❌ TỪ CHỐI TUYỆT ĐỐI: CV, Sơ yếu lý lịch, hồ sơ xin việc, bảng điểm, bằng cấp hoặc tài liệu không phải lịch trình."
+                android:text="TỪ CHỐI TUYỆT ĐỐI: CV, Sơ yếu lý lịch, hồ sơ xin việc, bảng điểm, bằng cấp hoặc tài liệu không phải lịch trình."
                 android:textSize="11.5sp"
                 android:textColor="#EF4444"
                 android:textStyle="bold" />

@@ -42,7 +42,7 @@
                 android:background="#DCFCE7"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="4dp"
-                android:text="🟢 TRỐNG CẢ NGÀY"
+                android:text="TRỐNG CẢ NGÀY"
                 android:textColor="#15803D"
                 android:textSize="11sp"
                 android:textStyle="bold" />
@@ -55,7 +55,7 @@
                 android:background="#EFF6FF"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="4dp"
-                android:text="📢 Báo SV"
+                android:text="Báo SV"
                 android:textColor="#2563EB"
                 android:textSize="11sp"
                 android:textStyle="bold"
@@ -76,7 +76,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="☀️ BUỔI SÁNG (07:00 - 11:30)"
+                android:text="BUỔI SÁNG (07:00 - 11:30)"
                 android:textColor="@color/text_primary"
                 android:textSize="11.5sp"
                 android:textStyle="bold"
@@ -86,7 +86,7 @@
                 android:id="@+id/tvMorningDetail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="🟢 Trống cả buổi sáng (07:00 - 11:30)"
+                android:text="Trống cả buổi sáng (07:00 - 11:30)"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp"
                 android:lineSpacingExtra="3dp" />
@@ -104,7 +104,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="⛅ BUỔI CHIỀU (13:00 - 17:00)"
+                android:text="BUỔI CHIỀU (13:00 - 17:00)"
                 android:textColor="@color/text_primary"
                 android:textSize="11.5sp"
                 android:textStyle="bold"
@@ -114,7 +114,7 @@
                 android:id="@+id/tvAfternoonDetail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="🟢 Trống cả buổi chiều (13:00 - 17:00)"
+                android:text="Trống cả buổi chiều (13:00 - 17:00)"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp"
                 android:lineSpacingExtra="3dp" />

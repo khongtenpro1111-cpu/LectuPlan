@@ -109,12 +109,13 @@
                             android:focusable="true"
                             android:foreground="?android:attr/selectableItemBackground">
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
                                 android:layout_gravity="center"
-                                android:text="🔔"
-                                android:textSize="18sp" />
+                                android:src="@drawable/ic_notification"
+                                app:tint="#FFFFFF"
+                                android:contentDescription="Thông báo" />
 
                             <TextView
                                 android:id="@+id/tvUnreadNotifBadge"
@@ -149,7 +150,7 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:background="@null"
-                        android:hint="🔍 Tìm kiếm môn học, lịch họp, ghi chú..."
+                        android:hint="Tìm kiếm môn học, lịch họp, ghi chú..."
                         android:textColorHint="@color/text_tertiary"
                         android:textSize="13.5sp"
                         android:textColor="@color/text_primary"
@@ -205,7 +206,7 @@
                             android:gravity="center"
                             android:paddingHorizontal="14dp"
                             android:paddingVertical="6dp"
-                            android:text="📌 Hôm nay"
+                            android:text="Hôm nay"
                             android:textColor="@color/chip_unselected_text"
                             android:textSize="13sp"
                             android:textStyle="bold"
@@ -222,7 +223,7 @@
                             android:gravity="center"
                             android:paddingHorizontal="14dp"
                             android:paddingVertical="6dp"
-                            android:text="👨‍🏫 Lịch dạy/học"
+                            android:text="Lịch dạy/học"
                             android:textColor="@color/chip_unselected_text"
                             android:textSize="13sp"
                             android:textStyle="bold"
@@ -239,7 +240,7 @@
                             android:gravity="center"
                             android:paddingHorizontal="14dp"
                             android:paddingVertical="6dp"
-                            android:text="🏛️ Lịch sự kiện"
+                            android:text="Lịch sự kiện"
                             android:textColor="@color/chip_unselected_text"
                             android:textSize="13sp"
                             android:textStyle="bold"
@@ -256,7 +257,7 @@
                             android:gravity="center"
                             android:paddingHorizontal="14dp"
                             android:paddingVertical="6dp"
-                            android:text="⚡ Lịch phát sinh"
+                            android:text="Lịch phát sinh"
                             android:textColor="@color/chip_unselected_text"
                             android:textSize="13sp"
                             android:textStyle="bold"
@@ -273,7 +274,7 @@
                             android:gravity="center"
                             android:paddingHorizontal="14dp"
                             android:paddingVertical="6dp"
-                            android:text="📝 Lịch khác"
+                            android:text="Lịch khác"
                             android:textColor="@color/chip_unselected_text"
                             android:textSize="13sp"
                             android:textStyle="bold"
@@ -290,7 +291,7 @@
                             android:gravity="center"
                             android:paddingHorizontal="14dp"
                             android:paddingVertical="6dp"
-                            android:text="💡 Lịch trống"
+                            android:text="Lịch trống"
                             android:textColor="@color/accent_amber"
                             android:textSize="13sp"
                             android:textStyle="bold"
@@ -307,7 +308,7 @@
                             android:gravity="center"
                             android:paddingHorizontal="14dp"
                             android:paddingVertical="6dp"
-                            android:text="⏱️ Dòng chảy thời gian"
+                            android:text="Dòng chảy thời gian"
                             android:textColor="@color/accent_blue"
                             android:textSize="13sp"
                             android:textStyle="bold"
@@ -324,7 +325,7 @@
                             android:gravity="center"
                             android:paddingHorizontal="14dp"
                             android:paddingVertical="6dp"
-                            android:text="🔍 Tìm khe nhét lịch"
+                            android:text="Tìm khe nhét lịch"
                             android:textColor="@color/accent_green"
                             android:textSize="13sp"
                             android:textStyle="bold"
@@ -373,7 +374,7 @@
                         android:background="@drawable/bg_search_input"
                         android:paddingHorizontal="8dp"
                         android:paddingVertical="4dp"
-                        android:text="⬆️ Đầu"
+                        android:text="Đầu"
                         android:textColor="@color/accent_blue"
                         android:textSize="11.5sp"
                         android:textStyle="bold"
@@ -388,7 +389,7 @@
                         android:background="@drawable/bg_search_input"
                         android:paddingHorizontal="8dp"
                         android:paddingVertical="4dp"
-                        android:text="⬇️ Cuối"
+                        android:text="Cuối"
                         android:textColor="@color/accent_blue"
                         android:textSize="11.5sp"
                         android:textStyle="bold"
@@ -403,7 +404,7 @@
                         android:background="@drawable/bg_search_input"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="4dp"
-                        android:text="☑️ Chọn nhiều"
+                        android:text="Chọn nhiều"
                         android:textColor="@color/accent_blue"
                         android:textSize="12sp"
                         android:textStyle="bold"
@@ -441,116 +442,137 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
+            <!-- TAB 2 HEADER: Title & Mode Selector (Matching Image 1) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
+                android:layout_marginBottom="12dp">
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="📅 LỊCH NGÀY, TUẦN &amp; THÁNG"
-                    android:textSize="16sp"
+                    android:text="TKB Giảng dạy"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary" />
+
+                <!-- Pill Switcher (NGÀY | TUẦN) -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:background="@drawable/bg_search_input"
+                    android:padding="2dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/btnTab2ModeDay"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_btn_pill_blue"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="NGÀY"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/btnTab2ModeWeek"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_btn_pill_gray"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="TUẦN"
+                        android:textColor="#475569"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/btnTab2ModeMonth"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:paddingHorizontal="12dp"
+                        android:text="THÁNG"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/btnTab2ModeFree"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:paddingHorizontal="10dp"
+                        android:text="TRỐNG"
+                        android:textColor="@color/accent_amber"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:visibility="gone" />
+                </LinearLayout>
+
+                <!-- Compatibility button -->
+                <TextView
+                    android:id="@+id/btnToggleCalendarTab2"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- Month Dropdown Selector (Hidden - Title is kept inside Calendar Card) -->
+            <LinearLayout
+                android:id="@+id/btnQuickPickCalendar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_gravity="center_horizontal"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="4dp"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:id="@+id/tvTab2SelectedDateTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tháng 11, 2026"
+                    android:textSize="15sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary" />
 
                 <TextView
-                    android:id="@+id/btnToggleCalendarTab2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="📅 Mở lịch tháng"
-                    android:textSize="11.5sp"
+                    android:text=" ▾"
+                    android:textSize="16sp"
                     android:textStyle="bold"
-                    android:textColor="@color/text_primary"
-                    android:background="@drawable/bg_search_input"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="5dp"
-                    android:clickable="true"
-                    android:focusable="true" />
+                    android:textColor="@color/text_secondary" />
             </LinearLayout>
 
-            <!-- Thanh Chuyển đổi Lịch trong Tab 2 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:minHeight="36dp"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/bg_search_input"
-                android:padding="3dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/btnTab2ModeDay"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:minHeight="30dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_chip_selected"
-                    android:gravity="center"
-                    android:paddingVertical="5dp"
-                    android:text="📌 Ngày"
-                    android:textColor="#FFFFFF"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-                <TextView
-                    android:id="@+id/btnTab2ModeWeek"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:minHeight="30dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:paddingVertical="5dp"
-                    android:text="📆 Tuần"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-                <TextView
-                    android:id="@+id/btnTab2ModeMonth"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:minHeight="30dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:paddingVertical="5dp"
-                    android:text="🗓️ Tháng"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-                <TextView
-                    android:id="@+id/btnTab2ModeFree"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:minHeight="30dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:paddingVertical="5dp"
-                    android:text="💡 Trống"
-                    android:textColor="@color/accent_amber"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:clickable="true"
-                    android:focusable="true" />
-            </LinearLayout>
-
-            <!-- Lịch Tháng Trực Quan (Interactive Month Calendar với Dấu Chấm Tròn Phân Loại) -->
+            <!-- Full Interactive Month Calendar Card (Always Visible) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardCalendarWidget"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:visibility="gone"
+                android:layout_marginBottom="10dp"
+                android:visibility="visible"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
                 app:strokeWidth="1dp"
@@ -561,166 +583,25 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Thanh hiển thị ngày đang chọn khi lịch tháng thu gọn -->
+            <!-- Hidden compatibility containers -->
             <LinearLayout
                 android:id="@+id/layoutSelectedDateHeader"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:background="@color/surface_card_secondary"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="7dp"
-                android:layout_marginBottom="6dp">
-
-                <TextView
-                    android:id="@+id/tvTab2SelectedDateTitle"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="📌 Đang xem: Hôm nay"
-                    android:textSize="12.5sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/text_primary" />
-
-                <TextView
-                    android:id="@+id/btnQuickPickCalendar"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🗓️ Chọn ngày khác"
-                    android:textSize="11.5sp"
-                    android:textColor="@color/accent_blue"
-                    android:textStyle="bold"
-                    android:paddingHorizontal="6dp"
-                    android:paddingVertical="2dp"
-                    android:clickable="true"
-                    android:focusable="true" />
-            </LinearLayout>
-
-            <!-- Nút tương tác Dòng chảy Thời gian và Tìm khe trống trực tiếp ở Tab Lịch biểu -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="8dp">
-
-                <TextView
-                    android:id="@+id/btnTab2OpenTimeline"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:minHeight="36dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_search_input"
-                    android:gravity="center"
-                    android:paddingVertical="6dp"
-                    android:text="⏱️ Dòng chảy ngày này"
-                    android:textColor="@color/accent_blue"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:layout_marginEnd="6dp" />
-
-                <TextView
-                    android:id="@+id/btnTab2SmartFinder"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:minHeight="36dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_search_input"
-                    android:gravity="center"
-                    android:paddingVertical="6dp"
-                    android:text="🔍 Tìm khe trống"
-                    android:textColor="@color/accent_purple"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:clickable="true"
-                    android:focusable="true" />
-            </LinearLayout>
-
-            <!-- Nút Ghi chú bằng Giọng nói -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="8dp">
-
-                <TextView
-                    android:id="@+id/btnTab2VoiceNote"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="36dp"
-                    android:background="@drawable/bg_search_input"
-                    android:gravity="center"
-                    android:paddingVertical="6dp"
-                    android:text="🎙️ Ghi chú dặn dò sau buổi học (Giọng nói)"
-                    android:textColor="#D97706"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:clickable="true"
-                    android:focusable="true" />
-            </LinearLayout>
+                android:visibility="gone" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:paddingBottom="6dp">
+                android:visibility="gone">
 
-                <TextView
-                    android:id="@+id/tvTab2Header"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="CHI TIẾT LỊCH CÔNG VIỆC &amp; KHOẢNG TRỐNG"
-                    android:textColor="@color/text_primary"
-                    android:textSize="13sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/btnTab2ScrollTop"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_search_input"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="4dp"
-                    android:text="⬆️ Đầu"
-                    android:textColor="@color/accent_blue"
-                    android:textSize="11.5sp"
-                    android:textStyle="bold"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:layout_marginEnd="4dp" />
-
-                <TextView
-                    android:id="@+id/btnTab2ScrollBottom"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_search_input"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="4dp"
-                    android:text="⬇️ Cuối"
-                    android:textColor="@color/accent_blue"
-                    android:textSize="11.5sp"
-                    android:textStyle="bold"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:layout_marginEnd="6dp" />
-
-                <TextView
-                    android:id="@+id/btnTab2EnableMultiSelect"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_search_input"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
-                    android:text="☑️ Chọn nhiều"
-                    android:textColor="@color/accent_blue"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:clickable="true"
-                    android:focusable="true" />
+                <TextView android:id="@+id/btnTab2OpenTimeline" android:layout_width="0dp" android:layout_height="0dp" />
+                <TextView android:id="@+id/btnTab2SmartFinder" android:layout_width="0dp" android:layout_height="0dp" />
+                <TextView android:id="@+id/tvTab2Header" android:layout_width="0dp" android:layout_height="0dp" />
+                <TextView android:id="@+id/btnTab2ScrollTop" android:layout_width="0dp" android:layout_height="0dp" />
+                <TextView android:id="@+id/btnTab2ScrollBottom" android:layout_width="0dp" android:layout_height="0dp" />
+                <TextView android:id="@+id/btnTab2EnableMultiSelect" android:layout_width="0dp" android:layout_height="0dp" />
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
@@ -754,7 +635,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="📊 THỐNG KÊ &amp; PHÂN TÍCH LỊCH TRÌNH"
+                    android:text="THỐNG KÊ &amp; PHÂN TÍCH LỊCH TRÌNH"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="@color/tab_header_title" />
@@ -788,7 +669,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="🎛️ BỘ LỌC DỮ LIỆU THỐNG KÊ"
+                            android:text="BỘ LỌC DỮ LIỆU THỐNG KÊ"
                             android:textSize="11.5sp"
                             android:textStyle="bold"
                             android:textColor="@color/accent_purple"
@@ -806,12 +687,13 @@
                             android:background="@drawable/bg_chart_spinner_box"
                             android:layout_marginBottom="8dp">
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="📅"
-                                android:textSize="14sp"
-                                android:layout_marginEnd="8dp" />
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/ic_calendar"
+                                app:tint="#2563EB"
+                                android:layout_marginEnd="8dp"
+                                android:contentDescription="Lịch" />
 
                             <Spinner
                                 android:id="@+id/spnChartTimeFilter"
@@ -834,12 +716,13 @@
                             android:paddingVertical="4dp"
                             android:background="@drawable/bg_chart_spinner_box">
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="🏫"
-                                android:textSize="14sp"
-                                android:layout_marginEnd="8dp" />
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/ic_school"
+                                app:tint="#2563EB"
+                                android:layout_marginEnd="8dp"
+                                android:contentDescription="Trường" />
 
                             <Spinner
                                 android:id="@+id/spnChartSchoolFilter"
@@ -889,7 +772,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="⏱️ TỔNG TIẾT / GIỜ"
+                                    android:text="TỔNG TIẾT / GIỜ"
                                     android:textSize="10.5sp"
                                     android:textStyle="bold"
                                     android:textColor="@color/accent_blue" />
@@ -939,7 +822,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="📅 TỔNG BUỔI CÔNG VIỆC"
+                                    android:text="TỔNG BUỔI CÔNG VIỆC"
                                     android:textSize="10.5sp"
                                     android:textStyle="bold"
                                     android:textColor="@color/accent_green" />
@@ -996,7 +879,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="🏫 TRƯỜNG / ĐƠN VỊ"
+                                    android:text="TRƯỜNG / ĐƠN VỊ"
                                     android:textSize="10.5sp"
                                     android:textStyle="bold"
                                     android:textColor="@color/accent_purple" />
@@ -1046,7 +929,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="⚡ VIỆC PHÁT SINH"
+                                    android:text="VIỆC PHÁT SINH"
                                     android:textSize="10.5sp"
                                     android:textStyle="bold"
                                     android:textColor="@color/accent_amber" />
@@ -1101,7 +984,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="💰 DỰ TOÁN THU NHẬP (Thỉnh giảng)"
+                                    android:text="DỰ TOÁN THU NHẬP (Thỉnh giảng)"
                                     android:textSize="10.5sp"
                                     android:textStyle="bold"
                                     android:textColor="#16A34A" />
@@ -1154,12 +1037,13 @@
                             android:orientation="horizontal"
                             android:gravity="center_vertical">
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="🚗"
-                                android:textSize="20sp"
-                                android:layout_marginEnd="8dp" />
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@drawable/ic_car"
+                                app:tint="#D97706"
+                                android:layout_marginEnd="8dp"
+                                android:contentDescription="Di chuyển" />
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -1196,7 +1080,7 @@
                             android:layout_marginTop="8dp"
                             android:paddingHorizontal="14dp"
                             android:paddingVertical="4dp"
-                            android:text="Xem chi tiết các ngày này ➔"
+                            android:text="Xem chi tiết các ngày này"
                             android:textSize="11.5sp"
                             android:textStyle="bold"
                             android:textColor="#FFFFFF"
@@ -1224,7 +1108,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="🏫 PHÂN BỔ KHỐI LƯỢNG THEO TRƯỜNG"
+                            android:text="PHÂN BỔ KHỐI LƯỢNG THEO TRƯỜNG"
                             android:textSize="14sp"
                             android:textStyle="bold"
                             android:textColor="@color/text_primary" />
@@ -1265,7 +1149,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="🏷️ PHÂN LOẠI TÍNH CHẤT CÔNG VIỆC"
+                            android:text="PHÂN LOẠI TÍNH CHẤT CÔNG VIỆC"
                             android:textSize="14sp"
                             android:textStyle="bold"
                             android:textColor="@color/text_primary" />
@@ -1306,7 +1190,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="📊 TẢI TRỌNG CÔNG VIỆC 12 THÁNG TRONG NĂM"
+                            android:text="TẢI TRỌNG CÔNG VIỆC 12 THÁNG TRONG NĂM"
                             android:textSize="14sp"
                             android:textStyle="bold"
                             android:textColor="@color/text_primary" />
@@ -1348,7 +1232,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="📅 MẬT ĐỘ THEO THỨ TRONG TUẦN"
+                            android:text="MẬT ĐỘ THEO THỨ TRONG TUẦN"
                             android:textSize="14sp"
                             android:textStyle="bold"
                             android:textColor="@color/text_primary" />
@@ -1389,7 +1273,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="🌓 PHÂN BỔ THEO CA DẠY"
+                            android:text="PHÂN BỔ THEO CA DẠY"
                             android:textSize="14sp"
                             android:textStyle="bold"
                             android:textColor="@color/text_primary" />
@@ -1433,7 +1317,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="📊 BÁO CÁO &amp; NHẬP XUẤT ĐA ĐỊNH DẠNG"
+                    android:text="BÁO CÁO &amp; NHẬP XUẤT ĐA ĐỊNH DẠNG"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="@color/tab_header_title"
@@ -1459,7 +1343,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="📥 NHẬP DỮ LIỆU TỪ NHIỀU NGUỒN FILE"
+                            android:text="NHẬP DỮ LIỆU TỪ NHIỀU NGUỒN FILE"
                             android:textSize="15sp"
                             android:textStyle="bold"
                             android:textColor="@color/accent_green" />
@@ -1481,7 +1365,8 @@
                             android:paddingVertical="10dp"
                             android:paddingHorizontal="10dp"
                             android:layout_marginBottom="8dp"
-                            android:text="📂 ĐỌC &amp; PHÂN TÍCH MỌI LOẠI FILE (TỰ NHẬN DIỆN + GHI TAY)"
+                            android:visibility="gone"
+                            android:text="ĐỌC &amp; PHÂN TÍCH MỌI LOẠI FILE (TỰ NHẬN DIỆN + GHI TAY)"
                             android:textColor="#FFFFFF"
                             android:backgroundTint="#6D28D9"
                             android:textSize="11.5sp"
@@ -1500,7 +1385,7 @@
                                 android:layout_height="wrap_content"
                                 android:minHeight="46dp"
                                 android:layout_weight="1"
-                                android:text="📊 Excel"
+                                android:text="Excel"
                                 android:textColor="#FFFFFF"
                                 android:backgroundTint="#10B981"
                                 android:textSize="11sp"
@@ -1517,7 +1402,7 @@
                                 android:minHeight="46dp"
                                 android:layout_weight="1"
                                 android:layout_marginStart="6dp"
-                                android:text="📄 PDF"
+                                android:text="PDF"
                                 android:textColor="#FFFFFF"
                                 android:backgroundTint="#DC2626"
                                 android:textSize="11sp"
@@ -1534,7 +1419,8 @@
                                 android:minHeight="46dp"
                                 android:layout_weight="1"
                                 android:layout_marginStart="6dp"
-                                android:text="🖼️ Ảnh OCR"
+                                android:visibility="gone"
+                                android:text="Ảnh OCR"
                                 android:textColor="#FFFFFF"
                                 android:backgroundTint="#D97706"
                                 android:textSize="11sp"
@@ -1550,7 +1436,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="20dp"
-                            android:text="📊 XUẤT BÁO CÁO EXCEL &amp; PDF A4"
+                            android:text="XUẤT BÁO CÁO EXCEL &amp; PDF"
                             android:textSize="15sp"
                             android:textStyle="bold"
                             android:textColor="@color/accent_blue" />
@@ -1567,7 +1453,7 @@
                                 android:layout_height="wrap_content"
                                 android:minHeight="48dp"
                                 android:layout_weight="1"
-                                android:text="📊 Xuất Excel (.xlsx)"
+                                android:text="Xuất Excel (.xlsx)"
                                 android:textColor="#FFFFFF"
                                 android:backgroundTint="#2563EB"
                                 android:textSize="11.5sp"
@@ -1583,7 +1469,7 @@
                                 android:minHeight="48dp"
                                 android:layout_weight="1"
                                 android:layout_marginStart="8dp"
-                                android:text="📄 Xuất PDF A4 (.pdf)"
+                                android:text="Xuất PDF (.pdf)"
                                 android:textColor="#FFFFFF"
                                 android:backgroundTint="#DC2626"
                                 android:textSize="11.5sp"
@@ -1623,7 +1509,7 @@
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="📜 LỊCH SỬ NHẬP &amp; XUẤT FILE"
+                                android:text="LỊCH SỬ NHẬP &amp; XUẤT FILE"
                                 android:textSize="14.5sp"
                                 android:textStyle="bold"
                                 android:textColor="@color/tab_header_title"
@@ -1646,8 +1532,8 @@
                                     android:background="@drawable/bg_btn_pill_blue"
                                     android:gravity="center"
                                     android:paddingVertical="5dp"
-                                    android:text="☑️ Chọn nhiều"
-                                    android:textColor="@color/accent_blue"
+                                    android:text="Chọn nhiều"
+                                    android:textColor="#FFFFFF"
                                     android:textSize="11.5sp"
                                     android:textStyle="bold"
                                     android:clickable="true"
@@ -1663,8 +1549,8 @@
                                     android:background="@drawable/bg_btn_pill_blue"
                                     android:gravity="center"
                                     android:paddingVertical="5dp"
-                                    android:text="📁 Quản lý tệp"
-                                    android:textColor="@color/accent_blue"
+                                    android:text="Quản lý tệp"
+                                    android:textColor="#FFFFFF"
                                     android:textSize="11.5sp"
                                     android:textStyle="bold"
                                     android:clickable="true"
@@ -1679,7 +1565,7 @@
                                     android:background="@drawable/bg_btn_pill_red"
                                     android:gravity="center"
                                     android:paddingVertical="5dp"
-                                    android:text="🧹 Xóa hết"
+                                    android:text="Xóa hết"
                                     android:textColor="@color/accent_red"
                                     android:textSize="11.5sp"
                                     android:textStyle="bold"
@@ -1720,7 +1606,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="⚙️ CÀI ĐẶT &amp; QUẢN LÝ"
+                    android:text="CÀI ĐẶT &amp; QUẢN LÝ"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="@color/tab_header_title"
@@ -1746,7 +1632,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="🤖 TRỢ LÝ TỰ ĐỘNG (DND &amp; Check-in)"
+                            android:text="TRỢ LÝ TỰ ĐỘNG (DND &amp; Check-in)"
                             android:textSize="15sp"
                             android:textStyle="bold"
                             android:textColor="#F59E0B" />
@@ -1756,7 +1642,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:text="🔇 Tự động Tắt Chuông khi đứng lớp"
+                            android:text="Tự động Tắt Chuông khi đứng lớp"
                             android:textColor="@color/text_primary"
                             android:textSize="13.5sp" />
 
@@ -1765,7 +1651,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="📍 Tự động Check-in GPS minh chứng"
+                            android:text="Tự động Check-in GPS minh chứng"
                             android:textColor="@color/text_primary"
                             android:textSize="13.5sp" />
                     </LinearLayout>
@@ -1793,7 +1679,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
-                            android:text="🎨 CHỦ ĐỀ GIAO DIỆN"
+                            android:text="CHỦ ĐỀ GIAO DIỆN"
                             android:textSize="15sp"
                             android:textStyle="bold"
                             android:textColor="@color/accent_purple" />
@@ -1810,7 +1696,7 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="📱 Hệ thống"
+                                android:text="Hệ thống"
                                 android:textColor="@color/text_primary"
                                 android:textSize="12sp"
                                 android:maxLines="1"
@@ -1823,7 +1709,7 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="☀️ Sáng"
+                                android:text="Sáng"
                                 android:textColor="@color/text_primary"
                                 android:textSize="12sp"
                                 android:maxLines="1"
@@ -1836,7 +1722,7 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="🌙 Tối"
+                                android:text="Tối"
                                 android:textColor="@color/text_primary"
                                 android:textSize="12sp"
                                 android:maxLines="1"
@@ -1869,7 +1755,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
-                            android:text="🔤 CỠ CHỮ &amp; HIỂN THỊ TOÀN APP"
+                            android:text="CỠ CHỮ &amp; HIỂN THỊ TOÀN APP"
                             android:textSize="15sp"
                             android:textStyle="bold"
                             android:textColor="@color/accent_purple" />
@@ -1886,7 +1772,7 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="🔤 Nhỏ"
+                                android:text="Nhỏ"
                                 android:textColor="@color/text_primary"
                                 android:textSize="12sp"
                                 android:maxLines="1"
@@ -1899,7 +1785,7 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="🔤 Vừa"
+                                android:text="Vừa"
                                 android:textColor="@color/text_primary"
                                 android:textSize="12sp"
                                 android:maxLines="1"
@@ -1912,7 +1798,7 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="🔤 Lớn"
+                                android:text="Lớn"
                                 android:textColor="@color/text_primary"
                                 android:textSize="12sp"
                                 android:maxLines="1"
@@ -1955,7 +1841,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="⏰ BÁO THỨC &amp; NHẮC LỊCH"
+                                    android:text="BÁO THỨC &amp; NHẮC LỊCH"
                                     android:textSize="15sp"
                                     android:textStyle="bold"
                                     android:textColor="@color/accent_purple" />
@@ -1965,7 +1851,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
-                                    android:text="⏳ Lần báo tiếp: 06:00 AM (Sáng mai)"
+                                    android:text="Lần báo tiếp: 06:00 AM (Sáng mai)"
                                     android:textSize="12sp"
                                     android:textColor="@color/text_secondary" />
                             </LinearLayout>
@@ -2005,7 +1891,7 @@
                                 android:id="@+id/btnChangeAlarmTime"
                                 android:layout_width="wrap_content"
                                 android:layout_height="38dp"
-                                android:text="🕒 Đổi giờ báo"
+                                android:text="Đổi giờ báo"
                                 android:textSize="12sp"
                                 android:textColor="#FFFFFF"
                                 android:backgroundTint="@color/accent_purple"
@@ -2019,7 +1905,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
-                            android:text="💡 Chỉ báo chuông khi có lịch dạy / công việc"
+                            android:text="Chỉ báo chuông khi có lịch dạy / công việc"
                             android:textColor="@color/text_primary"
                             android:textSize="13sp"
                             android:checked="true" />
@@ -2038,7 +1924,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="44dp"
                             android:layout_marginTop="14dp"
-                            android:text="🔔 Thử Phát Chuông Báo Ngay"
+                            android:text="Thử Phát Chuông Báo Ngay"
                             android:textColor="#FFFFFF"
                             android:backgroundTint="#7C3AED"
                             android:textSize="13sp"
@@ -2079,7 +1965,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="🎵 ÂM THANH &amp; PHẢN HỒI THAO TÁC"
+                                    android:text="ÂM THANH &amp; PHẢN HỒI THAO TÁC"
                                     android:textSize="15sp"
                                     android:textStyle="bold"
                                     android:textColor="@color/accent_purple" />
@@ -2110,7 +1996,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
-                            android:text="📳 Rung nhẹ khi tương tác phím chức năng"
+                            android:text="Rung nhẹ khi tương tác phím chức năng"
                             android:textColor="@color/text_primary"
                             android:textSize="13sp"
                             android:checked="true" />
@@ -2129,7 +2015,7 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="🎼 Kiểu âm thanh phím:"
+                                android:text="Kiểu âm thanh phím:"
                                 android:textSize="13.5sp"
                                 android:textStyle="bold"
                                 android:textColor="@color/text_primary" />
@@ -2148,7 +2034,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="44dp"
                             android:layout_marginTop="14dp"
-                            android:text="🎶 Thử Âm Thanh &amp; Rung Phản Hồi Ngay"
+                            android:text="Thử Âm Thanh &amp; Rung Phản Hồi Ngay"
                             android:textColor="#FFFFFF"
                             android:backgroundTint="#2563EB"
                             android:textSize="13sp"
@@ -2189,7 +2075,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="🗑️ TỰ ĐỘNG XÓA DỮ LIỆU CŨ"
+                                    android:text="TỰ ĐỘNG XÓA DỮ LIỆU CŨ"
                                     android:textSize="15sp"
                                     android:textStyle="bold"
                                     android:textColor="@color/accent_red" />
@@ -2228,7 +2114,7 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="⏱️ Thời hạn lưu trữ:"
+                                android:text="Thời hạn lưu trữ:"
                                 android:textSize="13.5sp"
                                 android:textStyle="bold"
                                 android:textColor="@color/text_primary" />
@@ -2254,7 +2140,7 @@
                                 android:id="@+id/tvAutoDeleteStats"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="📊 Phát hiện: 0 lịch cũ quá hạn • 0 tệp tin cũ"
+                                android:text="Phát hiện: 0 lịch cũ quá hạn • 0 tệp tin cũ"
                                 android:textSize="12.5sp"
                                 android:textStyle="bold"
                                 android:textColor="@color/accent_red" />
@@ -2264,7 +2150,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="🕒 Lần dọn gần nhất: Chưa thực hiện dọn dẹp"
+                                android:text="Lần dọn gần nhất: Chưa thực hiện dọn dẹp"
                                 android:textSize="11.5sp"
                                 android:textColor="@color/text_tertiary" />
                         </LinearLayout>
@@ -2275,7 +2161,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="44dp"
                             android:layout_marginTop="14dp"
-                            android:text="🧹 Dọn Dẹp Dữ Liệu Cũ Ngay"
+                            android:text="Dọn Dẹp Dữ Liệu Cũ Ngay"
                             android:textColor="#DC2626"
                             android:backgroundTint="#FEE2E2"
                             android:textSize="13sp"
@@ -2307,7 +2193,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="📖 GIỚI THIỆU &amp; THÔNG TIN ỨNG DỤNG"
+                            android:text="GIỚI THIỆU &amp; THÔNG TIN ỨNG DỤNG"
                             android:textSize="15sp"
                             android:textStyle="bold"
                             android:textColor="@color/accent_blue" />
@@ -2326,7 +2212,7 @@
                             android:id="@+id/btnOpenDetailedAppIntro"
                             android:layout_width="match_parent"
                             android:layout_height="44dp"
-                            android:text="📖 Xem Hướng Dẫn &amp; Giới Thiệu Chi Tiết"
+                            android:text="Xem Hướng Dẫn &amp; Giới Thiệu Chi Tiết"
                             android:textColor="#FFFFFF"
                             android:backgroundTint="#2563EB"
                             android:textSize="13sp"
@@ -2339,7 +2225,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="44dp"
                             android:layout_marginTop="8dp"
-                            android:text="🔄 Kiểm tra bản cập nhật mới"
+                            android:text="Kiểm tra bản cập nhật mới"
                             android:textColor="#2563EB"
                             android:backgroundTint="#EFF6FF"
                             android:textSize="13sp"
@@ -2456,7 +2342,7 @@
                 android:layout_marginStart="6dp"
                 android:minWidth="0dp"
                 android:minHeight="0dp"
-                android:text="✏️ Sửa"
+                android:text="Sửa"
                 android:textColor="#FFFFFF"
                 android:backgroundTint="#2563EB"
                 android:textSize="11sp"
@@ -2474,7 +2360,7 @@
                 android:layout_marginStart="6dp"
                 android:minWidth="0dp"
                 android:minHeight="0dp"
-                android:text="🗑️ Xóa"
+                android:text="Xóa"
                 android:textColor="#FFFFFF"
                 android:backgroundTint="#DC2626"
                 android:textSize="11sp"
@@ -2492,11 +2378,12 @@
                 android:layout_marginStart="6dp"
                 android:minWidth="0dp"
                 android:minHeight="0dp"
-                android:text="✕"
+                app:icon="@drawable/ic_close"
+                app:iconSize="16dp"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
                 android:textColor="@color/text_secondary"
                 android:backgroundTint="@color/surface_card_secondary"
-                android:textSize="13sp"
-                android:textStyle="bold"
                 android:padding="0dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
@@ -2563,7 +2450,7 @@
                 android:layout_marginStart="6dp"
                 android:minWidth="0dp"
                 android:minHeight="0dp"
-                android:text="🗑️ Xóa tệp"
+                android:text="Xóa tệp"
                 android:textColor="#FFFFFF"
                 android:backgroundTint="#DC2626"
                 android:textSize="11sp"
@@ -2581,11 +2468,12 @@
                 android:layout_marginStart="6dp"
                 android:minWidth="0dp"
                 android:minHeight="0dp"
-                android:text="✕"
+                app:icon="@drawable/ic_close"
+                app:iconSize="16dp"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
                 android:textColor="@color/text_secondary"
                 android:backgroundTint="@color/surface_card_secondary"
-                android:textSize="13sp"
-                android:textStyle="bold"
                 android:padding="0dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
@@ -2598,13 +2486,13 @@
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardBottomNav"
         android:layout_width="match_parent"
-        android:layout_height="62dp"
+        android:layout_height="58dp"
         android:layout_alignParentBottom="true"
         android:layout_marginHorizontal="16dp"
         android:layout_marginBottom="16dp"
-        app:cardCornerRadius="32dp"
-        app:cardElevation="10dp"
-        app:strokeWidth="1.5dp"
+        app:cardCornerRadius="29dp"
+        app:cardElevation="4dp"
+        app:strokeWidth="1dp"
         app:strokeColor="@color/bottom_nav_card_stroke"
         app:cardBackgroundColor="@color/bottom_nav_bg">
 
@@ -2644,7 +2532,7 @@
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:src="@drawable/ic_nav_home"
-                        app:tint="#6D28D9" />
+                        app:tint="#2563EB" />
 
                     <TextView
                         android:id="@+id/tvNavSchedule"
@@ -2652,7 +2540,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:text="Trang chủ"
-                        android:textColor="#6D28D9"
+                        android:textColor="#2563EB"
                         android:textSize="11sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -2672,7 +2560,7 @@
                         android:id="@+id/ivNavAlarm"
                         android:layout_width="20dp"
                         android:layout_height="20dp"
-                        android:src="@android:drawable/ic_menu_my_calendar"
+                        android:src="@drawable/ic_nav_schedule"
                         app:tint="@color/nav_item_unselected_tint" />
 
                     <TextView

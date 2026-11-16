@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@android:color/white">
+
+    <!-- Top Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical">
+
+        <ImageButton
+            android:id="@+id/btnCloseStaging"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:tint="@android:color/white"
+            android:contentDescription="Đóng" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Kiểm duyệt dữ liệu (Staging)"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginStart="16dp"/>
+
+        <TextView
+            android:id="@+id/tvStagingTotalCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 mục"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"/>
+    </LinearLayout>
+
+    <!-- Bulk Apply Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="#F5F5F5">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Gán hàng loạt cho các dòng đã chọn:"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <Spinner
+                android:id="@+id/spStagingSchool"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"/>
+
+            <Spinner
+                android:id="@+id/spStagingCategory"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"/>
+
+            <Button
+                android:id="@+id/btnApplyBulk"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Áp dụng"
+                android:textSize="12sp"
+                style="?attr/materialButtonOutlinedStyle"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- List Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
+        android:gravity="center_vertical"
+        android:background="#E0E0E0">
+        <CheckBox
+            android:id="@+id/cbSelectAllStaging"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chọn tất cả hợp lệ"
+            android:layout_marginStart="8dp"/>
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvStagingEvents"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingBottom="80dp"/>
+
+    <!-- Bottom Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@android:color/white"
+        android:elevation="8dp"
+        android:padding="16dp"
+        android:gravity="center_vertical">
+
+        <Button
+            android:id="@+id/btnAddRowStaging"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+ Thêm dòng"
+            style="@style/Widget.MaterialComponents.Button.TextButton"/>
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+
+        <Button
+            android:id="@+id/btnConfirmImportStaging"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Xác nhận nhập (0)"
+            android:backgroundTint="?attr/colorPrimary"/>
+    </LinearLayout>
+</LinearLayout>

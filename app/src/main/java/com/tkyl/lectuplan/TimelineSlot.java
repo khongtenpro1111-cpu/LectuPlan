@@ -40,9 +40,9 @@ public class TimelineSlot {
     private int endMin;
     private String timeDisplay;       // e.g. [07:30 - 11:35]
     private String title;             // e.g. [HUTECH] Thực hành lập trình Web (Lớp 23DTHC3)
-    private String subtitle;          // e.g. 📍 Phòng E1-04.06/1 (Thu Duc Campus) | Tiết 2 - 6
+    private String subtitle;          // e.g. Phòng E1-04.06/1 (Thu Duc Campus) | Tiết 2 - 6
     private String suggestion;        // e.g. Gợi ý: Ăn trưa, nghỉ ngơi (Không nhận lịch họp dài)
-    private String badgeText;         // e.g. 🟢 Rảnh hoàn toàn, 🟧 Cố định, 🟠 Đệm di chuyển
+    private String badgeText;         // e.g. Rảnh hoàn toàn, Cố định, Đệm di chuyển
     private String colorHex;          // Màu chủ đạo
     private String bgHex;             // Màu nền card
     private EventModel sourceEvent;   // Sự kiện gốc (nếu là BUSY_EVENT)
