@@ -23,9 +23,7 @@ public class SmartSlotAdapter extends RecyclerView.Adapter<SmartSlotAdapter.View
         public String durationFormatted;
         public String contextDesc;
         
-        // AI fields
         public int score;
-        public String aiRecommendation;
 
         public FoundSlot(String dateIso, String dayDisplay, int startMin, int endMin, String timeRangeStr, int durationMinutes, String durationFormatted, String contextDesc) {
             this.dateIso = dateIso;
@@ -37,7 +35,6 @@ public class SmartSlotAdapter extends RecyclerView.Adapter<SmartSlotAdapter.View
             this.durationFormatted = durationFormatted;
             this.contextDesc = contextDesc;
             this.score = 100; // Default base score
-            this.aiRecommendation = "";
         }
     }
 
@@ -73,25 +70,7 @@ public class SmartSlotAdapter extends RecyclerView.Adapter<SmartSlotAdapter.View
         holder.tvTimeRange.setText(slot.timeRangeStr + " (" + slot.durationFormatted + ")");
         
         String ctxText = slot.contextDesc != null ? slot.contextDesc : "Khả dụng nhận việc";
-        if (slot.aiRecommendation != null && !slot.aiRecommendation.isEmpty()) {
-            ctxText += "\nGợi ý: " + slot.aiRecommendation;
-        }
         holder.tvContext.setText(ctxText);
-
-        if (slot.score > 0) {
-            holder.tvAiScoreBadge.setVisibility(View.VISIBLE);
-            holder.tvAiScoreBadge.setText(slot.score + "đ");
-            if (slot.score >= 120) {
-                holder.tvAiScoreBadge.setBackgroundResource(R.drawable.bg_ai_badge); // Vàng
-            } else if (slot.score < 80) {
-                // Đỏ hoặc xám
-                holder.tvAiScoreBadge.setBackgroundColor(android.graphics.Color.parseColor("#EF4444"));
-            } else {
-                holder.tvAiScoreBadge.setBackgroundColor(android.graphics.Color.parseColor("#10B981")); // Xanh
-            }
-        } else {
-            holder.tvAiScoreBadge.setVisibility(View.GONE);
-        }
 
         holder.btnSchedule.setOnClickListener(v -> {
             if (listener != null) listener.onSchedule(slot);
@@ -113,7 +92,6 @@ public class SmartSlotAdapter extends RecyclerView.Adapter<SmartSlotAdapter.View
         TextView tvDayTitle;
         TextView tvTimeRange;
         TextView tvContext;
-        TextView tvAiScoreBadge;
         Button btnSchedule;
         Button btnShare;
 
@@ -122,10 +100,8 @@ public class SmartSlotAdapter extends RecyclerView.Adapter<SmartSlotAdapter.View
             tvDayTitle = itemView.findViewById(R.id.tvFoundDayTitle);
             tvTimeRange = itemView.findViewById(R.id.tvFoundTimeRange);
             tvContext = itemView.findViewById(R.id.tvFoundContext);
-            tvAiScoreBadge = itemView.findViewById(R.id.tvAiScoreBadge);
             btnSchedule = itemView.findViewById(R.id.btnScheduleSlot);
             btnShare = itemView.findViewById(R.id.btnShareSlot);
         }
     }
 }
-

@@ -6,9 +6,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="4dp"
-    android:layout_marginVertical="5dp"
-    app:cardCornerRadius="14dp"
-    app:cardElevation="1.5dp"
+    android:layout_marginVertical="6dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
     app:strokeWidth="1.2dp"
     app:strokeColor="@color/border_default"
     app:cardBackgroundColor="@color/surface_card">
@@ -21,7 +21,7 @@
         <!-- Dải màu phân loại bên trái -->
         <View
             android:id="@+id/viewSlotLeftStrip"
-            android:layout_width="5dp"
+            android:layout_width="6dp"
             android:layout_height="match_parent"
             android:background="#16A34A" />
 
@@ -29,10 +29,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="14dp"
-            android:paddingVertical="12dp">
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="14dp">
 
-            <!-- Dòng 1: Thời gian [HH:mm - HH:mm] + Badge trạng thái -->
+            <!-- Dòng 1: Thời gian + Badge trạng thái -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -44,63 +44,62 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="[07:30 - 11:35]"
+                    android:text="07:30 - 11:35"
                     android:textColor="@color/text_primary"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:fontFamily="monospace" />
+                    android:textSize="14.5sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvSlotBadge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="#DCFCE7"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="3dp"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp"
                     android:text="Rảnh hoàn toàn"
                     android:textColor="#16A34A"
-                    android:textSize="11sp"
+                    android:textSize="12sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- Dòng 2: Tiêu đề slot / Tên môn / Trạng thái trống -->
+            <!-- Dòng 2: Tiêu đề slot -->
             <TextView
                 android:id="@+id/tvSlotTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:text="[HUTECH] Thực hành lập trình Web (Lớp 23DTHC3)"
+                android:layout_marginTop="6dp"
+                android:text="Thực hành lập trình Web"
                 android:textColor="@color/text_primary"
-                android:textSize="14sp"
+                android:textSize="15.5sp"
                 android:textStyle="bold" />
 
-            <!-- Dòng 3: Chi tiết địa điểm / Cơ sở / Tiết học -->
+            <!-- Dòng 3: Chi tiết địa điểm / Tiết học -->
             <TextView
                 android:id="@+id/tvSlotSubtitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Phòng E1-04.06/1 (Thu Duc Campus) | Tiết 2 - 6"
+                android:text="Phòng E1-04.06/1 | Tiết 2 - 6"
                 android:textColor="@color/text_secondary"
-                android:textSize="12sp" />
+                android:textSize="13sp" />
 
-            <!-- Dòng 4: Gợi ý hành động / Cảnh báo di chuyển / Nút chèn lịch -->
+            <!-- Dòng 4: Gợi ý hành động / Nút chèn lịch / Báo SV -->
             <LinearLayout
                 android:id="@+id/layoutSlotSuggestion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginTop="6dp">
+                android:layout_marginTop="8dp">
 
                 <TextView
                     android:id="@+id/tvSlotSuggestion"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="└─ Gợi ý: Ăn trưa, nghỉ ngơi (Không nhận lịch họp dài)"
+                    android:text="Gợi ý: Nghỉ ngơi trưa"
                     android:textColor="@color/text_tertiary"
-                    android:textSize="11.5sp"
+                    android:textSize="12.5sp"
                     android:textStyle="italic" />
 
                 <TextView
@@ -108,11 +107,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="#2563EB"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
-                    android:text="+ Chèn lịch"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:text="+ Thêm lịch"
                     android:textColor="#FFFFFF"
-                    android:textSize="11sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
                     android:visibility="gone" />
 
@@ -120,13 +119,13 @@
                     android:id="@+id/btnShareTimelineSlot"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="6dp"
+                    android:layout_marginStart="8dp"
                     android:background="#EFF6FF"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="4dp"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="6dp"
                     android:text="Báo SV"
                     android:textColor="#2563EB"
-                    android:textSize="11sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
                     android:visibility="gone"
                     android:clickable="true"

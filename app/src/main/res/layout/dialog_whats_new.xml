@@ -40,7 +40,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="Phiên bản v1.1.3"
+                android:text="Phiên bản v1.1.4"
                 android:textColor="#E0E7FF"
                 android:textSize="13sp" />
         </LinearLayout>
@@ -48,7 +48,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="BỘ CẢI TIẾN &amp; TÍNH NĂNG MỚI TRONG v1.1.3:"
+            android:text="BỘ CẢI TIẾN &amp; TÍNH NĂNG MỚI TRONG v1.1.4:"
             android:textColor="@color/accent_purple"
             android:textSize="14sp"
             android:textStyle="bold"
@@ -71,33 +71,37 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="1. Cấu hình Trường học &amp; Tiết giảng: Hỗ trợ cấu hình mốc thời gian tiết học đa dạng theo từng trường (NTTU, HUTECH, UEF...)."
+                    android:text="1. Tự động Lọc &amp; Cảnh báo Định dạng File: Tự động lọc file PDF / Excel theo chuẩn hệ thống SAF &amp; cảnh báo chọn sai định dạng."
                     android:textSize="13.5sp"
                     android:textColor="@color/text_primary"
+                    android:justificationMode="inter_word"
                     android:layout_marginBottom="10dp" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="2. Phân tích &amp; Gợi ý Thông minh: Nâng cấp bộ phân tích khung giờ rảnh, tìm slot trống thông minh, Drilldown biểu đồ và báo cáo chi tiết."
+                    android:text="2. Cảnh báo Trùng lịch Chi tiết: Tự động phát hiện và hiển thị chi tiết các lịch bị trùng giờ trực tiếp trong Hộp thoại Chi tiết lịch."
                     android:textSize="13.5sp"
                     android:textColor="@color/text_primary"
+                    android:justificationMode="inter_word"
                     android:layout_marginBottom="10dp" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="3. Tối ưu Bộ đọc Lịch tự động: Nâng cấp UniversalScheduleParser &amp; Thư mời giảng Parser xử lý chuẩn xác dữ liệu PDF/Excel."
+                    android:text="3. Dọn dẹp Dữ liệu Thủ công &amp; Xóa Cache: Bổ sung công cụ dọn dẹp lịch theo khoảng ngày chọn trước và nút giải phóng bộ nhớ Cache/File tạm."
                     android:textSize="13.5sp"
                     android:textColor="@color/text_primary"
+                    android:justificationMode="inter_word"
                     android:layout_marginBottom="10dp" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="4. Cải tiến Thẻ sự kiện &amp; Thiệp chia sẻ: Thiết kế thẻ sự kiện mới, quản lý file nhập linh hoạt và bổ sung bộ Unit Test tự động."
+                    android:text="4. Thanh Lọc 2 Hàng Cố định &amp; Tối ưu Giao diện Tối: Chuyển đổi thanh lọc không cần vuốt ngang, tăng cỡ chữ chuẩn Lớn và tối ưu 100% Giao diện Tối."
                     android:textSize="13.5sp"
                     android:textColor="@color/text_primary"
+                    android:justificationMode="inter_word"
                     android:layout_marginBottom="10dp" />
 
             </LinearLayout>

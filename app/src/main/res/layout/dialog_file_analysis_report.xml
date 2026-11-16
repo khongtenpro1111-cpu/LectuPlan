@@ -34,35 +34,33 @@
                 android:textStyle="bold"
                 android:textColor="@color/tab_header_title" />
 
-            <TextView
+            <ImageButton
                 android:id="@+id/btnFileReportScrollTop"
-                android:layout_width="wrap_content"
-                android:layout_height="28dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:background="@drawable/bg_search_input"
-                android:gravity="center"
-                android:paddingHorizontal="8dp"
-                android:text="Đầu"
-                android:textColor="@color/accent_blue"
-                android:textSize="11sp"
-                android:textStyle="bold"
+                android:contentDescription="Lên đầu"
+                android:src="@drawable/ic_arrow_upward"
+                app:tint="@color/accent_blue"
                 android:clickable="true"
                 android:focusable="true"
-                android:layout_marginEnd="4dp" />
+                android:layout_marginEnd="4dp"
+                android:scaleType="centerInside"
+                android:padding="6dp" />
 
-            <TextView
+            <ImageButton
                 android:id="@+id/btnFileReportScrollBottom"
-                android:layout_width="wrap_content"
-                android:layout_height="28dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:background="@drawable/bg_search_input"
-                android:gravity="center"
-                android:paddingHorizontal="8dp"
-                android:text="Cuối"
-                android:textColor="@color/accent_blue"
-                android:textSize="11sp"
-                android:textStyle="bold"
+                android:contentDescription="Xuống cuối"
+                android:src="@drawable/ic_arrow_downward"
+                app:tint="@color/accent_blue"
                 android:clickable="true"
                 android:focusable="true"
-                android:layout_marginEnd="8dp" />
+                android:layout_marginEnd="8dp"
+                android:scaleType="centerInside"
+                android:padding="6dp" />
 
             <ImageButton
                 android:id="@+id/btnCloseAnalysisTop"

@@ -22,6 +22,7 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.pdf.PdfRenderer;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import android.media.AudioManager;
@@ -38,6 +39,7 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
+import android.view.WindowManager;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -51,6 +53,7 @@ import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -93,6 +96,7 @@ import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.google.android.gms.tasks.Tasks;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.mlkit.vision.common.InputImage;
@@ -147,6 +151,13 @@ public class MainActivity extends AppCompatActivity {
     private String currentExportConfigTitle = "BÁO CÁO LỊCH TRÌNH VÀ CÔNG VIỆC";
     private String currentExportConfigAuthor = "";
     private String currentExportConfigDept = "";
+    private boolean exportColStt = true;
+    private boolean exportColTitle = true;
+    private boolean exportColDate = true;
+    private boolean exportColTime = true;
+    private boolean exportColRoom = true;
+    private boolean exportColUnit = true;
+    private boolean exportColNote = true;
 
     private DatabaseHelper dbHelper;
     private EventAdapter adapter;
@@ -160,11 +171,16 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvUnreadNotifBadge;
     private SwipeRefreshLayout swipeRefreshLayout;
     private FloatingActionButton fabAddEvent, fabScrollToTop;
-    private boolean isFilteringToday = false;
-    private int currentCalendarMode = 0; // 0: Ngày, 1: Tuần, 2: Tháng, 3: Trống
+    private boolean isFilteringToday = true;
+    private int currentCalendarMode = 0; // 0: Ngày (Hôm nay), 1: Tuần, 2: Tất cả, 3: Trống
 
     // Tab 3: Biểu đồ & Thống kê đa trường
-    private Spinner spnChartTimeFilter, spnChartSchoolFilter;
+    private LinearLayout layoutChartTimeFilterBox;
+    private TextView tvChartTimeFilter;
+    private Spinner spnChartSchoolFilter;
+    private String chartFromDateIso = "";
+    private String chartToDateIso = "";
+    private String chartTimeLabel = "Tất cả thời gian";
     private TextView tvKpiPeriods, tvKpiPeriodsSub, tvKpiEvents, tvKpiEventsSub;
     private TextView tvKpiSchools, tvKpiSchoolsSub, tvKpiIncidents, tvKpiIncidentsSub;
     private TextView tvKpiIncome, tvKpiIncomeSub;
@@ -176,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
     private BarChart barChartDayOfWeek;
     private PieChart pieChartShift;
     private TextView tvMonthlyPeakNotice;
-    private MaterialCardView cardKpiPeriods, cardKpiEvents, cardKpiSchools, cardKpiIncidents, cardKpiIncome;
+    private View cardKpiPeriods, cardKpiEvents, cardKpiSchools, cardKpiIncidents, cardKpiIncome;
     private List<EventModel> currentFilteredChartEvents = new ArrayList<>();
     private final Map<String, List<EventModel>> crossSchoolDaysMap = new LinkedHashMap<>();
 
@@ -201,28 +217,113 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout layoutNavContainer;
 
     // 1. Bộ chọn file Excel (.xlsx / .xls)
-    private final ActivityResultLauncher<String> excelPickerLauncher =
-            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-                if (uri != null) importExcelFile(uri);
+    private final ActivityResultLauncher<Intent> excelPickerLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Uri uri = result.getData().getData();
+                    if (uri != null) importExcelFile(uri);
+                }
             });
 
     // 2. Bộ chọn file PDF (.pdf)
-    private final ActivityResultLauncher<String> pdfPickerLauncher =
-            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-                if (uri != null) processPdfImport(uri);
+    private final ActivityResultLauncher<Intent> pdfPickerLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Uri uri = result.getData().getData();
+                    if (uri != null) processPdfImport(uri);
+                }
             });
 
     // 3. Bộ chọn Ảnh chụp OCR (.png, .jpg)
-    private final ActivityResultLauncher<String> imagePickerLauncher =
-            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-                if (uri != null) processImageOcrImport(uri);
+    private final ActivityResultLauncher<Intent> imagePickerLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Uri uri = result.getData().getData();
+                    if (uri != null) processImageOcrImport(uri);
+                }
             });
 
-    // 4. Bộ chọn Đa năng (Tự động nhận diện mọi loại file: Excel, PDF, Word, CSV/TXT, Ảnh/Tài liệu ghi tay)
-    private final ActivityResultLauncher<String> universalFilePickerLauncher =
-            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-                if (uri != null) processUniversalFileImport(uri);
+    // 4. Bộ chọn Đa năng (Tự động nhận diện mọi loại file)
+    private final ActivityResultLauncher<Intent> universalFilePickerLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Uri uri = result.getData().getData();
+                    if (uri != null) processUniversalFileImport(uri);
+                }
             });
+
+    private void openExcelFilePicker() {
+        try {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("*/*");
+            String[] mimeTypes = new String[]{
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "application/vnd.ms-excel",
+                    "application/excel",
+                    "application/x-excel",
+                    "application/x-msexcel"
+            };
+            intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+            excelPickerLauncher.launch(intent);
+        } catch (Exception e) {
+            try {
+                Intent fallback = new Intent(Intent.ACTION_GET_CONTENT);
+                fallback.addCategory(Intent.CATEGORY_OPENABLE);
+                fallback.setType("application/vnd.ms-excel");
+                excelPickerLauncher.launch(fallback);
+            } catch (Exception ignored) {}
+        }
+    }
+
+    private void openPdfFilePicker() {
+        try {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("application/pdf");
+            intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"application/pdf"});
+            pdfPickerLauncher.launch(intent);
+        } catch (Exception e) {
+            try {
+                Intent fallback = new Intent(Intent.ACTION_GET_CONTENT);
+                fallback.addCategory(Intent.CATEGORY_OPENABLE);
+                fallback.setType("application/pdf");
+                pdfPickerLauncher.launch(fallback);
+            } catch (Exception ignored) {}
+        }
+    }
+
+    private void openImageOcrPicker() {
+        try {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("image/*");
+            imagePickerLauncher.launch(intent);
+        } catch (Exception e) {
+            try {
+                Intent fallback = new Intent(Intent.ACTION_GET_CONTENT);
+                fallback.addCategory(Intent.CATEGORY_OPENABLE);
+                fallback.setType("image/*");
+                imagePickerLauncher.launch(fallback);
+            } catch (Exception ignored) {}
+        }
+    }
+
+    private void openUniversalFilePicker() {
+        try {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("*/*");
+            universalFilePickerLauncher.launch(intent);
+        } catch (Exception e) {
+            try {
+                Intent fallback = new Intent(Intent.ACTION_GET_CONTENT);
+                fallback.addCategory(Intent.CATEGORY_OPENABLE);
+                fallback.setType("*/*");
+                universalFilePickerLauncher.launch(fallback);
+            } catch (Exception ignored) {}
+        }
+    }
 
     // Bộ chọn tạo file Excel xuất báo cáo (SAF)
     private final ActivityResultLauncher<String> exportExcelLauncher =
@@ -462,7 +563,7 @@ public class MainActivity extends AppCompatActivity {
         View cardCalendarWidget = findViewById(R.id.cardCalendarWidget);
         TextView btnToggleCalendarTab2 = findViewById(R.id.btnToggleCalendarTab2);
         TextView tvTab2SelectedDateTitle = findViewById(R.id.tvTab2SelectedDateTitle);
-        TextView btnQuickPickCalendar = findViewById(R.id.btnQuickPickCalendar);
+        LinearLayout btnQuickPickCalendar = findViewById(R.id.btnQuickPickCalendar);
 
         // Khởi tạo Custom Calendar Grid với các dấu chấm tròn phân loại công việc
         rvCustomCalendarGrid = findViewById(R.id.rvCustomCalendarGrid);
@@ -648,6 +749,7 @@ public class MainActivity extends AppCompatActivity {
                             });
                 }
                 @Override public void onEditClick(EventModel event) { showEditEventDialog(event); }
+                @Override public void onItemClick(EventModel event) { showEventDetailDialog(event); }
                 @Override public void onSelectionChanged(int selectedCount) {
                     TextView tvCount = findViewById(R.id.tvSelectedCount);
                     if (tvCount != null) {
@@ -662,11 +764,10 @@ public class MainActivity extends AppCompatActivity {
             rvTab2Events.setAdapter(tab2Adapter);
         }
 
-        TextView btnEnableMultiSelect = findViewById(R.id.btnEnableMultiSelect);
         TextView btnTab2EnableMultiSelect = findViewById(R.id.btnTab2EnableMultiSelect);
 
-        TextView btnScrollTop = findViewById(R.id.btnScrollTop);
-        TextView btnScrollBottom = findViewById(R.id.btnScrollBottom);
+        View btnScrollTop = findViewById(R.id.btnScrollTop);
+        View btnScrollBottom = findViewById(R.id.btnScrollBottom);
         if (btnScrollTop != null) {
             btnScrollTop.setOnClickListener(v -> {
                 if (rvEvents != null && rvEvents.getAdapter() != null && rvEvents.getAdapter().getItemCount() > 0) {
@@ -708,7 +809,6 @@ public class MainActivity extends AppCompatActivity {
         Button btnBatchDelete = findViewById(R.id.btnBatchDelete);
         Button btnCancelMultiSelect = findViewById(R.id.btnCancelMultiSelect);
 
-        TextView btnFileEnableMultiSelect = findViewById(R.id.btnFileEnableMultiSelect);
         MaterialCardView layoutFileMultiSelectBar = findViewById(R.id.layoutFileMultiSelectBar);
         TextView tvFileSelectedCount = findViewById(R.id.tvFileSelectedCount);
         Button btnFileSelectAll = findViewById(R.id.btnFileSelectAll);
@@ -864,13 +964,15 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-        if (btnImportAnyFileTab != null) btnImportAnyFileTab.setOnClickListener(v -> universalFilePickerLauncher.launch("*/*"));
-        if (btnImportExcelTab != null) btnImportExcelTab.setOnClickListener(v -> excelPickerLauncher.launch("*/*"));
-        if (btnImportPdfTab != null) btnImportPdfTab.setOnClickListener(v -> pdfPickerLauncher.launch("application/pdf"));
-        if (btnImportOcrTab != null) btnImportOcrTab.setOnClickListener(v -> imagePickerLauncher.launch("image/*"));
+        if (btnImportAnyFileTab != null) btnImportAnyFileTab.setOnClickListener(v -> openUniversalFilePicker());
+        if (btnImportExcelTab != null) btnImportExcelTab.setOnClickListener(v -> openExcelFilePicker());
+        if (btnImportPdfTab != null) btnImportPdfTab.setOnClickListener(v -> openPdfFilePicker());
+        if (btnImportOcrTab != null) btnImportOcrTab.setOnClickListener(v -> openImageOcrPicker());
 
         if (btnExportExcelTab != null) btnExportExcelTab.setOnClickListener(v -> showExportConfigDialog(true));
         if (btnExportPdfTab != null) btnExportPdfTab.setOnClickListener(v -> showExportConfigDialog(false));
+
+
 
         setupCustomBottomNav();
         setupThemeSettings();
@@ -930,6 +1032,11 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
+            public void onItemClick(EventModel event) {
+                showEventDetailDialog(event);
+            }
+
+            @Override
             public void onSelectionChanged(int selectedCount) {
                 if (tvSelectedCount != null) {
                     tvSelectedCount.setText("Đã chọn: " + selectedCount + " lịch");
@@ -945,15 +1052,6 @@ public class MainActivity extends AppCompatActivity {
         });
         rvEvents.setAdapter(adapter);
 
-        if (btnEnableMultiSelect != null) {
-            btnEnableMultiSelect.setOnClickListener(v -> {
-                if (adapter != null) {
-                    adapter.setMultiSelectMode(true);
-                    if (layoutMultiSelectBar != null) layoutMultiSelectBar.setVisibility(View.VISIBLE);
-                    if (fabAddEvent != null) fabAddEvent.hide();
-                }
-            });
-        }
 
         if (btnTab2EnableMultiSelect != null) {
             btnTab2EnableMultiSelect.setOnClickListener(v -> {
@@ -1020,11 +1118,6 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onViewContentClick(FileHistoryModel item) {
-                    viewHistoryFileContentInApp(item);
-                }
-
-                @Override
                 public void onDownloadClick(FileHistoryModel item) {
                     downloadHistoryFileToDevice(item.getFileName());
                 }
@@ -1048,19 +1141,6 @@ public class MainActivity extends AppCompatActivity {
             refreshFileHistory();
         }
 
-        if (btnFileEnableMultiSelect != null) {
-            btnFileEnableMultiSelect.setOnClickListener(v -> {
-                if (fileHistoryAdapter != null) {
-                    if (fileHistoryAdapter.getItemCount() == 0) {
-                        Toast.makeText(this, "Chưa có tệp nào trong lịch sử để chọn!", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    fileHistoryAdapter.setMultiSelectMode(true);
-                    if (layoutFileMultiSelectBar != null) layoutFileMultiSelectBar.setVisibility(View.VISIBLE);
-                    if (tvFileSelectedCount != null) tvFileSelectedCount.setText("Đã chọn: 0 tệp");
-                }
-            });
-        }
 
         if (btnFileSelectAll != null) {
             btnFileSelectAll.setOnClickListener(v -> {
@@ -1095,11 +1175,11 @@ public class MainActivity extends AppCompatActivity {
             tvTotalCount.setOnClickListener(v -> {
                 isFilteringToday = !isFilteringToday;
                 if (isFilteringToday) {
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-                    String todayStr = sdf.format(Calendar.getInstance().getTime());
-                    edtSearch.setText(todayStr);
+                    currentCalendarMode = 0;
+                    edtSearch.setText("");
                     Toast.makeText(this, "📌 Đang lọc danh sách lịch biểu cho HÔM NAY!", Toast.LENGTH_SHORT).show();
                 } else {
+                    currentCalendarMode = 2;
                     edtSearch.setText("");
                     Toast.makeText(this, "🔄 Đã hiển thị toàn bộ lịch biểu!", Toast.LENGTH_SHORT).show();
                 }
@@ -1186,7 +1266,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (displayList.isEmpty()) {
-                displayList.add(new EventModel(-100, 0, "☕ Ngày này chưa có lịch bận", dateIso, "Bạn đang có trọn vẹn cả ngày trống rảnh để nghỉ ngơi hoặc làm việc cá nhân.", "HK1", cal.get(Calendar.YEAR), cal.get(Calendar.WEEK_OF_YEAR)));
+                displayList.add(new EventModel(-100, 0, "Ngày này chưa có lịch bận", dateIso, "Bạn đang có trọn vẹn cả ngày trống rảnh để nghỉ ngơi hoặc làm việc cá nhân.", "HK1", cal.get(Calendar.YEAR), cal.get(Calendar.WEEK_OF_YEAR)));
             }
 
         } else if (currentTab2Mode == 1) {
@@ -1206,7 +1286,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (displayList.isEmpty()) {
-                displayList.add(new EventModel(-200, 0, "☕ Cả tuần này chưa có lịch bận", selectedTab2DateIso, "Tất cả các ngày trong tuần này đều chưa có lịch giảng dạy hay lịch họp.", "HK1", cal.get(Calendar.YEAR), cal.get(Calendar.WEEK_OF_YEAR)));
+                displayList.add(new EventModel(-200, 0, "Cả tuần này chưa có lịch bận", selectedTab2DateIso, "Tất cả các ngày trong tuần này đều chưa có lịch giảng dạy hay lịch họp.", "HK1", cal.get(Calendar.YEAR), cal.get(Calendar.WEEK_OF_YEAR)));
             }
 
         } else if (currentTab2Mode == 2) {
@@ -1222,7 +1302,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (displayList.isEmpty()) {
-                displayList.add(new EventModel(-300, 0, "☕ Tháng " + targetMonthIso + " chưa có lịch bận", selectedTab2DateIso, "Chưa có công việc nào được ghi nhận trong tháng này.", "HK1", cal.get(Calendar.YEAR), cal.get(Calendar.WEEK_OF_YEAR)));
+                displayList.add(new EventModel(-300, 0, "Tháng " + targetMonthIso + " chưa có lịch bận", selectedTab2DateIso, "Chưa có công việc nào được ghi nhận trong tháng này.", "HK1", cal.get(Calendar.YEAR), cal.get(Calendar.WEEK_OF_YEAR)));
             }
 
         } else {
@@ -1794,8 +1874,8 @@ public class MainActivity extends AppCompatActivity {
         Button btnTimelineToday = view.findViewById(R.id.btnTimelineToday);
         Button btnTimelineNextDay = view.findViewById(R.id.btnTimelineNextDay);
         RecyclerView rvTimelineStream = view.findViewById(R.id.rvTimelineStream);
-        TextView btnTimelineScrollTop = view.findViewById(R.id.btnTimelineScrollTop);
-        TextView btnTimelineScrollBottom = view.findViewById(R.id.btnTimelineScrollBottom);
+        View btnTimelineScrollTop = view.findViewById(R.id.btnTimelineScrollTop);
+        View btnTimelineScrollBottom = view.findViewById(R.id.btnTimelineScrollBottom);
         if (btnTimelineScrollTop != null) {
             btnTimelineScrollTop.setOnClickListener(v -> {
                 if (rvTimelineStream != null && rvTimelineStream.getAdapter() != null && rvTimelineStream.getAdapter().getItemCount() > 0) {
@@ -1839,7 +1919,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onBusyEventClick(EventModel event) {
                     dialog.dismiss();
-                    showEditEventDialog(event);
+                    showEventDetailDialog(event);
                 }
 
                 @Override
@@ -1910,8 +1990,8 @@ public class MainActivity extends AppCompatActivity {
         playSuccessSound();
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_free_time_analysis, null);
         RecyclerView rvFreeTimeDays = view.findViewById(R.id.rvFreeTimeDays);
-        TextView btnFreeTimeScrollTop = view.findViewById(R.id.btnFreeTimeScrollTop);
-        TextView btnFreeTimeScrollBottom = view.findViewById(R.id.btnFreeTimeScrollBottom);
+        View btnFreeTimeScrollTop = view.findViewById(R.id.btnFreeTimeScrollTop);
+        View btnFreeTimeScrollBottom = view.findViewById(R.id.btnFreeTimeScrollBottom);
         if (btnFreeTimeScrollTop != null) {
             btnFreeTimeScrollTop.setOnClickListener(v -> {
                 if (rvFreeTimeDays != null && rvFreeTimeDays.getAdapter() != null && rvFreeTimeDays.getAdapter().getItemCount() > 0) {
@@ -2007,8 +2087,8 @@ public class MainActivity extends AppCompatActivity {
         TextView chipFind180 = view.findViewById(R.id.chipFind180);
         TextView tvFinderResultCount = view.findViewById(R.id.tvFinderResultCount);
         RecyclerView rvFoundSlots = view.findViewById(R.id.rvFoundSlots);
-        TextView btnSlotFinderScrollTop = view.findViewById(R.id.btnSlotFinderScrollTop);
-        TextView btnSlotFinderScrollBottom = view.findViewById(R.id.btnSlotFinderScrollBottom);
+        View btnSlotFinderScrollTop = view.findViewById(R.id.btnSlotFinderScrollTop);
+        View btnSlotFinderScrollBottom = view.findViewById(R.id.btnSlotFinderScrollBottom);
         if (btnSlotFinderScrollTop != null) {
             btnSlotFinderScrollTop.setOnClickListener(v -> {
                 if (rvFoundSlots != null && rvFoundSlots.getAdapter() != null && rvFoundSlots.getAdapter().getItemCount() > 0) {
@@ -2072,11 +2152,10 @@ public class MainActivity extends AppCompatActivity {
                             
                             // 🌟 AI Scoring Logic (Offline, rule-based)
                             int score = 100; // Base score
-                            String recommendation = "";
-                            
+                            String recommendation;
                             if (dayEvents.isEmpty()) {
                                 score += 20; // Khá tốt, ngày hoàn toàn trống
-                                recommendation = "Ngày trống hoàn toàn, thoải mái sắp xếp.";
+                                recommendation = "Gợi ý: Ngày trống hoàn toàn, thoải mái sắp xếp.";
                             } else {
                                 // Tính toán dựa trên các môn đã có trong ngày
                                 boolean sameCampus = false;
@@ -2091,15 +2170,15 @@ public class MainActivity extends AppCompatActivity {
                                 
                                 if (sameCampus) {
                                     score += 50; // Ưu tiên cực cao: Dạy bù cùng ngày, cùng trường
-                                    recommendation = "Nên chọn! Tiện đường đi dạy ở " + matchedCampus;
+                                    recommendation = "Gợi ý: Nên chọn! Tiện đường đi dạy ở " + matchedCampus;
                                 } else {
                                     score -= 10;
-                                    recommendation = "Ngày có lịch dạy, cần chú ý di chuyển.";
+                                    recommendation = "Gợi ý: Ngày có lịch dạy, cần chú ý di chuyển.";
                                 }
                             }
                             
                             fs.score = score;
-                            fs.aiRecommendation = recommendation;
+                            fs.contextDesc = recommendation;
 
                             foundSlots.add(fs);
                         }
@@ -2113,10 +2192,10 @@ public class MainActivity extends AppCompatActivity {
 
             if (tvFinderResultCount != null) {
                 if (foundSlots.isEmpty()) {
-                    tvFinderResultCount.setText("⚠️ Không tìm thấy khe rảnh liên tục nào đủ " + reqMinutes + " phút trong 7 ngày tới.");
+                    tvFinderResultCount.setText("⚠️ Không tìm thấy lịch rảnh liên tục nào đủ " + reqMinutes + " phút trong 7 ngày tới.");
                     tvFinderResultCount.setTextColor(Color.parseColor("#DC2626"));
                 } else {
-                    tvFinderResultCount.setText("✅ Tìm thấy " + foundSlots.size() + " khe rảnh đủ điều kiện (>= " + reqMinutes + " phút) trong 7 ngày tới:");
+                    tvFinderResultCount.setText("Tìm thấy " + foundSlots.size() + " lịch rảnh (>= " + reqMinutes + " phút) trong 7 ngày tới:");
                     tvFinderResultCount.setTextColor(Color.parseColor("#16A34A"));
                 }
             }
@@ -2421,8 +2500,8 @@ public class MainActivity extends AppCompatActivity {
         ImageButton btnCloseTop = view.findViewById(R.id.btnCloseAnalysisTop);
         Button btnCloseBottom = view.findViewById(R.id.btnCloseAnalysisBottom);
         androidx.core.widget.NestedScrollView nsvFileReport = view.findViewById(R.id.nsvFileReport);
-        TextView btnFileReportScrollTop = view.findViewById(R.id.btnFileReportScrollTop);
-        TextView btnFileReportScrollBottom = view.findViewById(R.id.btnFileReportScrollBottom);
+        View btnFileReportScrollTop = view.findViewById(R.id.btnFileReportScrollTop);
+        View btnFileReportScrollBottom = view.findViewById(R.id.btnFileReportScrollBottom);
         if (btnFileReportScrollTop != null && nsvFileReport != null) {
             btnFileReportScrollTop.setOnClickListener(v -> nsvFileReport.fullScroll(View.FOCUS_UP));
         }
@@ -2766,7 +2845,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void processPdfImport(Uri uri) {
+        if (uri == null) return;
         String fileName = resolveFileName(uri, "ThongBao_PDF", ".pdf");
+        String lowerName = fileName.toLowerCase(Locale.getDefault());
+
+        if (!lowerName.endsWith(".pdf") && !lowerName.contains("pdf")) {
+            showCustomConfirmDialog(
+                    "⚠️",
+                    "ĐỊNH DẠNG FILE KHÔNG HỢP LỆ",
+                    "Tệp tin bạn vừa chọn ('" + fileName + "') không phải là file PDF (.pdf).\n\nVui lòng nhấn nút 'Nhập PDF' và chọn đúng tệp tài liệu PDF!",
+                    "ĐÃ HỂU",
+                    Color.parseColor("#2563EB"),
+                    null
+            );
+            return;
+        }
+
         copyUriToDownloads(uri, fileName);
         Toast.makeText(this, "⏳ Đang đọc & phân tích cấu trúc file PDF...", Toast.LENGTH_SHORT).show();
 
@@ -3238,19 +3332,24 @@ public class MainActivity extends AppCompatActivity {
         try {
             ThumoiGiangParser.ParseResult pResult = ThumoiGiangParser.parseInvitationDocument(fullText);
             if (pResult != null && !pResult.generatedEvents.isEmpty()) {
-                    for (ThumoiGiangParser.GeneratedClassEvent gEv : pResult.generatedEvents) {
-                        String orgWithFile = (gEv.organizer != null ? gEv.organizer : "");
-                        if (fileName != null && !fileName.trim().isEmpty() && !orgWithFile.contains(fileName.trim())) {
-                            orgWithFile = orgWithFile + " • " + fileName.trim();
-                        }
-                        String healedTitle = ThumoiGiangParser.healVietnameseText(gEv.title);
-                        stagingList.add(new EventModel(0, stt++, healedTitle, gEv.dateIso, orgWithFile, "HK1", Calendar.getInstance().get(Calendar.YEAR), 1));
-                        extractedSummaries.add("[" + gEv.dateIso + "] " + healedTitle);
-                        count++;
+                for (ThumoiGiangParser.GeneratedClassEvent gEv : pResult.generatedEvents) {
+                    String healedTitle = ThumoiGiangParser.healVietnameseText(gEv.title);
+                    if (UniversalScheduleParser.isNoiseLine(healedTitle) || UniversalScheduleParser.isInstitutionalBoilerplate(healedTitle)) {
+                        continue;
                     }
+                    String orgWithFile = (gEv.organizer != null ? gEv.organizer : "");
+                    if (fileName != null && !fileName.trim().isEmpty() && !orgWithFile.contains(fileName.trim())) {
+                        orgWithFile = orgWithFile + " • " + fileName.trim();
+                    }
+                    stagingList.add(new EventModel(0, stt++, healedTitle, gEv.dateIso, orgWithFile, "HK1", Calendar.getInstance().get(Calendar.YEAR), 1));
+                    extractedSummaries.add("[" + gEv.dateIso + "] " + healedTitle);
+                    count++;
+                }
+                if (!stagingList.isEmpty()) {
                     showStagingImportDialog(stagingList, fileName, activeFormatLabel, isHandwritten, "Bóc tách Thư mời giảng (Tự động rải lịch từng tuần & kiểm tra ngày lễ)");
                     return;
                 }
+            }
         } catch (Exception ignored) {}
 
         // 2. Bóc tách thông minh đa năng (UniversalScheduleParser): Dành cho Ảnh chụp lịch học OCR (theo ngày/tuần), thẻ môn học điện tử
@@ -3259,12 +3358,17 @@ public class MainActivity extends AppCompatActivity {
             if (parsedEvents != null && !parsedEvents.isEmpty()) {
                 for (UniversalScheduleParser.ParsedScheduleEvent pEv : parsedEvents) {
                     String healedTitle = ThumoiGiangParser.healVietnameseText(pEv.title);
+                    if (UniversalScheduleParser.isNoiseLine(healedTitle) || UniversalScheduleParser.isInstitutionalBoilerplate(healedTitle)) {
+                        continue;
+                    }
                     stagingList.add(new EventModel(0, stt++, healedTitle, pEv.dateIso, pEv.organizer, "HK1", Calendar.getInstance().get(Calendar.YEAR), 1));
                     extractedSummaries.add("[" + pEv.dateIso + "] " + healedTitle);
                     count++;
                 }
-                showStagingImportDialog(stagingList, fileName, activeFormatLabel, isHandwritten, "Bóc tách Thẻ Lịch học & Thời khóa biểu chuẩn xác 100% (Khử hoàn toàn nhiễu giao diện)");
-                return;
+                if (!stagingList.isEmpty()) {
+                    showStagingImportDialog(stagingList, fileName, activeFormatLabel, isHandwritten, "Bóc tách Thẻ Lịch học & Thời khóa biểu chuẩn xác 100% (Khử hoàn toàn nhiễu giao diện)");
+                    return;
+                }
             }
         } catch (Exception e) {
             android.util.Log.e("LectuPlan", "Lỗi UniversalScheduleParser: " + e.getMessage(), e);
@@ -3470,7 +3574,169 @@ public class MainActivity extends AppCompatActivity {
         return lines;
     }
 
-    private void drawPdfTableHeader(android.graphics.Canvas canvas, android.graphics.Paint paint, int topY) {
+    public static String formatIsoToVnDate(String rawDate) {
+        if (rawDate == null || rawDate.trim().isEmpty()) return "";
+        String clean = rawDate.trim();
+        if (clean.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            try {
+                SimpleDateFormat sdfIso = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                Date d = sdfIso.parse(clean);
+                if (d != null) {
+                    return new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(d);
+                }
+            } catch (Exception ignored) {}
+        }
+        return clean;
+    }
+
+    public static String formatVnToIsoDate(String rawDate) {
+        if (rawDate == null || rawDate.trim().isEmpty()) return "";
+        String clean = rawDate.trim();
+        if (clean.matches("\\d{2}/\\d{2}/\\d{4}")) {
+            try {
+                SimpleDateFormat sdfVn = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                Date d = sdfVn.parse(clean);
+                if (d != null) {
+                    return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(d);
+                }
+            } catch (Exception ignored) {}
+        }
+        return clean;
+    }
+
+    public static String getCleanTitleForExport(EventModel e) {
+        if (e == null || e.getTitle() == null) return "";
+        String clean = EventModel.cleanDisplayTitle(e.getTitle());
+        clean = clean.replaceAll("(?i)\\s*\\(nhắc việc tự động\\)", "")
+                     .replaceAll("(?i)\\s*•\\s*.*\\.pdf", "")
+                     .replaceAll("(?i)\\s*\\|\\s*.*\\.pdf", "")
+                     .trim();
+        return clean.isEmpty() ? e.getTitle() : clean;
+    }
+
+    public static String getCleanRoomForExport(EventModel e) {
+        if (e == null) return "";
+        String room = e.getRoom() != null ? e.getRoom().trim() : "";
+        room = room.replaceAll("(?i)^(?:phòng|room|địa\\s*điểm)\\s*[:=–-]?\\s*", "")
+                   .replaceAll("(?i)\\s*\\(nhắc việc tự động\\)", "")
+                   .replaceAll("(?i)\\s*•\\s*.*\\.pdf", "")
+                   .trim();
+
+        String campus = e.getCampus() != null ? e.getCampus().trim() : "";
+        campus = campus.replaceAll("(?i)\\s*\\(nhắc việc tự động\\)", "")
+                       .replaceAll("(?i)\\s*•\\s*.*\\.pdf", "")
+                       .trim();
+
+        String result = "";
+        if (!room.isEmpty()) {
+            result += "Phòng " + room;
+        }
+        if (!campus.isEmpty()) {
+            if (!result.isEmpty()) result += " • ";
+            result += campus;
+        }
+        return result;
+    }
+
+    public static String getCleanOrganizerForExport(EventModel e) {
+        if (e == null || e.getOrganizer() == null) return "";
+        String org = e.getOrganizer().trim();
+        org = org.replaceAll("(?i)\\s*\\(nhắc việc tự động\\)", "")
+                 .replaceAll("(?i)\\s*•\\s*.*\\.pdf", "")
+                 .replaceAll("(?i)\\s*\\|\\s*.*\\.pdf", "")
+                 .trim();
+        return org;
+    }
+
+    private static class PdfColumnConfig {
+        String key;
+        String headerText;
+        float baseWeight;
+        float actualWidth;
+        float startX;
+    }
+
+    private List<PdfColumnConfig> buildPdfColumnConfigs() {
+        List<PdfColumnConfig> cols = new ArrayList<>();
+
+        if (exportColStt) {
+            PdfColumnConfig col = new PdfColumnConfig();
+            col.key = "STT";
+            col.headerText = "STT";
+            col.baseWeight = 30f;
+            cols.add(col);
+        }
+
+        if (exportColDate || exportColTime) {
+            PdfColumnConfig col = new PdfColumnConfig();
+            col.key = "DATE_TIME";
+            if (exportColDate && exportColTime) {
+                col.headerText = "Ngày & Giờ";
+            } else if (exportColDate) {
+                col.headerText = "Ngày";
+            } else {
+                col.headerText = "Giờ / Tiết";
+            }
+            col.baseWeight = 80f;
+            cols.add(col);
+        }
+
+        {
+            PdfColumnConfig col = new PdfColumnConfig();
+            col.key = "TITLE_ROOM";
+            if (exportColRoom) {
+                col.headerText = "Nội dung công việc & Địa điểm";
+            } else {
+                col.headerText = "Nội dung công việc";
+            }
+            col.baseWeight = 210f;
+            cols.add(col);
+        }
+
+        if (exportColUnit) {
+            PdfColumnConfig col = new PdfColumnConfig();
+            col.key = "CATEGORY";
+            col.headerText = "Phân loại";
+            col.baseWeight = 85f;
+            cols.add(col);
+        }
+
+        if (exportColUnit || exportColNote) {
+            PdfColumnConfig col = new PdfColumnConfig();
+            col.key = "UNIT_NOTE";
+            if (exportColUnit && exportColNote) {
+                col.headerText = "Đơn vị & Tuần học";
+            } else if (exportColUnit) {
+                col.headerText = "Đơn vị / Nguồn";
+            } else {
+                col.headerText = "Ghi chú (Tuần & Năm)";
+            }
+            col.baseWeight = 130f;
+            cols.add(col);
+        }
+
+        float totalWeight = 0;
+        for (PdfColumnConfig c : cols) {
+            totalWeight += c.baseWeight;
+        }
+        if (totalWeight <= 0) totalWeight = 1f;
+
+        float currentX = 30f;
+        for (int i = 0; i < cols.size(); i++) {
+            PdfColumnConfig c = cols.get(i);
+            if (i == cols.size() - 1) {
+                c.actualWidth = 565f - currentX;
+            } else {
+                c.actualWidth = (c.baseWeight / totalWeight) * 535f;
+            }
+            c.startX = currentX;
+            currentX += c.actualWidth;
+        }
+
+        return cols;
+    }
+
+    private void drawPdfTableHeader(android.graphics.Canvas canvas, android.graphics.Paint paint, int topY, List<PdfColumnConfig> cols) {
         paint.setColor(Color.parseColor("#1E3A8A"));
         paint.setStyle(android.graphics.Paint.Style.FILL);
         canvas.drawRect(30, topY, 565, topY + 26, paint);
@@ -3478,11 +3744,10 @@ public class MainActivity extends AppCompatActivity {
         paint.setColor(Color.WHITE);
         paint.setTextSize(9.5f);
         paint.setFakeBoldText(true);
-        canvas.drawText("STT", 34, topY + 17, paint);
-        canvas.drawText("Ngày & Giờ", 62, topY + 17, paint);
-        canvas.drawText("Nội dung công việc & Địa điểm", 134, topY + 17, paint);
-        canvas.drawText("Phân loại", 344, topY + 17, paint);
-        canvas.drawText("Đơn vị & Tuần học", 429, topY + 17, paint);
+
+        for (PdfColumnConfig col : cols) {
+            canvas.drawText(col.headerText, col.startX + 4, topY + 17, paint);
+        }
     }
 
     private void exportPdfReportProcess() {
@@ -3492,6 +3757,8 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Không có lịch biểu nào để xuất báo cáo PDF!", Toast.LENGTH_SHORT).show();
                 return;
             }
+
+            List<PdfColumnConfig> cols = buildPdfColumnConfigs();
 
             android.graphics.pdf.PdfDocument pdfDoc = new android.graphics.pdf.PdfDocument();
             int pageNumber = 1;
@@ -3518,18 +3785,12 @@ public class MainActivity extends AppCompatActivity {
             paint.setStrokeWidth(1f);
             canvas.drawLine(30, 70, 565, 70, paint);
 
-            drawPdfTableHeader(canvas, paint, 80);
+            drawPdfTableHeader(canvas, paint, 80, cols);
 
             int y = 106;
             SimpleDateFormat sdfInput = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             SimpleDateFormat sdfOutput = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
-            // Khổ A4 (595pt x 842pt), lề 30pt..565pt (rộng 535pt)
-            // Cột STT: 30..58 (28pt) | Cột Ngày & Giờ: 58..130 (72pt) | Cột Nội dung: 130..340 (210pt) | Cột Phân loại: 340..425 (85pt) | Cột Đơn vị: 425..565 (140pt)
-            float dateMaxWidth = 66f;
-            float titleMaxWidth = 202f;
-            float catMaxWidth = 78f;
-            float orgMaxWidth = 132f;
             int lineHeight = 13;
 
             for (int i = 0; i < list.size(); i++) {
@@ -3538,40 +3799,62 @@ public class MainActivity extends AppCompatActivity {
                 paint.setTextSize(9f);
                 paint.setFakeBoldText(false);
 
-                String dateStr = e.getDate() != null ? e.getDate() : "";
-                try {
-                    Date d = sdfInput.parse(dateStr);
-                    if (d != null) dateStr = sdfOutput.format(d);
-                } catch (Exception ignored) {}
+                List<List<String>> colWrappedLines = new ArrayList<>();
+                int maxLines = 1;
 
-                String timeStr = (e.getStartTime() != null && !e.getStartTime().isEmpty())
-                        ? (e.getStartTime() + " - " + e.getEndTime()) : "";
-                String dateText = dateStr + (timeStr.isEmpty() ? "" : "\n" + timeStr);
+                for (PdfColumnConfig col : cols) {
+                    String cellText = "";
+                    if ("STT".equals(col.key)) {
+                        cellText = String.valueOf(i + 1);
+                    } else if ("DATE_TIME".equals(col.key)) {
+                        String dateStr = e.getDate() != null ? e.getDate() : "";
+                        try {
+                            Date d = sdfInput.parse(dateStr);
+                            if (d != null) dateStr = sdfOutput.format(d);
+                        } catch (Exception ignored) {}
+                        String timeStr = (e.getStartTime() != null && !e.getStartTime().isEmpty())
+                                ? (e.getStartTime() + " - " + e.getEndTime()) : "";
+                        if (exportColDate && exportColTime) {
+                            cellText = dateStr + (timeStr.isEmpty() ? "" : "\n" + timeStr);
+                        } else if (exportColDate) {
+                            cellText = dateStr;
+                        } else {
+                            cellText = timeStr;
+                        }
+                    } else if ("TITLE_ROOM".equals(col.key)) {
+                        String cleanTitle = getCleanTitleForExport(e);
+                        if (exportColRoom) {
+                            String cleanRoom = getCleanRoomForExport(e);
+                            if (!cleanRoom.isEmpty()) {
+                                String cleanRoomLower = cleanRoom.toLowerCase(Locale.getDefault());
+                                String titleLower = cleanTitle.toLowerCase(Locale.getDefault());
+                                if (!titleLower.contains(cleanRoomLower)) {
+                                    cleanTitle += "\n(" + cleanRoom + ")";
+                                }
+                            }
+                        }
+                        cellText = cleanTitle;
+                    } else if ("CATEGORY".equals(col.key)) {
+                        cellText = e.getScheduleCategory();
+                    } else if ("UNIT_NOTE".equals(col.key)) {
+                        String cleanOrg = getCleanOrganizerForExport(e);
+                        String noteStr = "(Tuần " + e.getWeek() + " • Năm " + e.getYear() + ")";
+                        if (exportColUnit && exportColNote) {
+                            cellText = cleanOrg + (cleanOrg.isEmpty() ? "" : "\n") + noteStr;
+                        } else if (exportColUnit) {
+                            cellText = cleanOrg;
+                        } else {
+                            cellText = noteStr;
+                        }
+                    }
 
-                String titleText = e.getTitle() != null ? e.getTitle() : "";
-                String roomInfo = "";
-                if (e.getRoom() != null && !e.getRoom().trim().isEmpty()) {
-                    roomInfo += "Phòng " + e.getRoom().trim();
+                    List<String> lines = wrapPdfTextToLines(cellText, paint, col.actualWidth - 8f);
+                    colWrappedLines.add(lines);
+                    if (lines.size() > maxLines) {
+                        maxLines = lines.size();
+                    }
                 }
-                if (e.getCampus() != null && !e.getCampus().trim().isEmpty()) {
-                    if (!roomInfo.isEmpty()) roomInfo += " • ";
-                    roomInfo += e.getCampus().trim();
-                }
-                if (!roomInfo.isEmpty()) {
-                    titleText += "\n(" + roomInfo + ")";
-                }
 
-                String catText = e.getScheduleCategory();
-
-                String orgText = (e.getOrganizer() != null ? e.getOrganizer() : "")
-                        + "\n(Tuần " + e.getWeek() + " • Năm " + e.getYear() + ")";
-
-                List<String> dateLines = wrapPdfTextToLines(dateText, paint, dateMaxWidth);
-                List<String> titleLines = wrapPdfTextToLines(titleText, paint, titleMaxWidth);
-                List<String> catLines = wrapPdfTextToLines(catText, paint, catMaxWidth);
-                List<String> orgLines = wrapPdfTextToLines(orgText, paint, orgMaxWidth);
-
-                int maxLines = Math.max(dateLines.size(), Math.max(titleLines.size(), Math.max(catLines.size(), orgLines.size())));
                 int rowHeight = Math.max(26, maxLines * lineHeight + 10);
 
                 // Nếu vượt quá chiều cao trang A4 thì sang trang mới
@@ -3591,7 +3874,7 @@ public class MainActivity extends AppCompatActivity {
                     paint.setFakeBoldText(false);
                     canvas.drawText("BÁO CÁO LỊCH GIẢNG DẠY & CÔNG VIỆC GIẢNG VIÊN (Tiếp theo - Trang " + pageNumber + ")", 30, 34, paint);
 
-                    drawPdfTableHeader(canvas, paint, 44);
+                    drawPdfTableHeader(canvas, paint, 44, cols);
                     y = 70;
                 }
 
@@ -3607,36 +3890,35 @@ public class MainActivity extends AppCompatActivity {
                 paint.setStyle(android.graphics.Paint.Style.STROKE);
                 paint.setStrokeWidth(0.6f);
                 canvas.drawRect(30, y, 565, y + rowHeight, paint);
-                canvas.drawLine(58, y, 58, y + rowHeight, paint);
-                canvas.drawLine(130, y, 130, y + rowHeight, paint);
-                canvas.drawLine(340, y, 340, y + rowHeight, paint);
-                canvas.drawLine(425, y, 425, y + rowHeight, paint);
+                for (int c = 1; c < cols.size(); c++) {
+                    canvas.drawLine(cols.get(c).startX, y, cols.get(c).startX, y + rowHeight, paint);
+                }
 
                 // In nội dung từng cột
                 paint.setStyle(android.graphics.Paint.Style.FILL);
-                paint.setColor(Color.parseColor("#0F172A"));
                 paint.setTextSize(9f);
-                paint.setFakeBoldText(true);
-                canvas.drawText(String.valueOf(i + 1), 34, y + 15, paint);
 
-                paint.setFakeBoldText(false);
-                for (int l = 0; l < dateLines.size(); l++) {
-                    canvas.drawText(dateLines.get(l), 62, y + 15 + (l * lineHeight), paint);
-                }
+                for (int c = 0; c < cols.size(); c++) {
+                    PdfColumnConfig col = cols.get(c);
+                    List<String> lines = colWrappedLines.get(c);
 
-                paint.setColor(Color.parseColor("#0F172A"));
-                for (int l = 0; l < titleLines.size(); l++) {
-                    canvas.drawText(titleLines.get(l), 134, y + 15 + (l * lineHeight), paint);
-                }
+                    if ("STT".equals(col.key)) {
+                        paint.setColor(Color.parseColor("#0F172A"));
+                        paint.setFakeBoldText(true);
+                    } else if ("CATEGORY".equals(col.key)) {
+                        paint.setColor(Color.parseColor("#2563EB"));
+                        paint.setFakeBoldText(false);
+                    } else if ("UNIT_NOTE".equals(col.key)) {
+                        paint.setColor(Color.parseColor("#334155"));
+                        paint.setFakeBoldText(false);
+                    } else {
+                        paint.setColor(Color.parseColor("#0F172A"));
+                        paint.setFakeBoldText(false);
+                    }
 
-                paint.setColor(Color.parseColor("#2563EB"));
-                for (int l = 0; l < catLines.size(); l++) {
-                    canvas.drawText(catLines.get(l), 344, y + 15 + (l * lineHeight), paint);
-                }
-
-                paint.setColor(Color.parseColor("#334155"));
-                for (int l = 0; l < orgLines.size(); l++) {
-                    canvas.drawText(orgLines.get(l), 429, y + 15 + (l * lineHeight), paint);
+                    for (int l = 0; l < lines.size(); l++) {
+                        canvas.drawText(lines.get(l), col.startX + 4, y + 15 + (l * lineHeight), paint);
+                    }
                 }
 
                 y += rowHeight;
@@ -4074,7 +4356,7 @@ public class MainActivity extends AppCompatActivity {
                 if (files.isEmpty()) {
                     if (tvEmpty != null) {
                         tvEmpty.setVisibility(View.VISIBLE);
-                        tvEmpty.setText("☕ Hiện không có tệp nào được lưu trong ứng dụng.");
+                        tvEmpty.setText("Hiện không có tệp nào được lưu trong ứng dụng.");
                     }
                     if (rvManage != null) rvManage.setVisibility(View.GONE);
                     if (btnDeleteAll != null) {
@@ -4278,10 +4560,10 @@ public class MainActivity extends AppCompatActivity {
         if (prefillEnd != null && edtEndTime != null) edtEndTime.setText(prefillEnd);
 
         String[] categoryDisplayOptions = new String[]{
-                "👨‍🏫 Lịch dạy/học",
-                "🏛️ Lịch sự kiện",
-                "⚡ Lịch phát sinh",
-                "📝 Lịch khác (tự đặt tên)"
+                "Lịch dạy/học",
+                "Lịch sự kiện",
+                "Lịch phát sinh",
+                "Lịch khác (tự đặt tên)"
         };
 
         CheckBox cbCalculateIncome = view.findViewById(R.id.cbCalculateIncome);
@@ -4475,7 +4757,7 @@ public class MainActivity extends AppCompatActivity {
             currentCalendarMode = 0;
             isFilteringToday = true;
             if (edtSearch != null) {
-                edtSearch.setText(todayIso);
+                edtSearch.setText("");
             }
             updateChipUi(R.id.chipToday);
         }
@@ -4541,6 +4823,257 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void showEventDetailDialog(EventModel event) {
+        if (event == null) return;
+
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_event_detail, null);
+
+        ImageButton btnBackDetail = view.findViewById(R.id.btnBackDetail);
+        ImageButton btnCloseDetail = view.findViewById(R.id.btnCloseDetail);
+        TextView tvDetailTitle = view.findViewById(R.id.tvDetailTitle);
+        TextView tvDetailRoom = view.findViewById(R.id.tvDetailRoom);
+        TextView tvDetailGroup = view.findViewById(R.id.tvDetailGroup);
+        TextView tvDetailOrganizer = view.findViewById(R.id.tvDetailOrganizer);
+        TextView tvDetailDayOfWeek = view.findViewById(R.id.tvDetailDayOfWeek);
+        TextView tvDetailPeriod = view.findViewById(R.id.tvDetailPeriod);
+        TextView tvDetailSemester = view.findViewById(R.id.tvDetailSemester);
+        TextView tvDetailCredits = view.findViewById(R.id.tvDetailCredits);
+        TextView tvDetailStartTime = view.findViewById(R.id.tvDetailStartTime);
+        TextView tvDetailEndTime = view.findViewById(R.id.tvDetailEndTime);
+        TextView tvDetailDate = view.findViewById(R.id.tvDetailDate);
+        TextView tvDetailYear = view.findViewById(R.id.tvDetailYear);
+        LinearLayout layoutDetailConflict = view.findViewById(R.id.layoutDetailConflict);
+        TextView tvDetailConflict = view.findViewById(R.id.tvDetailConflict);
+        MaterialButton btnDeleteDetail = view.findViewById(R.id.btnDeleteDetail);
+        MaterialButton btnEditDetail = view.findViewById(R.id.btnEditDetail);
+
+        EventModel.EventFieldBreakdown bd = event.getBreakdown();
+
+        if (tvDetailTitle != null) {
+            String rawTitle = event.getTitle() != null ? event.getTitle().trim() : "";
+            tvDetailTitle.setText(rawTitle.isEmpty() ? EventModel.cleanDisplayTitle(event.getTitle()) : rawTitle);
+        }
+
+        String room = event.getRoom();
+        if (room == null || room.trim().isEmpty()) {
+            room = bd.room;
+        }
+        if (tvDetailRoom != null) {
+            if (room != null && !room.trim().isEmpty()) {
+                tvDetailRoom.setText("Phòng: " + room.trim());
+                tvDetailRoom.setVisibility(View.VISIBLE);
+            } else {
+                tvDetailRoom.setVisibility(View.GONE);
+            }
+        }
+
+        if (tvDetailGroup != null) {
+            if (bd.group != null && !bd.group.trim().isEmpty()) {
+                tvDetailGroup.setText("Lớp / Nhóm: " + bd.group.trim());
+                tvDetailGroup.setVisibility(View.VISIBLE);
+            } else {
+                tvDetailGroup.setVisibility(View.GONE);
+            }
+        }
+
+        if (tvDetailOrganizer != null) {
+            String org = event.getOrganizer();
+            if (org == null || org.trim().isEmpty()) org = bd.organizer;
+            if (org != null && !org.trim().isEmpty()) {
+                tvDetailOrganizer.setText("Tổ chức / Đơn vị: " + org.trim());
+                tvDetailOrganizer.setVisibility(View.VISIBLE);
+            } else {
+                tvDetailOrganizer.setVisibility(View.GONE);
+            }
+        }
+
+        if (tvDetailDayOfWeek != null) {
+            String dateStr = event.getDate();
+            String dayOfWeekStr = "";
+            String formattedDate = "";
+            if (dateStr != null && !dateStr.trim().isEmpty()) {
+                try {
+                    SimpleDateFormat sdfIso = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                    Date d = sdfIso.parse(dateStr.trim());
+                    if (d != null) {
+                        Calendar cal = Calendar.getInstance();
+                        cal.setTime(d);
+                        int dow = cal.get(Calendar.DAY_OF_WEEK);
+                        switch (dow) {
+                            case Calendar.MONDAY: dayOfWeekStr = "Thứ Hai"; break;
+                            case Calendar.TUESDAY: dayOfWeekStr = "Thứ Ba"; break;
+                            case Calendar.WEDNESDAY: dayOfWeekStr = "Thứ Tư"; break;
+                            case Calendar.THURSDAY: dayOfWeekStr = "Thứ Năm"; break;
+                            case Calendar.FRIDAY: dayOfWeekStr = "Thứ Sáu"; break;
+                            case Calendar.SATURDAY: dayOfWeekStr = "Thứ Bảy"; break;
+                            case Calendar.SUNDAY: dayOfWeekStr = "Chủ Nhật"; break;
+                        }
+                        SimpleDateFormat sdfOut = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                        formattedDate = sdfOut.format(d);
+                    }
+                } catch (Exception ignored) {}
+            }
+            if (!dayOfWeekStr.isEmpty() && !formattedDate.isEmpty()) {
+                tvDetailDayOfWeek.setText("Thứ: " + dayOfWeekStr + ", " + formattedDate);
+                tvDetailDayOfWeek.setVisibility(View.VISIBLE);
+            } else if (!formattedDate.isEmpty()) {
+                tvDetailDayOfWeek.setText("Ngày học: " + formattedDate);
+                tvDetailDayOfWeek.setVisibility(View.VISIBLE);
+            } else if (dateStr != null && !dateStr.isEmpty()) {
+                tvDetailDayOfWeek.setText("Ngày học: " + dateStr);
+                tvDetailDayOfWeek.setVisibility(View.VISIBLE);
+            } else {
+                tvDetailDayOfWeek.setVisibility(View.GONE);
+            }
+        }
+
+        if (tvDetailPeriod != null) {
+            if (bd.period != null && !bd.period.trim().isEmpty()) {
+                tvDetailPeriod.setText("Tiết: " + bd.period.trim());
+                tvDetailPeriod.setVisibility(View.VISIBLE);
+            } else {
+                tvDetailPeriod.setVisibility(View.GONE);
+            }
+        }
+
+        if (tvDetailStartTime != null) {
+            tvDetailStartTime.setText("Giờ bắt đầu: " + (event.getStartTime() != null ? event.getStartTime() : ""));
+        }
+        if (tvDetailEndTime != null) {
+            tvDetailEndTime.setText("Giờ kết thúc: " + (event.getEndTime() != null ? event.getEndTime() : ""));
+        }
+
+        if (tvDetailDate != null) {
+            String dateStr = event.getDate();
+            String formattedDate = dateStr;
+            if (dateStr != null && !dateStr.trim().isEmpty()) {
+                try {
+                    SimpleDateFormat sdfIso = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                    Date d = sdfIso.parse(dateStr.trim());
+                    if (d != null) {
+                        SimpleDateFormat sdfOut = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                        formattedDate = sdfOut.format(d);
+                    }
+                } catch (Exception ignored) {}
+            }
+            tvDetailDate.setText("Ngày học: " + formattedDate);
+        }
+
+        if (tvDetailSemester != null) {
+            tvDetailSemester.setVisibility(View.GONE);
+        }
+
+        if (tvDetailYear != null) {
+            if (event.getYear() > 0) {
+                tvDetailYear.setText("Năm học: " + event.getYear() + "-" + (event.getYear() + 1));
+                tvDetailYear.setVisibility(View.VISIBLE);
+            } else {
+                tvDetailYear.setVisibility(View.GONE);
+            }
+        }
+
+        if (layoutDetailConflict != null && tvDetailConflict != null) {
+            List<EventModel> dayEvents = dbHelper != null ? dbHelper.searchEvents(event.getDate(), "Tất cả HK", "Tất cả Năm") : new ArrayList<>();
+            StringBuilder conflictSb = new StringBuilder();
+            int conflictCount = 0;
+
+            if (dayEvents != null && event.getStartMin() > 0 && event.getEndMin() > 0) {
+                Set<String> seenConflicts = new HashSet<>();
+                for (EventModel other : dayEvents) {
+                    if (other.getId() != event.getId() && other.getId() > 0
+                        && other.getStartMin() > 0 && other.getEndMin() > 0) {
+
+                        int overlapStart = Math.max(event.getStartMin(), other.getStartMin());
+                        int overlapEnd = Math.min(event.getEndMin(), other.getEndMin());
+
+                        if (overlapStart < overlapEnd) {
+                            String fullOtherTitle = other.getTitle() != null ? other.getTitle().trim() : EventModel.cleanDisplayTitle(other.getTitle());
+                            
+                            if (seenConflicts.contains(fullOtherTitle)) {
+                                continue;
+                            }
+                            seenConflicts.add(fullOtherTitle);
+
+                            conflictCount++;
+                            int overlapDuration = overlapEnd - overlapStart;
+                            String overlapTimeStr = TimeNormalizer.minuteToTimeString(overlapStart) + " - " + TimeNormalizer.minuteToTimeString(overlapEnd);
+
+                            String durStr;
+                            int h = overlapDuration / 60;
+                            int m = overlapDuration % 60;
+                            if (h > 0 && m > 0) {
+                                durStr = h + " tiếng " + m + " phút";
+                            } else if (h > 0) {
+                                durStr = h + " tiếng";
+                            } else {
+                                durStr = m + " phút";
+                            }
+
+                            if (conflictSb.length() == 0) {
+                                conflictSb.append("⚠️ CẢNH BÁO TRÙNG LỊCH:\n");
+                            } else {
+                                conflictSb.append("\n");
+                            }
+                            conflictSb.append("• Khung trùng: ").append(overlapTimeStr).append(" (").append(durStr).append(")\n")
+                                      .append("  ↳ Trùng với: ").append(fullOtherTitle);
+                        }
+                    }
+                }
+            }
+
+            if (conflictCount > 0) {
+                tvDetailConflict.setText(conflictSb.toString());
+                layoutDetailConflict.setVisibility(View.VISIBLE);
+            } else {
+                layoutDetailConflict.setVisibility(View.GONE);
+            }
+        }
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(view)
+                .create();
+        KeyboardUtils.applyAutoHideKeyboard(dialog);
+        applyAdaptiveDialogBounds(dialog);
+
+        View.OnClickListener dismissListener = v -> dialog.dismiss();
+        if (btnBackDetail != null) btnBackDetail.setOnClickListener(dismissListener);
+        if (btnCloseDetail != null) btnCloseDetail.setOnClickListener(dismissListener);
+
+        if (btnDeleteDetail != null) {
+            btnDeleteDetail.setOnClickListener(v -> {
+                dialog.dismiss();
+                showCustomConfirmDialog(
+                        "🗑️",
+                        "XÓA LỊCH CÔNG VIỆC",
+                        "Bạn có chắc chắn muốn xóa lịch '" + event.getTitle() + "'?",
+                        "🔴 Xóa lịch này",
+                        Color.parseColor("#DC2626"),
+                        () -> {
+                            dbHelper.deleteEvent(event.getId());
+                            playSuccessSound();
+                            refreshAllTabs();
+                            Toast.makeText(MainActivity.this, "Đã xóa lịch thành công!", Toast.LENGTH_SHORT).show();
+                        });
+            });
+        }
+
+        if (btnEditDetail != null) {
+            btnEditDetail.setOnClickListener(v -> {
+                dialog.dismiss();
+                showEditEventDialog(event);
+            });
+        }
+
+        dialog.show();
+
+        if (dialog.getWindow() != null) {
+            int displayWidth = getResources().getDisplayMetrics().widthPixels;
+            int displayHeight = getResources().getDisplayMetrics().heightPixels;
+            dialog.getWindow().setLayout((int) (displayWidth * 0.90), (int) (displayHeight * 0.82));
+            dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
+        }
+    }
+
     private void showEditEventDialog(EventModel event) {
         if (event == null) return;
 
@@ -4567,14 +5100,14 @@ public class MainActivity extends AppCompatActivity {
         setupSchoolChipListeners(view, edtOrganizer);
 
         if (tvDialogHeaderTitle != null) {
-            tvDialogHeaderTitle.setText("✏️ CHỈNH SỬA LỊCH CÔNG VIỆC");
+            tvDialogHeaderTitle.setText("CHỈNH SỬA LỊCH CÔNG VIỆC");
         }
 
         String[] categoryDisplayOptions = new String[]{
-                "👨‍🏫 Lịch dạy/học",
-                "🏛️ Lịch sự kiện",
-                "⚡ Lịch phát sinh",
-                "📝 Lịch khác (tự đặt tên)"
+                "Lịch dạy/học",
+                "Lịch sự kiện",
+                "Lịch phát sinh",
+                "Lịch khác (tự đặt tên)"
         };
 
         if (spnCategory != null) {
@@ -4719,7 +5252,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (btnSaveDialog != null) {
-            btnSaveDialog.setText("💾 LƯU THAY ĐỔI");
+            btnSaveDialog.setText("LƯU THAY ĐỔI");
             btnSaveDialog.setOnClickListener(v -> {
                 int stt = event.getStt();
                 try { stt = Integer.parseInt(edtStt.getText().toString().trim()); } catch (Exception ignored) {}
@@ -4852,7 +5385,7 @@ public class MainActivity extends AppCompatActivity {
             currentCalendarMode = 0;
             isFilteringToday = true;
             if (edtSearch != null) {
-                edtSearch.setText(todayIso);
+                edtSearch.setText("");
             }
             updateChipUi(R.id.chipToday);
         }
@@ -4906,8 +5439,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void importExcelFile(Uri fileUri) {
+        if (fileUri == null) return;
+        String fileName = resolveFileName(fileUri, "Import", ".xlsx");
+        String lowerName = fileName.toLowerCase(Locale.getDefault());
+
+        if (!lowerName.endsWith(".xlsx") && !lowerName.endsWith(".xls") && !lowerName.endsWith(".csv")) {
+            showCustomConfirmDialog(
+                    "⚠️",
+                    "ĐỊNH DẠNG FILE KHÔNG HỢP LỆ",
+                    "Tệp tin bạn vừa chọn ('" + fileName + "') không phải là file Excel (.xlsx hoặc .xls).\n\nVui lòng nhấn nút 'Nhập Excel' và chọn đúng file bảng tính Excel!",
+                    "ĐÃ HỂU",
+                    Color.parseColor("#2563EB"),
+                    null
+            );
+            return;
+        }
+
         try {
-            String fileName = resolveFileName(fileUri, "Import", ".xlsx");
 
             InputStream is = getContentResolver().openInputStream(fileUri);
             if (is == null) return;
@@ -5102,29 +5650,91 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void filterStagingByDateRange(List<EventModel> allEvents, List<EventModel> stagingList, String fromDateStr, String toDateStr, StagingEventAdapter adapter) {
+        stagingList.clear();
+        String fromIso = formatVnToIsoDate(fromDateStr);
+        String toIso = formatVnToIsoDate(toDateStr);
+
+        for (EventModel ev : allEvents) {
+            if (ev.getId() >= 0 && ev.getDate() != null && !ev.getDate().trim().isEmpty()) {
+                String dateIso = formatVnToIsoDate(ev.getDate().trim());
+
+                if (!fromIso.isEmpty() && dateIso.compareTo(fromIso) < 0) {
+                    continue;
+                }
+                if (!toIso.isEmpty() && dateIso.compareTo(toIso) > 0) {
+                    continue;
+                }
+                ev.setSelectedForImport(true);
+                stagingList.add(ev);
+            }
+        }
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
+    }
+
     private void showExportConfigDialog(boolean isExcel) {
         Dialog dialog = new Dialog(this, android.R.style.Theme_Light_NoTitleBar_Fullscreen);
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                dialog.getWindow().setStatusBarColor(Color.parseColor("#1976D2"));
+            }
+        }
         dialog.setContentView(R.layout.dialog_export_config);
+
+        View topBar = dialog.findViewById(R.id.layoutExportConfigTopBar);
+        if (topBar != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(topBar, (v, insets) -> {
+                int statusBarTop = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+                int pLeft = v.getPaddingLeft();
+                int pRight = v.getPaddingRight();
+                int pBottom = v.getPaddingBottom();
+                float density = getResources().getDisplayMetrics().density;
+                int safeTop = Math.max(statusBarTop, (int) (36 * density)) + (int) (12 * density);
+                v.setPadding(pLeft, safeTop, pRight, pBottom);
+                return insets;
+            });
+        }
 
         ImageButton btnClose = dialog.findViewById(R.id.btnCloseExportConfig);
         Button btnDoExport = dialog.findViewById(R.id.btnDoExport);
         EditText etTitle = dialog.findViewById(R.id.etExportTitle);
         EditText etAuthor = dialog.findViewById(R.id.etExportAuthor);
         EditText etDept = dialog.findViewById(R.id.etExportDepartment);
+        EditText etFromDate = dialog.findViewById(R.id.etExportFromDate);
+        EditText etToDate = dialog.findViewById(R.id.etExportToDate);
+        TextView btnClearDateRange = dialog.findViewById(R.id.btnExportClearDateRange);
         androidx.recyclerview.widget.RecyclerView rvEvents = dialog.findViewById(R.id.rvExportEvents);
 
         android.content.SharedPreferences prefs = getSharedPreferences("ExportPrefs", MODE_PRIVATE);
         etAuthor.setText(prefs.getString("export_author", ""));
         etDept.setText(prefs.getString("export_dept", ""));
 
+        String savedFromDateIso = prefs.getString("export_from_date", "");
+        String savedToDateIso = prefs.getString("export_to_date", "");
+        if (etFromDate != null) etFromDate.setText(formatIsoToVnDate(savedFromDateIso));
+        if (etToDate != null) etToDate.setText(formatIsoToVnDate(savedToDateIso));
+
+        CheckBox cbColStt = dialog.findViewById(R.id.cbColStt);
+        CheckBox cbColTitle = dialog.findViewById(R.id.cbColTitle);
+        CheckBox cbColDate = dialog.findViewById(R.id.cbColDate);
+        CheckBox cbColTime = dialog.findViewById(R.id.cbColTime);
+        CheckBox cbColRoom = dialog.findViewById(R.id.cbColRoom);
+        CheckBox cbColUnit = dialog.findViewById(R.id.cbColUnit);
+        CheckBox cbColNote = dialog.findViewById(R.id.cbColNote);
+
+        if (cbColStt != null) cbColStt.setChecked(prefs.getBoolean("export_col_stt", true));
+        if (cbColTitle != null) { cbColTitle.setChecked(true); cbColTitle.setEnabled(false); }
+        if (cbColDate != null) cbColDate.setChecked(prefs.getBoolean("export_col_date", true));
+        if (cbColTime != null) cbColTime.setChecked(prefs.getBoolean("export_col_time", true));
+        if (cbColRoom != null) cbColRoom.setChecked(prefs.getBoolean("export_col_room", true));
+        if (cbColUnit != null) cbColUnit.setChecked(prefs.getBoolean("export_col_unit", true));
+        if (cbColNote != null) cbColNote.setChecked(prefs.getBoolean("export_col_note", true));
+
         List<EventModel> allEvents = dbHelper.searchEvents("", "Tất cả HK", "Tất cả Năm");
         List<EventModel> stagingList = new ArrayList<>();
-        for (EventModel ev : allEvents) {
-            if (ev.getId() >= 0) {
-                ev.setSelectedForImport(true);
-                stagingList.add(ev);
-            }
-        }
 
         StagingEventAdapter stagingAdapter = new StagingEventAdapter(stagingList, (position, event) -> {
             showEditStagingEventDialog(event, position, null, dialog);
@@ -5132,12 +5742,78 @@ public class MainActivity extends AppCompatActivity {
         rvEvents.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
         rvEvents.setAdapter(stagingAdapter);
 
+        filterStagingByDateRange(allEvents, stagingList, formatIsoToVnDate(savedFromDateIso), formatIsoToVnDate(savedToDateIso), stagingAdapter);
+
+        if (etFromDate != null) {
+            etFromDate.setOnClickListener(v -> {
+                Calendar cal = Calendar.getInstance();
+                String currIso = formatVnToIsoDate(etFromDate.getText().toString().trim());
+                if (!currIso.isEmpty()) {
+                    try {
+                        Date d = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(currIso);
+                        if (d != null) cal.setTime(d);
+                    } catch (Exception ignored) {}
+                }
+                new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+                    String selectedVn = String.format(Locale.getDefault(), "%02d/%02d/%04d", dayOfMonth, month + 1, year);
+                    etFromDate.setText(selectedVn);
+                    filterStagingByDateRange(allEvents, stagingList, selectedVn, etToDate != null ? etToDate.getText().toString().trim() : "", stagingAdapter);
+                }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show();
+            });
+        }
+
+        if (etToDate != null) {
+            etToDate.setOnClickListener(v -> {
+                Calendar cal = Calendar.getInstance();
+                String currIso = formatVnToIsoDate(etToDate.getText().toString().trim());
+                if (!currIso.isEmpty()) {
+                    try {
+                        Date d = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(currIso);
+                        if (d != null) cal.setTime(d);
+                    } catch (Exception ignored) {}
+                }
+                new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+                    String selectedVn = String.format(Locale.getDefault(), "%02d/%02d/%04d", dayOfMonth, month + 1, year);
+                    etToDate.setText(selectedVn);
+                    filterStagingByDateRange(allEvents, stagingList, etFromDate != null ? etFromDate.getText().toString().trim() : "", selectedVn, stagingAdapter);
+                }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show();
+            });
+        }
+
+        if (btnClearDateRange != null) {
+            btnClearDateRange.setOnClickListener(v -> {
+                if (etFromDate != null) etFromDate.setText("");
+                if (etToDate != null) etToDate.setText("");
+                prefs.edit().remove("export_from_date").remove("export_to_date").apply();
+                filterStagingByDateRange(allEvents, stagingList, "", "", stagingAdapter);
+            });
+        }
+
         btnClose.setOnClickListener(v -> dialog.dismiss());
 
         btnDoExport.setOnClickListener(v -> {
+            exportColStt = cbColStt != null && cbColStt.isChecked();
+            exportColTitle = true;
+            exportColDate = cbColDate != null && cbColDate.isChecked();
+            exportColTime = cbColTime != null && cbColTime.isChecked();
+            exportColRoom = cbColRoom != null && cbColRoom.isChecked();
+            exportColUnit = cbColUnit != null && cbColUnit.isChecked();
+            exportColNote = cbColNote != null && cbColNote.isChecked();
+
+            String fromValIso = formatVnToIsoDate(etFromDate != null ? etFromDate.getText().toString().trim() : "");
+            String toValIso = formatVnToIsoDate(etToDate != null ? etToDate.getText().toString().trim() : "");
+
             prefs.edit()
                 .putString("export_author", etAuthor.getText().toString().trim())
                 .putString("export_dept", etDept.getText().toString().trim())
+                .putString("export_from_date", fromValIso)
+                .putString("export_to_date", toValIso)
+                .putBoolean("export_col_stt", exportColStt)
+                .putBoolean("export_col_date", exportColDate)
+                .putBoolean("export_col_time", exportColTime)
+                .putBoolean("export_col_room", exportColRoom)
+                .putBoolean("export_col_unit", exportColUnit)
+                .putBoolean("export_col_note", exportColNote)
                 .apply();
 
             currentExportConfigTitle = etTitle.getText().toString().trim();
@@ -5288,22 +5964,55 @@ public class MainActivity extends AppCompatActivity {
             subTitleCell.setCellValue("Họ tên: " + currentExportConfigAuthor + " | Đơn vị: " + currentExportConfigDept + " | Ngày lập báo cáo: " + printDate + " | Tổng số: " + list.size() + " mục");
             subTitleCell.setCellStyle(subTitleStyle);
 
-            String[] headers = {
-                    "STT",
-                    "Thứ & Ngày tổ chức",
-                    "Thời gian",
-                    "Tên bài giảng / Sự kiện / Nội dung công việc",
-                    "Phòng & Cơ sở",
-                    "Phân loại lịch",
-                    "Đơn vị / Nguồn tài liệu",
-                    "Tuần & Năm"
-            };
+            List<String> headers = new ArrayList<>();
+            List<Integer> colWidths = new ArrayList<>();
+            List<String> colKeys = new ArrayList<>();
+
+            if (exportColStt) {
+                headers.add("STT");
+                colWidths.add(8 * 256);
+                colKeys.add("STT");
+            }
+            if (exportColDate) {
+                headers.add("Thứ & Ngày tổ chức");
+                colWidths.add(26 * 256);
+                colKeys.add("DATE");
+            }
+            if (exportColTime) {
+                headers.add("Thời gian");
+                colWidths.add(16 * 256);
+                colKeys.add("TIME");
+            }
+            headers.add("Tên bài giảng / Sự kiện / Nội dung công việc");
+            colWidths.add(48 * 256);
+            colKeys.add("TITLE");
+
+            if (exportColRoom) {
+                headers.add("Phòng & Cơ sở");
+                colWidths.add(24 * 256);
+                colKeys.add("ROOM");
+            }
+            if (exportColUnit) {
+                headers.add("Phân loại lịch");
+                colWidths.add(18 * 256);
+                colKeys.add("CATEGORY");
+
+                headers.add("Đơn vị / Nguồn tài liệu");
+                colWidths.add(32 * 256);
+                colKeys.add("UNIT");
+            }
+            if (exportColNote) {
+                headers.add("Ghi chú (Tuần & Năm)");
+                colWidths.add(20 * 256);
+                colKeys.add("NOTE");
+            }
+
             Row headerRow = sheet.createRow(3);
             headerRow.setHeightInPoints(28);
 
-            for (int i = 0; i < headers.length; i++) {
+            for (int i = 0; i < headers.size(); i++) {
                 Cell cell = headerRow.createCell(i);
-                cell.setCellValue(headers[i]);
+                cell.setCellValue(headers.get(i));
                 cell.setCellStyle(headerStyle);
             }
 
@@ -5323,12 +6032,6 @@ public class MainActivity extends AppCompatActivity {
                 CellStyle cStyle = isAlt ? altCenterStyle : centerStyle;
                 CellStyle lStyle = isAlt ? altLeftWrapStyle : leftWrapStyle;
 
-                // 0. STT
-                Cell c0 = row.createCell(0);
-                c0.setCellValue(idx + 1);
-                c0.setCellStyle(cStyle);
-
-                // 1. Thứ & Ngày tổ chức
                 String fullDateStr = e.getDate();
                 try {
                     Date d = sdfInput.parse(e.getDate().trim());
@@ -5349,21 +6052,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 } catch (Exception ignored) {}
 
-                Cell c1 = row.createCell(1);
-                c1.setCellValue(fullDateStr);
-                c1.setCellStyle(cStyle);
-
-                // 2. Thời gian
-                Cell c2 = row.createCell(2);
-                c2.setCellValue(e.getStartTime() + " - " + e.getEndTime());
-                c2.setCellStyle(cStyle);
-
-                // 3. Tên sự kiện / Nội dung công việc
-                Cell c3 = row.createCell(3);
-                c3.setCellValue(e.getTitle());
-                c3.setCellStyle(lStyle);
-
-                // 4. Phòng & Cơ sở
                 String roomInfo = "";
                 if (e.getRoom() != null && !e.getRoom().trim().isEmpty()) {
                     roomInfo += "Phòng " + e.getRoom().trim();
@@ -5374,25 +6062,47 @@ public class MainActivity extends AppCompatActivity {
                     if (roomInfo.contains("(")) roomInfo += ")";
                 }
                 if (roomInfo.isEmpty()) roomInfo = "-";
-                Cell c4 = row.createCell(4);
-                c4.setCellValue(roomInfo);
-                c4.setCellStyle(cStyle);
 
-                // 5. Phân loại lịch
-                Cell c5 = row.createCell(5);
-                c5.setCellValue(e.getScheduleCategory());
-                c5.setCellStyle(cStyle);
-
-                // 6. Đơn vị / Nguồn tài liệu
-                Cell c6 = row.createCell(6);
-                c6.setCellValue(e.getOrganizer() != null ? e.getOrganizer() : "-");
-                c6.setCellStyle(lStyle);
-
-                // 7. Tuần & Năm
-                Cell c7 = row.createCell(7);
-                c7.setCellValue("Tuần " + e.getWeek() + " (Năm " + e.getYear() + ")");
-                c7.setCellStyle(cStyle);
-
+                for (int cIdx = 0; cIdx < colKeys.size(); cIdx++) {
+                    String key = colKeys.get(cIdx);
+                    Cell cell = row.createCell(cIdx);
+                    switch (key) {
+                        case "STT":
+                            cell.setCellValue(idx + 1);
+                            cell.setCellStyle(cStyle);
+                            break;
+                        case "DATE":
+                            cell.setCellValue(fullDateStr);
+                            cell.setCellStyle(cStyle);
+                            break;
+                        case "TIME":
+                            cell.setCellValue(e.getStartTime() + " - " + e.getEndTime());
+                            cell.setCellStyle(cStyle);
+                            break;
+                        case "TITLE":
+                            cell.setCellValue(getCleanTitleForExport(e));
+                            cell.setCellStyle(lStyle);
+                            break;
+                        case "ROOM":
+                            String cleanR = getCleanRoomForExport(e);
+                            cell.setCellValue(cleanR.isEmpty() ? "-" : cleanR);
+                            cell.setCellStyle(cStyle);
+                            break;
+                        case "CATEGORY":
+                            cell.setCellValue(e.getScheduleCategory());
+                            cell.setCellStyle(cStyle);
+                            break;
+                        case "UNIT":
+                            String cleanO = getCleanOrganizerForExport(e);
+                            cell.setCellValue(cleanO.isEmpty() ? "-" : cleanO);
+                            cell.setCellStyle(lStyle);
+                            break;
+                        case "NOTE":
+                            cell.setCellValue("Tuần " + e.getWeek() + " (Năm " + e.getYear() + ")");
+                            cell.setCellStyle(cStyle);
+                            break;
+                    }
+                }
                 rowIdx++;
             }
 
@@ -5406,14 +6116,9 @@ public class MainActivity extends AppCompatActivity {
             footerStyle.setAlignment(HorizontalAlignment.LEFT);
             footerCell.setCellStyle(footerStyle);
 
-            sheet.setColumnWidth(0, 8 * 256);   // STT
-            sheet.setColumnWidth(1, 26 * 256);  // Thứ & Ngày
-            sheet.setColumnWidth(2, 16 * 256);  // Thời gian
-            sheet.setColumnWidth(3, 48 * 256);  // Tên sự kiện
-            sheet.setColumnWidth(4, 24 * 256);  // Phòng & Cơ sở
-            sheet.setColumnWidth(5, 18 * 256);  // Phân loại
-            sheet.setColumnWidth(6, 32 * 256);  // Đơn vị
-            sheet.setColumnWidth(7, 20 * 256);  // Tuần & Năm
+            for (int i = 0; i < colWidths.size(); i++) {
+                sheet.setColumnWidth(i, colWidths.get(i));
+            }
 
             return workbook;
         } catch (Throwable t) {
@@ -5425,27 +6130,40 @@ public class MainActivity extends AppCompatActivity {
     private Workbook createSimpleExcelWorkbook(List<EventModel> list) {
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("BaoCaoLichGiangVien");
+
+        List<String> headers = new ArrayList<>();
+        List<String> colKeys = new ArrayList<>();
+
+        if (exportColStt) { headers.add("STT"); colKeys.add("STT"); }
+        if (exportColDate) { headers.add("Thứ & Ngày tổ chức"); colKeys.add("DATE"); }
+        if (exportColTime) { headers.add("Thời gian"); colKeys.add("TIME"); }
+        headers.add("Tên sự kiện / Công việc"); colKeys.add("TITLE");
+        if (exportColRoom) { headers.add("Phòng & Cơ sở"); colKeys.add("ROOM"); }
+        if (exportColUnit) { headers.add("Phân loại"); colKeys.add("CATEGORY"); headers.add("Người / Đơn vị tổ chức"); colKeys.add("UNIT"); }
+        if (exportColNote) { headers.add("Tuần & Năm"); colKeys.add("NOTE"); }
+
         Row headerRow = sheet.createRow(0);
-        headerRow.createCell(0).setCellValue("STT");
-        headerRow.createCell(1).setCellValue("Thứ & Ngày tổ chức");
-        headerRow.createCell(2).setCellValue("Thời gian");
-        headerRow.createCell(3).setCellValue("Tên sự kiện / Công việc");
-        headerRow.createCell(4).setCellValue("Phòng & Cơ sở");
-        headerRow.createCell(5).setCellValue("Phân loại");
-        headerRow.createCell(6).setCellValue("Người / Đơn vị tổ chức");
-        headerRow.createCell(7).setCellValue("Tuần & Năm");
+        for (int i = 0; i < headers.size(); i++) {
+            headerRow.createCell(i).setCellValue(headers.get(i));
+        }
 
         int rowIdx = 1;
         for (EventModel e : list) {
             Row row = sheet.createRow(rowIdx++);
-            row.createCell(0).setCellValue(e.getStt());
-            row.createCell(1).setCellValue(e.getDate());
-            row.createCell(2).setCellValue(e.getStartTime() + " - " + e.getEndTime());
-            row.createCell(3).setCellValue(e.getTitle());
-            row.createCell(4).setCellValue(e.getRoom() + " " + e.getCampus());
-            row.createCell(5).setCellValue(e.getScheduleCategory());
-            row.createCell(6).setCellValue(e.getOrganizer());
-            row.createCell(7).setCellValue("Tuần " + e.getWeek() + " (Năm " + e.getYear() + ")");
+            for (int cIdx = 0; cIdx < colKeys.size(); cIdx++) {
+                String key = colKeys.get(cIdx);
+                Cell cell = row.createCell(cIdx);
+                switch (key) {
+                    case "STT": cell.setCellValue(e.getStt()); break;
+                    case "DATE": cell.setCellValue(e.getDate()); break;
+                    case "TIME": cell.setCellValue(e.getStartTime() + " - " + e.getEndTime()); break;
+                    case "TITLE": cell.setCellValue(getCleanTitleForExport(e)); break;
+                    case "ROOM": String cr = getCleanRoomForExport(e); cell.setCellValue(cr.isEmpty() ? "-" : cr); break;
+                    case "CATEGORY": cell.setCellValue(e.getScheduleCategory()); break;
+                    case "UNIT": String co = getCleanOrganizerForExport(e); cell.setCellValue(co.isEmpty() ? "-" : co); break;
+                    case "NOTE": cell.setCellValue("Tuần " + e.getWeek() + " (Năm " + e.getYear() + ")"); break;
+                }
+            }
         }
         return workbook;
     }
@@ -6242,6 +6960,167 @@ public class MainActivity extends AppCompatActivity {
                         });
             });
         }
+
+        Button btnManualCleanData = findViewById(R.id.btnManualCleanData);
+        if (btnManualCleanData != null) {
+            btnManualCleanData.setOnClickListener(v -> showManualCleanDataDialog());
+        }
+
+        Button btnClearAppCache = findViewById(R.id.btnClearAppCache);
+        if (btnClearAppCache != null) {
+            btnClearAppCache.setOnClickListener(v -> clearAppCache());
+        }
+    }
+
+    private void showManualCleanDataDialog() {
+        if (isFinishing() || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isDestroyed())) return;
+        try {
+            Dialog dialog = new Dialog(this);
+            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            dialog.setContentView(R.layout.dialog_manual_clean_data);
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            }
+
+            LinearLayout layoutFrom = dialog.findViewById(R.id.layoutCleanFromDate);
+            LinearLayout layoutTo = dialog.findViewById(R.id.layoutCleanToDate);
+            EditText etFrom = dialog.findViewById(R.id.etCleanFromDate);
+            EditText etTo = dialog.findViewById(R.id.etCleanToDate);
+            Button btnCancel = dialog.findViewById(R.id.btnCancelManualClean);
+            Button btnConfirm = dialog.findViewById(R.id.btnConfirmManualClean);
+
+            final String[] selectedFromIso = {""};
+            final String[] selectedToIso = {""};
+
+            View.OnClickListener pickFromListener = v -> {
+                Calendar pCal = Calendar.getInstance();
+                if (!selectedFromIso[0].isEmpty()) {
+                    try {
+                        Date d = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(selectedFromIso[0]);
+                        if (d != null) pCal.setTime(d);
+                    } catch (Exception ignored) {}
+                }
+                new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+                    selectedFromIso[0] = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, dayOfMonth);
+                    if (etFrom != null) etFrom.setText(formatIsoToVnDate(selectedFromIso[0]));
+                }, pCal.get(Calendar.YEAR), pCal.get(Calendar.MONTH), pCal.get(Calendar.DAY_OF_MONTH)).show();
+            };
+
+            View.OnClickListener pickToListener = v -> {
+                Calendar pCal = Calendar.getInstance();
+                if (!selectedToIso[0].isEmpty()) {
+                    try {
+                        Date d = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(selectedToIso[0]);
+                        if (d != null) pCal.setTime(d);
+                    } catch (Exception ignored) {}
+                }
+                new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+                    selectedToIso[0] = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, dayOfMonth);
+                    if (etTo != null) etTo.setText(formatIsoToVnDate(selectedToIso[0]));
+                }, pCal.get(Calendar.YEAR), pCal.get(Calendar.MONTH), pCal.get(Calendar.DAY_OF_MONTH)).show();
+            };
+
+            if (layoutFrom != null) layoutFrom.setOnClickListener(pickFromListener);
+            if (etFrom != null) etFrom.setOnClickListener(pickFromListener);
+            if (layoutTo != null) layoutTo.setOnClickListener(pickToListener);
+            if (etTo != null) etTo.setOnClickListener(pickToListener);
+
+            if (btnCancel != null) btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+            if (btnConfirm != null) {
+                btnConfirm.setOnClickListener(v -> {
+                    if (selectedFromIso[0].isEmpty() && selectedToIso[0].isEmpty()) {
+                        Toast.makeText(this, "Vui lòng chọn ít nhất Từ ngày hoặc Đến ngày!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    dialog.dismiss();
+
+                    String dateRangeDesc = (!selectedFromIso[0].isEmpty() ? "Từ ngày " + formatIsoToVnDate(selectedFromIso[0]) : "")
+                            + (!selectedToIso[0].isEmpty() ? " đến " + formatIsoToVnDate(selectedToIso[0]) : "");
+
+                    showCustomConfirmDialog(
+                            "🗑️",
+                            "XÁC NHẬN DỌN DẸP THỦ CÔNG",
+                            "Bạn có chắc chắn muốn xóa toàn bộ lịch biểu " + dateRangeDesc + "?\n\nHành động này không thể hoàn tác!",
+                            "🔴 XÓA NGAY",
+                            Color.parseColor("#DC2626"),
+                            () -> {
+                                int deletedCount = dbHelper != null ? dbHelper.deleteEventsByDateRange(selectedFromIso[0], selectedToIso[0]) : 0;
+                                playSuccessSound();
+                                refreshAllTabs();
+                                Toast.makeText(MainActivity.this, "Đã dọn dẹp thành công " + deletedCount + " mục lịch biểu!", Toast.LENGTH_LONG).show();
+                            });
+                });
+            }
+
+            dialog.show();
+        } catch (Exception e) {
+            android.util.Log.e("LectuPlan", "Lỗi showManualCleanDataDialog: " + e.getMessage(), e);
+        }
+    }
+
+    private void clearAppCache() {
+        try {
+            long cacheSize = 0;
+            File cacheDir = getCacheDir();
+            if (cacheDir != null) cacheSize += getFolderSize(cacheDir);
+            File externalCacheDir = getExternalCacheDir();
+            if (externalCacheDir != null) cacheSize += getFolderSize(externalCacheDir);
+
+            deleteDir(cacheDir);
+            deleteDir(externalCacheDir);
+
+            String formattedSize = formatFileSize(cacheSize);
+            playSuccessSound();
+            Toast.makeText(this, "🧹 Đã dọn sạch bộ nhớ cache & file tạm (" + formattedSize + ")!", Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            android.util.Log.e("LectuPlan", "Lỗi clearAppCache: " + e.getMessage(), e);
+            Toast.makeText(this, "Lỗi xóa bộ nhớ cache!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private long getFolderSize(File folder) {
+        if (folder == null || !folder.exists()) return 0;
+        long size = 0;
+        File[] files = folder.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                if (f.isDirectory()) {
+                    size += getFolderSize(f);
+                } else {
+                    size += f.length();
+                }
+            }
+        }
+        return size;
+    }
+
+    private boolean deleteDir(File dir) {
+        if (dir != null && dir.isDirectory()) {
+            String[] children = dir.list();
+            if (children != null) {
+                for (String child : children) {
+                    boolean success = deleteDir(new File(dir, child));
+                    if (!success) {
+                        return false;
+                    }
+                }
+            }
+            return dir.delete();
+        } else if (dir != null && dir.isFile()) {
+            return dir.delete();
+        } else {
+            return false;
+        }
+    }
+
+    private String formatFileSize(long size) {
+        if (size <= 0) return "0 KB";
+        final String[] units = new String[]{"B", "KB", "MB", "GB"};
+        int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
+        if (digitGroups >= units.length) digitGroups = units.length - 1;
+        return new java.text.DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
     }
 
     private void playSuccessSound() {
@@ -6815,14 +7694,17 @@ public class MainActivity extends AppCompatActivity {
         TextView chipManual = findViewById(R.id.chipManual);
         TextView chipToday = findViewById(R.id.chipToday);
         TextView chipFreeTime = findViewById(R.id.chipFreeTime);
+        TextView chipTimeline = findViewById(R.id.chipTimeline);
 
-        TextView[] allChips = new TextView[]{chipAll, chipTeaching, chipMeeting, chipIncident, chipManual, chipToday, chipFreeTime};
+        TextView[] allChips = new TextView[]{chipAll, chipTeaching, chipMeeting, chipIncident, chipManual, chipToday, chipFreeTime, chipTimeline};
+
+        int unselectedTextColor = androidx.core.content.ContextCompat.getColor(this, R.color.chip_unselected_text);
 
         View.OnClickListener chipClickListener = v -> {
             for (TextView c : allChips) {
                 if (c != null) {
                     c.setBackgroundResource(R.drawable.bg_chip_unselected);
-                    c.setTextColor(Color.parseColor("#334155"));
+                    c.setTextColor(unselectedTextColor);
                 }
             }
             v.setBackgroundResource(R.drawable.bg_chip_selected);
@@ -6833,60 +7715,56 @@ public class MainActivity extends AppCompatActivity {
                 currentCategoryFilter = "ALL";
                 currentCalendarMode = 2;
                 isFilteringToday = false;
-                edtSearch.setText("");
+                if (edtSearch != null) edtSearch.setText("");
                 if (spnSemester != null) spnSemester.setSelection(0);
                 if (spnYear != null) spnYear.setSelection(0);
                 refreshData();
             } else if (id == R.id.chipTeaching) {
                 currentCategoryFilter = EventModel.CAT_TEACHING;
+                currentCalendarMode = 2;
                 isFilteringToday = false;
-                edtSearch.setText("");
+                if (edtSearch != null) edtSearch.setText("");
                 refreshData();
             } else if (id == R.id.chipMeeting) {
                 currentCategoryFilter = EventModel.CAT_EVENT;
+                currentCalendarMode = 2;
                 isFilteringToday = false;
-                edtSearch.setText("");
+                if (edtSearch != null) edtSearch.setText("");
                 refreshData();
             } else if (id == R.id.chipIncident) {
                 currentCategoryFilter = EventModel.CAT_INCIDENT;
+                currentCalendarMode = 2;
                 isFilteringToday = false;
-                edtSearch.setText("");
+                if (edtSearch != null) edtSearch.setText("");
                 refreshData();
             } else if (id == R.id.chipManual) {
                 currentCategoryFilter = EventModel.CAT_MANUAL_OTHER;
+                currentCalendarMode = 2;
                 isFilteringToday = false;
-                edtSearch.setText("");
+                if (edtSearch != null) edtSearch.setText("");
                 refreshData();
             } else if (id == R.id.chipToday) {
                 currentCategoryFilter = "ALL";
                 currentCalendarMode = 0;
                 isFilteringToday = true;
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-                String todayStr = sdf.format(Calendar.getInstance().getTime());
-                edtSearch.setText(todayStr);
+                if (edtSearch != null) edtSearch.setText("");
+                refreshData();
             } else if (id == R.id.chipFreeTime) {
                 isFilteringToday = false;
                 showFreeTimeAnalysis();
+            } else if (id == R.id.chipTimeline) {
+                currentCategoryFilter = "CONFLICT";
+                currentCalendarMode = 2;
+                isFilteringToday = false;
+                if (edtSearch != null) edtSearch.setText("");
+                refreshData();
             }
         };
 
         for (TextView c : allChips) {
-            if (c != null) c.setOnClickListener(chipClickListener);
-        }
-
-        TextView chipTimeline = findViewById(R.id.chipTimeline);
-        TextView chipSmartFinder = findViewById(R.id.chipSmartFinder);
-
-        if (chipTimeline != null) {
-            chipTimeline.setOnClickListener(v -> {
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-                String todayStr = sdf.format(Calendar.getInstance().getTime());
-                showContinuousTimeline(todayStr);
-            });
-        }
-
-        if (chipSmartFinder != null) {
-            chipSmartFinder.setOnClickListener(v -> showSmartSlotFinderDialog());
+            if (c != null) {
+                c.setOnClickListener(chipClickListener);
+            }
         }
     }
 
@@ -6942,7 +7820,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (displayList.isEmpty()) {
-                displayList.add(new EventModel(-100, 0, "☕ Hôm nay không có lịch bận", todayIso, "Bạn đang có trọn vẹn cả ngày trống rảnh để nghỉ ngơi hoặc làm việc cá nhân.", "HK1", cal.get(Calendar.YEAR), cal.get(Calendar.WEEK_OF_YEAR)));
+                displayList.add(new EventModel(-100, 0, "Hôm nay không có lịch bận", todayIso, "Bạn đang có trọn vẹn cả ngày trống rảnh để nghỉ ngơi hoặc làm việc cá nhân.", "HK1", cal.get(Calendar.YEAR), cal.get(Calendar.WEEK_OF_YEAR)));
             }
 
         } else if (currentCalendarMode == 1) {
@@ -6958,7 +7836,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (displayList.isEmpty()) {
-                displayList.add(new EventModel(-200, 0, "☕ Tuần này không có lịch bận", sdf.format(new Date()), "Tất cả các ngày trong tuần này đều chưa có lịch giảng dạy hay lịch họp.", "HK1", cal.get(Calendar.YEAR), cal.get(Calendar.WEEK_OF_YEAR)));
+                displayList.add(new EventModel(-200, 0, "Tuần này không có lịch bận", sdf.format(new Date()), "Tất cả các ngày trong tuần này đều chưa có lịch giảng dạy hay lịch họp.", "HK1", cal.get(Calendar.YEAR), cal.get(Calendar.WEEK_OF_YEAR)));
             }
 
         } else if (currentCalendarMode == 2) {
@@ -6971,7 +7849,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (displayList.isEmpty()) {
-                displayList.add(new EventModel(-300, 0, "☕ Chưa có lịch bận", sdf.format(new Date()), "Chưa có công việc nào được ghi nhận trong ứng dụng.", "HK1", cal.get(Calendar.YEAR), cal.get(Calendar.WEEK_OF_YEAR)));
+                displayList.add(new EventModel(-300, 0, "Chưa có lịch bận", sdf.format(new Date()), "Chưa có công việc nào được ghi nhận trong ứng dụng.", "HK1", cal.get(Calendar.YEAR), cal.get(Calendar.WEEK_OF_YEAR)));
             }
 
         } else {
@@ -6997,26 +7875,54 @@ public class MainActivity extends AppCompatActivity {
 
         if (!"ALL".equals(currentCategoryFilter)) {
             List<EventModel> filtered = new ArrayList<>();
-            for (EventModel em : displayList) {
-                if (em.getId() < 0) continue;
-                String cat = em.getScheduleCategory();
-                if (currentCategoryFilter.equals(cat)) {
-                    filtered.add(em);
-                } else if (EventModel.CAT_MANUAL_OTHER.equals(currentCategoryFilter)
-                        || EventModel.LEGACY_CAT_MANUAL_OTHER.equals(currentCategoryFilter)
-                        || "Lịch khác".equals(currentCategoryFilter)) {
-                    if (!EventModel.CAT_TEACHING.equalsIgnoreCase(cat)
-                            && !EventModel.CAT_EVENT.equalsIgnoreCase(cat)
-                            && !EventModel.CAT_INCIDENT.equalsIgnoreCase(cat)) {
+            if ("CONFLICT".equals(currentCategoryFilter)) {
+                Set<Integer> conflictIds = new HashSet<>();
+                for (int i = 0; i < displayList.size(); i++) {
+                    EventModel e1 = displayList.get(i);
+                    if (e1.getId() <= 0 || e1.getStartMin() <= 0 || e1.getEndMin() <= 0) continue;
+                    for (int j = i + 1; j < displayList.size(); j++) {
+                        EventModel e2 = displayList.get(j);
+                        if (e2.getId() <= 0 || e2.getStartMin() <= 0 || e2.getEndMin() <= 0) continue;
+                        if (e1.getDate() != null && e1.getDate().equals(e2.getDate())) {
+                            int overlapStart = Math.max(e1.getStartMin(), e2.getStartMin());
+                            int overlapEnd = Math.min(e1.getEndMin(), e2.getEndMin());
+                            if (overlapStart < overlapEnd) {
+                                conflictIds.add(e1.getId());
+                                conflictIds.add(e2.getId());
+                            }
+                        }
+                    }
+                }
+                for (EventModel em : displayList) {
+                    if (em.getId() > 0 && conflictIds.contains(em.getId())) {
                         filtered.add(em);
                     }
                 }
+                if (filtered.isEmpty()) {
+                    filtered.add(new EventModel(-500, 0, "Không có lịch trùng giờ", sdf.format(new Date()), "Tất cả các công việc và lịch giảng dạy hiện tại đều an toàn, không có lịch trùng.", "HK1", cal.get(Calendar.YEAR), cal.get(Calendar.WEEK_OF_YEAR)));
+                }
+            } else {
+                for (EventModel em : displayList) {
+                    if (em.getId() < 0) continue;
+                    String cat = em.getScheduleCategory();
+                    if (currentCategoryFilter.equals(cat)) {
+                        filtered.add(em);
+                    } else if (EventModel.CAT_MANUAL_OTHER.equals(currentCategoryFilter)
+                            || EventModel.LEGACY_CAT_MANUAL_OTHER.equals(currentCategoryFilter)
+                            || "Lịch khác".equals(currentCategoryFilter)) {
+                        if (!EventModel.CAT_TEACHING.equalsIgnoreCase(cat)
+                                && !EventModel.CAT_EVENT.equalsIgnoreCase(cat)
+                                && !EventModel.CAT_INCIDENT.equalsIgnoreCase(cat)) {
+                            filtered.add(em);
+                        }
+                    }
+                }
+                if (filtered.isEmpty()) {
+                    String filterName = (EventModel.CAT_MANUAL_OTHER.equals(currentCategoryFilter) || EventModel.LEGACY_CAT_MANUAL_OTHER.equals(currentCategoryFilter)) ? "Lịch khác" : currentCategoryFilter;
+                    filtered.add(new EventModel(-400, 0, "Không có lịch thuộc nhóm này", sdf.format(new Date()), "Chưa có sự kiện nào thuộc phân loại: " + filterName, "HK1", cal.get(Calendar.YEAR), cal.get(Calendar.WEEK_OF_YEAR)));
+                }
             }
             displayList = filtered;
-            if (displayList.isEmpty()) {
-                String filterName = (EventModel.CAT_MANUAL_OTHER.equals(currentCategoryFilter) || EventModel.LEGACY_CAT_MANUAL_OTHER.equals(currentCategoryFilter)) ? "Lịch khác" : currentCategoryFilter;
-                displayList.add(new EventModel(-400, 0, "☕ Không có lịch thuộc nhóm này", sdf.format(new Date()), "Chưa có sự kiện nào thuộc phân loại: " + filterName, "HK1", cal.get(Calendar.YEAR), cal.get(Calendar.WEEK_OF_YEAR)));
-            }
         }
 
         adapter.updateList(displayList);
@@ -7040,7 +7946,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initChartTabViews() {
-        spnChartTimeFilter = findViewById(R.id.spnChartTimeFilter);
+        layoutChartTimeFilterBox = findViewById(R.id.layoutChartTimeFilterBox);
+        tvChartTimeFilter = findViewById(R.id.tvChartTimeFilter);
         spnChartSchoolFilter = findViewById(R.id.spnChartSchoolFilter);
         tvKpiPeriods = findViewById(R.id.tvKpiPeriods);
         tvKpiPeriodsSub = findViewById(R.id.tvKpiPeriodsSub);
@@ -7124,24 +8031,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupChartSpinners() {
-        if (spnChartTimeFilter == null || spnChartSchoolFilter == null) return;
+        if (spnChartSchoolFilter == null) return;
 
-        Calendar cal = Calendar.getInstance();
-        int curMonth = cal.get(Calendar.MONTH) + 1;
-        int curYear = cal.get(Calendar.YEAR);
-
-        List<String> timeOptions = new ArrayList<>();
-        timeOptions.add("Tất cả thời gian");
-        timeOptions.add("Năm nay (" + curYear + ")");
-        timeOptions.add("Tháng này (T" + curMonth + "/" + curYear + ")");
-        timeOptions.add("Tháng trước");
-        for (int m = 1; m <= 12; m++) {
-            timeOptions.add("Tháng " + m + " (" + curYear + ")");
+        if (layoutChartTimeFilterBox != null) {
+            layoutChartTimeFilterBox.setOnClickListener(v -> showChartTimeFilterDialog());
         }
-
-        ArrayAdapter<String> timeAdapter = new ArrayAdapter<>(this, R.layout.item_chart_spinner, timeOptions);
-        timeAdapter.setDropDownViewResource(R.layout.item_chart_spinner_dropdown);
-        spnChartTimeFilter.setAdapter(timeAdapter);
 
         List<String> schoolOptions = new ArrayList<>();
         schoolOptions.add("Tất cả đơn vị / trường");
@@ -7166,8 +8060,148 @@ public class MainActivity extends AppCompatActivity {
             public void onNothingSelected(AdapterView<?> parent) {}
         };
 
-        spnChartTimeFilter.setOnItemSelectedListener(filterChangeListener);
         spnChartSchoolFilter.setOnItemSelectedListener(filterChangeListener);
+    }
+
+    private void showChartTimeFilterDialog() {
+        if (isFinishing() || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isDestroyed())) return;
+        try {
+            Dialog dialog = new Dialog(this);
+            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            dialog.setContentView(R.layout.dialog_chart_time_filter);
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            }
+
+            Button btnAll = dialog.findViewById(R.id.btnChartFilterAll);
+            Button btnMonth = dialog.findViewById(R.id.btnChartFilterMonth);
+            Button btnPrevMonth = dialog.findViewById(R.id.btnChartFilterPrevMonth);
+            Button btnYear = dialog.findViewById(R.id.btnChartFilterYear);
+
+            LinearLayout layoutFrom = dialog.findViewById(R.id.layoutChartFromDate);
+            LinearLayout layoutTo = dialog.findViewById(R.id.layoutChartToDate);
+            EditText etFrom = dialog.findViewById(R.id.etChartFromDate);
+            EditText etTo = dialog.findViewById(R.id.etChartToDate);
+
+            Button btnCancel = dialog.findViewById(R.id.btnCancelChartFilter);
+            Button btnApply = dialog.findViewById(R.id.btnApplyChartFilter);
+
+            final String[] selectedFromIso = {chartFromDateIso};
+            final String[] selectedToIso = {chartToDateIso};
+
+            if (etFrom != null) etFrom.setText(formatIsoToVnDate(selectedFromIso[0]));
+            if (etTo != null) etTo.setText(formatIsoToVnDate(selectedToIso[0]));
+
+            Calendar cal = Calendar.getInstance();
+            int curYear = cal.get(Calendar.YEAR);
+            int curMonth = cal.get(Calendar.MONTH) + 1;
+
+            if (btnAll != null) {
+                btnAll.setOnClickListener(v -> {
+                    selectedFromIso[0] = "";
+                    selectedToIso[0] = "";
+                    if (etFrom != null) etFrom.setText("");
+                    if (etTo != null) etTo.setText("");
+                });
+            }
+
+            if (btnMonth != null) {
+                btnMonth.setOnClickListener(v -> {
+                    selectedFromIso[0] = String.format(Locale.getDefault(), "%04d-%02d-01", curYear, curMonth);
+                    cal.set(curYear, curMonth - 1, 1);
+                    int maxDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+                    selectedToIso[0] = String.format(Locale.getDefault(), "%04d-%02d-%02d", curYear, curMonth, maxDay);
+                    if (etFrom != null) etFrom.setText(formatIsoToVnDate(selectedFromIso[0]));
+                    if (etTo != null) etTo.setText(formatIsoToVnDate(selectedToIso[0]));
+                });
+            }
+
+            if (btnPrevMonth != null) {
+                btnPrevMonth.setOnClickListener(v -> {
+                    int prevM = curMonth - 1;
+                    int prevY = curYear;
+                    if (prevM < 1) { prevM = 12; prevY--; }
+                    selectedFromIso[0] = String.format(Locale.getDefault(), "%04d-%02d-01", prevY, prevM);
+                    Calendar pCal = Calendar.getInstance();
+                    pCal.set(prevY, prevM - 1, 1);
+                    int maxDay = pCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+                    selectedToIso[0] = String.format(Locale.getDefault(), "%04d-%02d-%02d", prevY, prevM, maxDay);
+                    if (etFrom != null) etFrom.setText(formatIsoToVnDate(selectedFromIso[0]));
+                    if (etTo != null) etTo.setText(formatIsoToVnDate(selectedToIso[0]));
+                });
+            }
+
+            if (btnYear != null) {
+                btnYear.setOnClickListener(v -> {
+                    selectedFromIso[0] = String.format(Locale.getDefault(), "%04d-01-01", curYear);
+                    selectedToIso[0] = String.format(Locale.getDefault(), "%04d-12-31", curYear);
+                    if (etFrom != null) etFrom.setText(formatIsoToVnDate(selectedFromIso[0]));
+                    if (etTo != null) etTo.setText(formatIsoToVnDate(selectedToIso[0]));
+                });
+            }
+
+            View.OnClickListener pickFromListener = v -> {
+                Calendar pCal = Calendar.getInstance();
+                if (!selectedFromIso[0].isEmpty()) {
+                    try {
+                        Date d = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(selectedFromIso[0]);
+                        if (d != null) pCal.setTime(d);
+                    } catch (Exception ignored) {}
+                }
+                new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+                    selectedFromIso[0] = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, dayOfMonth);
+                    if (etFrom != null) etFrom.setText(formatIsoToVnDate(selectedFromIso[0]));
+                }, pCal.get(Calendar.YEAR), pCal.get(Calendar.MONTH), pCal.get(Calendar.DAY_OF_MONTH)).show();
+            };
+
+            View.OnClickListener pickToListener = v -> {
+                Calendar pCal = Calendar.getInstance();
+                if (!selectedToIso[0].isEmpty()) {
+                    try {
+                        Date d = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(selectedToIso[0]);
+                        if (d != null) pCal.setTime(d);
+                    } catch (Exception ignored) {}
+                }
+                new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+                    selectedToIso[0] = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, dayOfMonth);
+                    if (etTo != null) etTo.setText(formatIsoToVnDate(selectedToIso[0]));
+                }, pCal.get(Calendar.YEAR), pCal.get(Calendar.MONTH), pCal.get(Calendar.DAY_OF_MONTH)).show();
+            };
+
+            if (layoutFrom != null) layoutFrom.setOnClickListener(pickFromListener);
+            if (etFrom != null) etFrom.setOnClickListener(pickFromListener);
+
+            if (layoutTo != null) layoutTo.setOnClickListener(pickToListener);
+            if (etTo != null) etTo.setOnClickListener(pickToListener);
+
+            if (btnCancel != null) btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+            if (btnApply != null) {
+                btnApply.setOnClickListener(v -> {
+                    chartFromDateIso = selectedFromIso[0];
+                    chartToDateIso = selectedToIso[0];
+
+                    if (chartFromDateIso.isEmpty() && chartToDateIso.isEmpty()) {
+                        chartTimeLabel = "Tất cả thời gian";
+                    } else if (!chartFromDateIso.isEmpty() && !chartToDateIso.isEmpty()) {
+                        chartTimeLabel = formatIsoToVnDate(chartFromDateIso) + " - " + formatIsoToVnDate(chartToDateIso);
+                    } else if (!chartFromDateIso.isEmpty()) {
+                        chartTimeLabel = "Từ " + formatIsoToVnDate(chartFromDateIso);
+                    } else {
+                        chartTimeLabel = "Đến " + formatIsoToVnDate(chartToDateIso);
+                    }
+
+                    if (tvChartTimeFilter != null) tvChartTimeFilter.setText(chartTimeLabel);
+                    updateChartTab();
+                    dialog.dismiss();
+                });
+            }
+
+            dialog.show();
+        } catch (Exception e) {
+            android.util.Log.e("LectuPlan", "Lỗi showChartTimeFilterDialog: " + e.getMessage(), e);
+        }
     }
 
     public static String classifyEventNature(String title, String organizer) {
@@ -7252,48 +8286,20 @@ public class MainActivity extends AppCompatActivity {
         if (allEvents == null) allEvents = new ArrayList<>();
 
         // 1. Lọc theo Thời gian
-        int timeFilterPos = spnChartTimeFilter != null ? spnChartTimeFilter.getSelectedItemPosition() : 0;
-        Calendar calNow = Calendar.getInstance();
-        int currentYear = calNow.get(Calendar.YEAR);
-        int currentMonth = calNow.get(Calendar.MONTH) + 1;
-        String currentYearStr = String.valueOf(currentYear);
-        String currentMonthIso = String.format(Locale.getDefault(), "%04d-%02d", currentYear, currentMonth);
-
-        calNow.add(Calendar.MONTH, -1);
-        int prevYear = calNow.get(Calendar.YEAR);
-        int prevMonth = calNow.get(Calendar.MONTH) + 1;
-        String prevMonthIso = String.format(Locale.getDefault(), "%04d-%02d", prevYear, prevMonth);
-
         List<EventModel> timeFiltered = new ArrayList<>();
         for (EventModel em : allEvents) {
             String d = em.getDate();
-            if (d == null || d.length() < 7) {
+            if (d == null || d.trim().isEmpty()) {
                 timeFiltered.add(em);
                 continue;
             }
-            if (timeFilterPos == 0) {
-                timeFiltered.add(em);
-            } else if (timeFilterPos == 1) {
-                if (d.startsWith(currentYearStr + "-")) {
-                    timeFiltered.add(em);
-                }
-            } else if (timeFilterPos == 2) {
-                if (d.startsWith(currentMonthIso)) {
-                    timeFiltered.add(em);
-                }
-            } else if (timeFilterPos == 3) {
-                if (d.startsWith(prevMonthIso)) {
-                    timeFiltered.add(em);
-                }
-            } else if (timeFilterPos >= 4 && timeFilterPos <= 15) {
-                int targetMonth = timeFilterPos - 3;
-                String targetMonthStr = String.format(Locale.getDefault(), "-%02d-", targetMonth);
-                if (d.contains(targetMonthStr)) {
-                    timeFiltered.add(em);
-                }
-            } else {
-                timeFiltered.add(em);
+            if (!chartFromDateIso.isEmpty() && d.compareTo(chartFromDateIso) < 0) {
+                continue;
             }
+            if (!chartToDateIso.isEmpty() && d.compareTo(chartToDateIso) > 0) {
+                continue;
+            }
+            timeFiltered.add(em);
         }
 
         // 2. Lọc theo Trường / Đơn vị
@@ -8302,6 +9308,12 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 @Override
+                public void onItemClick(EventModel event) {
+                    dialog.dismiss();
+                    showEventDetailDialog(event);
+                }
+
+                @Override
                 public void onSelectionChanged(int selectedCount) {}
             }));
         }
@@ -8310,159 +9322,316 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    private interface OnInputConfirmedListener {
+        void onConfirmed(String inputText);
+    }
+
+    private void showCustomInputDialog(String title, String hint, String defaultValue, OnInputConfirmedListener onConfirm, Runnable onCancel) {
+        if (isFinishing() || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isDestroyed())) return;
+        try {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(title);
+
+            final EditText input = new EditText(this);
+            input.setHint(hint);
+            if (defaultValue != null) input.setText(defaultValue);
+            input.setSingleLine(true);
+            int marginPx = (int) (18 * getResources().getDisplayMetrics().density);
+
+            FrameLayout container = new FrameLayout(this);
+            container.setPadding(marginPx, marginPx / 2, marginPx, marginPx / 2);
+            container.addView(input);
+            builder.setView(container);
+
+            builder.setPositiveButton("Xác nhận", (dialog, which) -> {
+                String text = input.getText() != null ? input.getText().toString().trim() : "";
+                if (onConfirm != null) onConfirm.onConfirmed(text);
+            });
+            builder.setNegativeButton("Hủy", (dialog, which) -> {
+                dialog.dismiss();
+                if (onCancel != null) onCancel.run();
+            });
+            builder.setOnCancelListener(dialog -> {
+                if (onCancel != null) onCancel.run();
+            });
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        } catch (Exception e) {
+            android.util.Log.e("LectuPlan", "Lỗi showCustomInputDialog: " + e.getMessage(), e);
+        }
+    }
+
     private void showStagingImportDialog(List<EventModel> stagingList, String fileName, String formatLabel, boolean isHandwritten, String extractionMethod) {
+        if (isFinishing() || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isDestroyed())) return;
         if (stagingList == null || stagingList.isEmpty()) {
             Toast.makeText(this, "Không tìm thấy dữ liệu hợp lệ trong file!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Dialog dialog = new Dialog(this, android.R.style.Theme_Light_NoTitleBar_Fullscreen);
-        dialog.setContentView(R.layout.dialog_staging_import);
+        try {
+            Dialog dialog = new Dialog(this, android.R.style.Theme_Light_NoTitleBar_Fullscreen);
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    dialog.getWindow().setStatusBarColor(Color.parseColor("#1976D2"));
+                }
+            }
+            dialog.setContentView(R.layout.dialog_staging_import);
 
-        TextView tvStagingTotalCount = dialog.findViewById(R.id.tvStagingTotalCount);
-        ImageButton btnCloseStaging = dialog.findViewById(R.id.btnCloseStaging);
-        Button btnAddRowStaging = dialog.findViewById(R.id.btnAddRowStaging);
-        Button btnConfirmImportStaging = dialog.findViewById(R.id.btnConfirmImportStaging);
-        CheckBox cbSelectAllStaging = dialog.findViewById(R.id.cbSelectAllStaging);
-        androidx.recyclerview.widget.RecyclerView rvStagingEvents = dialog.findViewById(R.id.rvStagingEvents);
-        
-        Spinner spStagingSchool = dialog.findViewById(R.id.spStagingSchool);
-        Spinner spStagingCategory = dialog.findViewById(R.id.spStagingCategory);
-        Button btnApplyBulk = dialog.findViewById(R.id.btnApplyBulk);
+            View topBar = dialog.findViewById(R.id.layoutStagingImportTopBar);
+            if (topBar != null) {
+                ViewCompat.setOnApplyWindowInsetsListener(topBar, (v, insets) -> {
+                    try {
+                        int statusBarTop = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+                        int pLeft = v.getPaddingLeft();
+                        int pRight = v.getPaddingRight();
+                        int pBottom = v.getPaddingBottom();
+                        float density = getResources().getDisplayMetrics().density;
+                        int safeTop = Math.max(statusBarTop, (int) (36 * density)) + (int) (12 * density);
+                        v.setPadding(pLeft, safeTop, pRight, pBottom);
+                    } catch (Exception ignored) {}
+                    return insets;
+                });
+            }
 
-        ArrayAdapter<CharSequence> schoolAdapter = ArrayAdapter.createFromResource(this, R.array.school_codes, android.R.layout.simple_spinner_item);
-        schoolAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spStagingSchool.setAdapter(schoolAdapter);
-
-        ArrayAdapter<String> catAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new String[]{EventModel.CAT_TEACHING, EventModel.CAT_EVENT, EventModel.CAT_INCIDENT, EventModel.CAT_MANUAL_OTHER});
-        catAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spStagingCategory.setAdapter(catAdapter);
-
-        tvStagingTotalCount.setText(stagingList.size() + " mục");
-        
-        for (EventModel ev : stagingList) {
-            ev.setSelectedForImport(!ev.hasMissingDateTime());
-        }
-
-        StagingEventAdapter adapter = new StagingEventAdapter(stagingList, (position, event) -> {
-            showEditStagingEventDialog(event, position, null, dialog);
-        }, () -> {
-            int selectedCount = 0;
-            for (EventModel e : stagingList) if (e.isSelectedForImport()) selectedCount++;
-            btnConfirmImportStaging.setText("Xác nhận nhập (" + selectedCount + ")");
-            cbSelectAllStaging.setOnCheckedChangeListener(null);
-            cbSelectAllStaging.setChecked(selectedCount == stagingList.size());
-            cbSelectAllStaging.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                for (EventModel e : stagingList) e.setSelectedForImport(isChecked);
-                // We need to notify adapter here. Since we can't access adapter easily from here without effectively making it final, let's just do it.
-            });
-        });
-        
-        // Fix the listener cross-reference:
-        cbSelectAllStaging.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            for (EventModel e : stagingList) e.setSelectedForImport(isChecked);
-            adapter.notifyDataSetChanged();
-            int sCount = isChecked ? stagingList.size() : 0;
-            btnConfirmImportStaging.setText("Xác nhận nhập (" + sCount + ")");
-        });
-
-        rvStagingEvents.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
-        rvStagingEvents.setAdapter(adapter);
-
-        int initialSelectedCount = 0;
-        for (EventModel e : stagingList) if (e.isSelectedForImport()) initialSelectedCount++;
-        btnConfirmImportStaging.setText("Xác nhận nhập (" + initialSelectedCount + ")");
-
-        btnCloseStaging.setOnClickListener(v -> dialog.dismiss());
-
-        btnAddRowStaging.setOnClickListener(v -> {
-            EventModel newEv = new EventModel(0, 0, "", new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()), "", "HK1", Calendar.getInstance().get(Calendar.YEAR), 1);
-            newEv.setSelectedForImport(true);
-            stagingList.add(newEv);
-            adapter.notifyItemInserted(stagingList.size() - 1);
-            rvStagingEvents.scrollToPosition(stagingList.size() - 1);
-            tvStagingTotalCount.setText(stagingList.size() + " mục");
+            TextView tvStagingTotalCount = dialog.findViewById(R.id.tvStagingTotalCount);
+            ImageButton btnCloseStaging = dialog.findViewById(R.id.btnCloseStaging);
+            Button btnAddRowStaging = dialog.findViewById(R.id.btnAddRowStaging);
+            Button btnConfirmImportStaging = dialog.findViewById(R.id.btnConfirmImportStaging);
+            CheckBox cbSelectAllStaging = dialog.findViewById(R.id.cbSelectAllStaging);
+            androidx.recyclerview.widget.RecyclerView rvStagingEvents = dialog.findViewById(R.id.rvStagingEvents);
             
-            int sCount = 0;
-            for (EventModel e : stagingList) if (e.isSelectedForImport()) sCount++;
-            btnConfirmImportStaging.setText("Xác nhận nhập (" + sCount + ")");
-        });
-        
-        btnApplyBulk.setOnClickListener(v -> {
-            String selectedSchool = spStagingSchool.getSelectedItem().toString();
-            String selectedCat = spStagingCategory.getSelectedItem().toString();
-            for (EventModel ev : stagingList) {
-                if (ev.isSelectedForImport()) {
-                    ev.setSchoolCode(selectedSchool);
-                    ev.setCategory(selectedCat);
-                }
-            }
-            adapter.notifyDataSetChanged();
-            Toast.makeText(this, "Đã áp dụng cho các dòng được chọn", Toast.LENGTH_SHORT).show();
-        });
+            Spinner spStagingSchool = dialog.findViewById(R.id.spStagingSchool);
+            Spinner spStagingCategory = dialog.findViewById(R.id.spStagingCategory);
+            Button btnApplyBulk = dialog.findViewById(R.id.btnApplyBulk);
 
-        btnConfirmImportStaging.setOnClickListener(v -> {
-            int count = 0;
-            List<String> extractedSummaries = new ArrayList<>();
-            android.database.sqlite.SQLiteDatabase writableDb = dbHelper.getWritableDatabase();
-            writableDb.beginTransaction();
-            try {
-                int stt = 1;
-                for (EventModel ev : stagingList) {
-                    if (ev.isSelectedForImport() && !ev.hasMissingDateTime()) {
-                        dbHelper.insertEvent(stt++, ev.getTitle(), ev.getDate(), ev.getOrganizer(), ev.getCategory() != null ? ev.getCategory() : EventModel.CAT_TEACHING);
-                        extractedSummaries.add("[" + ev.getDate() + "] " + ev.getTitle());
-                        count++;
+            final String ADD_CUSTOM_SCHOOL_OPTION = "✏️ Thêm tên trường / đơn vị khác...";
+            List<String> schoolList = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.school_codes)));
+            schoolList.add(ADD_CUSTOM_SCHOOL_OPTION);
+
+            ArrayAdapter<String> schoolAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, schoolList);
+            schoolAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            if (spStagingSchool != null) spStagingSchool.setAdapter(schoolAdapter);
+
+            if (spStagingSchool != null) {
+                spStagingSchool.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    private int lastPosition = 0;
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        String selected = schoolList.get(position);
+                        if (ADD_CUSTOM_SCHOOL_OPTION.equals(selected)) {
+                            showCustomInputDialog("Thêm Trường / Đơn vị mới", "Nhập tên Trường / Đơn vị:", "", newCustomName -> {
+                                if (newCustomName != null && !newCustomName.trim().isEmpty()) {
+                                    String trimmed = newCustomName.trim();
+                                    int insertIdx = schoolList.size() - 1;
+                                    schoolList.add(insertIdx, trimmed);
+                                    schoolAdapter.notifyDataSetChanged();
+                                    spStagingSchool.setSelection(insertIdx);
+                                } else {
+                                    spStagingSchool.setSelection(lastPosition);
+                                }
+                            }, () -> spStagingSchool.setSelection(lastPosition));
+                        } else {
+                            lastPosition = position;
+                        }
                     }
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {}
+                });
+            }
+
+            final String ADD_CUSTOM_CAT_OPTION = "✏️ Thêm phân loại khác...";
+            List<String> catList = new ArrayList<>(Arrays.asList(EventModel.CAT_TEACHING, EventModel.CAT_EVENT, EventModel.CAT_INCIDENT, EventModel.CAT_MANUAL_OTHER));
+            catList.add(ADD_CUSTOM_CAT_OPTION);
+
+            ArrayAdapter<String> catAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, catList);
+            catAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            if (spStagingCategory != null) spStagingCategory.setAdapter(catAdapter);
+
+            if (spStagingCategory != null) {
+                spStagingCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    private int lastPosition = 0;
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        String selected = catList.get(position);
+                        if (ADD_CUSTOM_CAT_OPTION.equals(selected)) {
+                            showCustomInputDialog("Thêm Phân loại lịch mới", "Nhập tên Phân loại:", "", newCustomCat -> {
+                                if (newCustomCat != null && !newCustomCat.trim().isEmpty()) {
+                                    String trimmed = newCustomCat.trim();
+                                    int insertIdx = catList.size() - 1;
+                                    catList.add(insertIdx, trimmed);
+                                    catAdapter.notifyDataSetChanged();
+                                    spStagingCategory.setSelection(insertIdx);
+                                } else {
+                                    spStagingCategory.setSelection(lastPosition);
+                                }
+                            }, () -> spStagingCategory.setSelection(lastPosition));
+                        } else {
+                            lastPosition = position;
+                        }
+                    }
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {}
+                });
+            }
+
+            if (tvStagingTotalCount != null) tvStagingTotalCount.setText(stagingList.size() + " mục");
+            
+            for (EventModel ev : stagingList) {
+                if (ev != null) ev.setSelectedForImport(!ev.hasMissingDateTime());
+            }
+
+            StagingEventAdapter adapter = new StagingEventAdapter(stagingList, (position, event) -> {
+                showEditStagingEventDialog(event, position, null, dialog);
+            }, () -> {
+                int selectedCount = 0;
+                for (EventModel e : stagingList) if (e != null && e.isSelectedForImport()) selectedCount++;
+                if (btnConfirmImportStaging != null) btnConfirmImportStaging.setText("Xác nhận nhập (" + selectedCount + ")");
+                if (cbSelectAllStaging != null) {
+                    cbSelectAllStaging.setOnCheckedChangeListener(null);
+                    cbSelectAllStaging.setChecked(selectedCount == stagingList.size());
                 }
-                dbHelper.normalizeSttNumbers();
-                writableDb.setTransactionSuccessful();
-            } finally {
-                writableDb.endTransaction();
+            });
+            
+            if (cbSelectAllStaging != null) {
+                cbSelectAllStaging.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                    for (EventModel e : stagingList) if (e != null) e.setSelectedForImport(isChecked);
+                    adapter.notifyDataSetChanged();
+                    int sCount = isChecked ? stagingList.size() : 0;
+                    if (btnConfirmImportStaging != null) btnConfirmImportStaging.setText("Xác nhận nhập (" + sCount + ")");
+                });
             }
 
-            if (count > 0) {
-                String historyBadgeType = isHandwritten
-                        ? "LỊCH BIỂU (VIẾT TAY • " + getFileExtensionLabel(fileName).toUpperCase(Locale.getDefault()) + ")"
-                        : "NHẬP FILE (" + getFileExtensionLabel(fileName).toUpperCase(Locale.getDefault()) + ")";
-                dbHelper.addFileHistory(fileName, historyBadgeType, count);
-                refreshFileHistory();
-                playSuccessSound();
-                refreshData();
-                refreshTab2CalendarEvents();
-                showFileAnalysisReportDialog(fileName, formatLabel, extractionMethod, isHandwritten, count, extractedSummaries);
+            if (rvStagingEvents != null) {
+                rvStagingEvents.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
+                rvStagingEvents.setAdapter(adapter);
             }
-            dialog.dismiss();
-        });
 
-        dialog.show();
+            int initialSelectedCount = 0;
+            for (EventModel e : stagingList) if (e != null && e.isSelectedForImport()) initialSelectedCount++;
+            if (btnConfirmImportStaging != null) btnConfirmImportStaging.setText("Xác nhận nhập (" + initialSelectedCount + ")");
+
+            if (btnCloseStaging != null) btnCloseStaging.setOnClickListener(v -> dialog.dismiss());
+
+            if (btnAddRowStaging != null) {
+                btnAddRowStaging.setOnClickListener(v -> {
+                    EventModel newEv = new EventModel(0, 0, "", new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()), "", "HK1", Calendar.getInstance().get(Calendar.YEAR), 1);
+                    newEv.setSelectedForImport(true);
+                    stagingList.add(newEv);
+                    adapter.notifyItemInserted(stagingList.size() - 1);
+                    if (rvStagingEvents != null) rvStagingEvents.scrollToPosition(stagingList.size() - 1);
+                    if (tvStagingTotalCount != null) tvStagingTotalCount.setText(stagingList.size() + " mục");
+                    
+                    int sCount = 0;
+                    for (EventModel e : stagingList) if (e != null && e.isSelectedForImport()) sCount++;
+                    if (btnConfirmImportStaging != null) btnConfirmImportStaging.setText("Xác nhận nhập (" + sCount + ")");
+                });
+            }
+            
+            if (btnApplyBulk != null) {
+                btnApplyBulk.setOnClickListener(v -> {
+                    String selectedSchool = spStagingSchool != null && spStagingSchool.getSelectedItem() != null ? spStagingSchool.getSelectedItem().toString() : "Nhà trường";
+                    String selectedCat = spStagingCategory != null && spStagingCategory.getSelectedItem() != null ? spStagingCategory.getSelectedItem().toString() : EventModel.CAT_TEACHING;
+
+                    if (ADD_CUSTOM_SCHOOL_OPTION.equals(selectedSchool)) selectedSchool = "Nhà trường";
+                    if (ADD_CUSTOM_CAT_OPTION.equals(selectedCat)) selectedCat = EventModel.CAT_TEACHING;
+
+                    for (EventModel ev : stagingList) {
+                        if (ev != null && ev.isSelectedForImport()) {
+                            ev.setSchoolCode(selectedSchool);
+                            ev.setOrganizer(selectedSchool);
+                            ev.setCategory(selectedCat);
+                        }
+                    }
+                    adapter.notifyDataSetChanged();
+                    Toast.makeText(this, "Đã áp dụng gán hàng loạt cho các dòng được chọn", Toast.LENGTH_SHORT).show();
+                });
+            }
+
+            if (btnConfirmImportStaging != null) {
+                btnConfirmImportStaging.setOnClickListener(v -> {
+                    int count = 0;
+                    List<String> extractedSummaries = new ArrayList<>();
+                    android.database.sqlite.SQLiteDatabase writableDb = dbHelper != null ? dbHelper.getWritableDatabase() : null;
+                    if (writableDb != null) {
+                        writableDb.beginTransaction();
+                        try {
+                            int stt = 1;
+                            for (EventModel ev : stagingList) {
+                                if (ev != null && ev.isSelectedForImport() && !ev.hasMissingDateTime()) {
+                                    dbHelper.insertEvent(stt++, ev.getTitle(), ev.getDate(), ev.getOrganizer(), ev.getCategory() != null ? ev.getCategory() : EventModel.CAT_TEACHING);
+                                    extractedSummaries.add("[" + ev.getDate() + "] " + ev.getTitle());
+                                    count++;
+                                }
+                            }
+                            dbHelper.normalizeSttNumbers();
+                            writableDb.setTransactionSuccessful();
+                        } finally {
+                            writableDb.endTransaction();
+                        }
+                    }
+
+                    if (count > 0) {
+                        String historyBadgeType = isHandwritten
+                                ? "LỊCH BIỂU (VIẾT TAY • " + getFileExtensionLabel(fileName).toUpperCase(Locale.getDefault()) + ")"
+                                : "NHẬP FILE (" + getFileExtensionLabel(fileName).toUpperCase(Locale.getDefault()) + ")";
+                        if (dbHelper != null) dbHelper.addFileHistory(fileName, historyBadgeType, count);
+                        refreshFileHistory();
+                        playSuccessSound();
+                        refreshData();
+                        refreshTab2CalendarEvents();
+                        showFileAnalysisReportDialog(fileName, formatLabel, extractionMethod, isHandwritten, count, extractedSummaries);
+                    }
+                    dialog.dismiss();
+                });
+            }
+
+            dialog.show();
+        } catch (Exception e) {
+            android.util.Log.e("LectuPlan", "Lỗi showStagingImportDialog: " + e.getMessage(), e);
+            Toast.makeText(this, "Lỗi hiển thị dữ liệu nhập!", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showEditStagingEventDialog(EventModel event, int position, StagingEventAdapter adapter, Dialog parentDialog) {
         Dialog editDialog = new Dialog(this);
         editDialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
         editDialog.setContentView(R.layout.dialog_staging_edit_event);
-        editDialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        if (editDialog.getWindow() != null) {
+            editDialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            editDialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
+        }
         
         EditText etTitle = editDialog.findViewById(R.id.etEditStagingTitle);
         EditText etDate = editDialog.findViewById(R.id.etEditStagingDate);
         EditText etStartTime = editDialog.findViewById(R.id.etEditStagingStartTime);
         EditText etEndTime = editDialog.findViewById(R.id.etEditStagingEndTime);
         EditText etRoom = editDialog.findViewById(R.id.etEditStagingRoom);
+        EditText etOrganizer = editDialog.findViewById(R.id.etEditStagingOrganizer);
+        EditText etCategory = editDialog.findViewById(R.id.etEditStagingCategory);
         ImageButton btnDate = editDialog.findViewById(R.id.btnPickStagingDate);
         Button btnSave = editDialog.findViewById(R.id.btnSaveEditStaging);
         Button btnCancel = editDialog.findViewById(R.id.btnCancelEditStaging);
         
         etTitle.setText(event.getTitle());
-        etDate.setText(event.getDate());
+        etDate.setText(formatIsoToVnDate(event.getDate()));
         etStartTime.setText(event.getStartTime());
         etEndTime.setText(event.getEndTime());
         etRoom.setText(event.getRoom());
+        if (etOrganizer != null) etOrganizer.setText(event.getOrganizer());
+        if (etCategory != null) etCategory.setText(event.getCategory());
         
         btnDate.setOnClickListener(v -> {
             Calendar cal = Calendar.getInstance();
+            String currIso = formatVnToIsoDate(etDate.getText().toString().trim());
+            if (!currIso.isEmpty()) {
+                try {
+                    Date d = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(currIso);
+                    if (d != null) cal.setTime(d);
+                } catch (Exception ignored) {}
+            }
             new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
-                etDate.setText(String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, dayOfMonth));
+                etDate.setText(String.format(Locale.getDefault(), "%02d/%02d/%04d", dayOfMonth, month + 1, year));
             }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show();
         });
         
@@ -8470,13 +9639,15 @@ public class MainActivity extends AppCompatActivity {
         
         btnSave.setOnClickListener(v -> {
             event.setTitle(etTitle.getText().toString());
-            event.setDate(etDate.getText().toString());
+            event.setDate(formatVnToIsoDate(etDate.getText().toString()));
             event.setStartTime(etStartTime.getText().toString());
             event.setEndTime(etEndTime.getText().toString());
             event.setRoom(etRoom.getText().toString());
-            // Need to notify adapter here. We'll do it manually.
+            if (etOrganizer != null) event.setOrganizer(etOrganizer.getText().toString().trim());
+            if (etCategory != null) event.setCategory(etCategory.getText().toString().trim());
             if (parentDialog != null && parentDialog.isShowing()) {
                 androidx.recyclerview.widget.RecyclerView rv = parentDialog.findViewById(R.id.rvStagingEvents);
+                if (rv == null) rv = parentDialog.findViewById(R.id.rvExportEvents);
                 if (rv != null && rv.getAdapter() != null) {
                     rv.getAdapter().notifyItemChanged(position);
                 }

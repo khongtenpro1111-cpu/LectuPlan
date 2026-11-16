@@ -101,9 +101,9 @@ public class GranularTimelineEngine {
                     TimelineSlot.SlotType.DEEP_FREE,
                     TimeNormalizer.DAY_START_MINUTE,
                     TimeNormalizer.DAY_END_MINUTE,
-                    "TRỐNG TOÀN BỘ NGÀY (Cả ngày rảnh rỗi)",
-                    "Khung giờ hoạt động: 06:45 - 20:15 (" + formatMinutesToHourString(dayDuration) + ")",
-                    "Gợi ý: Sẵn sàng nhận toàn bộ ca dạy thỉnh giảng, chấm khóa luận hoặc làm việc chuyên sâu.",
+                    "TRỐNG TOÀN BỘ NGÀY",
+                    "Khung giờ: 06:45 - 20:15 (" + formatMinutesToHourString(dayDuration) + ")",
+                    "Gợi ý: Phù hợp để dạy học, chấm bài hoặc làm việc.",
                     "Rảnh cả ngày",
                     "#16A34A",
                     "#F0FDF4"
@@ -129,8 +129,8 @@ public class GranularTimelineEngine {
                 currBusy.setBadgeText("XUNG ĐỘT TRÙNG GIỜ");
                 currBusy.setColorHex("#DC2626");
                 currBusy.setBgHex("#FEF2F2");
-                currBusy.setSuggestion("CẢNH BÁO XUNG ĐỘT: Bị trùng giờ với sự kiện trước [" + prevBusy.getTitle()
-                        + " (" + TimeNormalizer.minuteToTimeString(prevBusy.getStartMin()) + " - " + TimeNormalizer.minuteToTimeString(prevBusy.getEndMin()) + ")]! Giảng viên cần xin đổi ca hoặc dời lịch.");
+                currBusy.setSuggestion("CẢNH BÁO TRÙNG GIỜ: Trùng với sự kiện trước [" + prevBusy.getTitle()
+                        + " (" + TimeNormalizer.minuteToTimeString(prevBusy.getStartMin()) + " - " + TimeNormalizer.minuteToTimeString(prevBusy.getEndMin()) + ")]!");
             }
 
             // A. Khoảng trống phía trước ca này
@@ -145,7 +145,7 @@ public class GranularTimelineEngine {
                             currBusy.getStartMin(),
                             "TRỐNG ĐẦU NGÀY (" + formatDuration(gap) + ")",
                             "[" + TimeNormalizer.minuteToTimeString(pointer) + " - " + TimeNormalizer.minuteToTimeString(currBusy.getStartMin()) + "]",
-                            "Gợi ý: Ăn sáng, chuẩn bị tài liệu giảng dạy, di chuyển sớm",
+                            "Gợi ý: Chuẩn bị tài liệu giảng dạy",
                             "Rảnh đầu ngày",
                             "#16A34A",
                             "#F0FDF4"
@@ -167,9 +167,9 @@ public class GranularTimelineEngine {
                                     TimelineSlot.SlotType.MICRO_FREE,
                                     pointer,
                                     currBusy.getStartMin() - travelMin,
-                                    "NGHỈ NGẮN TRƯỚC GIỜ DI CHUYỂN (" + formatDuration(freeBeforeTravel) + ")",
+                                    "NGHỈ NGẮN TRƯỚC DI CHUYỂN (" + formatDuration(freeBeforeTravel) + ")",
                                     "[" + TimeNormalizer.minuteToTimeString(pointer) + " - " + TimeNormalizer.minuteToTimeString(currBusy.getStartMin() - travelMin) + "]",
-                                    "Gợi ý: Nghỉ ngơi tại chỗ, chuẩn bị phương tiện",
+                                    "Gợi ý: Nghỉ ngơi tại chỗ",
                                     "Nghỉ ngắn",
                                     "#CA8A04",
                                     "#FEFCE8"
@@ -185,7 +185,7 @@ public class GranularTimelineEngine {
                                 currBusy.getStartMin(),
                                 "ĐỆM DI CHUYỂN QUA CƠ SỞ KHÁC (" + travelMin + " phút: " + prevCampus.shortName + " -> " + currCampus.shortName + ")",
                                 "Lộ trình: " + prevCampus.shortName + " sang " + currCampus.shortName,
-                                "Đang chạy xe di chuyển ngoài đường - Tuyệt đối không thể nhận việc!",
+                                "Đang di chuyển ngoài đường",
                                 "Đệm di chuyển",
                                 "#EA580C",
                                 "#FFF7ED"
@@ -194,7 +194,7 @@ public class GranularTimelineEngine {
                     } else {
                         // Cùng cơ sở: Không cần đệm di chuyển, toàn bộ là giờ rảnh / nghỉ giữa ca
                         if (gap >= 60) {
-                            // Trống từ 60 phút trở lên (VD: 16:35 - 18:00 là 1h25p hoặc >= 120 phút): Lịch trống khả dụng để chèn lịch phát sinh
+                            // Trống từ 60 phút trở lên: Lịch trống khả dụng để chèn lịch phát sinh
                             boolean isDeep = gap >= 120;
                             TimelineSlot freeSlot = new TimelineSlot(
                                     TimelineSlot.SlotType.DEEP_FREE,
@@ -203,7 +203,7 @@ public class GranularTimelineEngine {
                                     isDeep ? "RẢNH HOÀN TOÀN (" + formatDuration(gap) + ")"
                                            : "LỊCH TRỐNG KHẢ DỤNG (" + formatDuration(gap) + ")",
                                     "[" + TimeNormalizer.minuteToTimeString(pointer) + " - " + TimeNormalizer.minuteToTimeString(currBusy.getStartMin()) + "]",
-                                    "[+ Nhấn vào đây để chèn lịch phát sinh / Soạn đề thi]",
+                                    "Nhấn vào đây để chèn lịch mới",
                                     isDeep ? "Rảnh hoàn toàn" : "Trống khả dụng",
                                     "#16A34A",
                                     "#F0FDF4"
@@ -211,14 +211,14 @@ public class GranularTimelineEngine {
                             summary.timelineSlots.add(freeSlot);
                             totalFreeMin += gap;
                         } else {
-                            // Dưới 60 phút (VD: 11:35 - 12:30 là 55 phút): Nghỉ chuyển ca / Ăn trưa tại chỗ
+                            // Dưới 60 phút: Nghỉ chuyển ca / Ăn trưa tại chỗ
                             TimelineSlot microFree = new TimelineSlot(
                                     TimelineSlot.SlotType.MICRO_FREE,
                                     pointer,
                                     currBusy.getStartMin(),
-                                    "NGHỈ GIỮA CA TẠI CHỖ (" + gap + " phút - Cùng cơ sở " + currCampus.shortName + ")",
+                                    "NGHỈ GIỮA CA (" + gap + " phút - " + currCampus.shortName + ")",
                                     "[" + TimeNormalizer.minuteToTimeString(pointer) + " - " + TimeNormalizer.minuteToTimeString(currBusy.getStartMin()) + "]",
-                                    "Gợi ý: Ăn trưa, nghỉ ngơi, họp online nhanh (Không nhận lịch họp dài)",
+                                    "Gợi ý: Nghỉ ngơi trưa",
                                     "Nghỉ chuyển ca",
                                     "#CA8A04",
                                     "#FEFCE8"
@@ -245,7 +245,7 @@ public class GranularTimelineEngine {
                         TimeNormalizer.DAY_END_MINUTE,
                         "TRỐNG CUỐI NGÀY (" + formatDuration(endGap) + ")",
                         "[" + TimeNormalizer.minuteToTimeString(pointer) + " - " + TimeNormalizer.minuteToTimeString(TimeNormalizer.DAY_END_MINUTE) + "]",
-                        "Gợi ý: Thể thao, sinh hoạt gia đình hoặc làm việc tự do",
+                        "Gợi ý: Thời gian tự do",
                         "Rảnh cuối ngày",
                         "#16A34A",
                         "#F0FDF4"

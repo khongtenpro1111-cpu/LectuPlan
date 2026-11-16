@@ -780,7 +780,7 @@ public class ThumoiGiangParser {
                 // Phần còn lại của cleanPrev và cleanNext là tên môn học
                 String subName = (cleanPrev + " " + cleanNext).replaceAll("\\s+", " ").trim();
                 if (!subName.isEmpty()) {
-                    item.subjectName = healVietnameseText(subName);
+                    item.subjectName = healVietnameseText(subName).replaceAll("(?i)[\\s•,\\-–—(\\[|]+$", "").trim();
                 } else {
                     item.subjectName = "Học phần " + item.subjectCode;
                 }

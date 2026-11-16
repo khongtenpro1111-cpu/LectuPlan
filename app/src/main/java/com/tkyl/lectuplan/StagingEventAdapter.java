@@ -45,8 +45,9 @@ public class StagingEventAdapter extends RecyclerView.Adapter<StagingEventAdapte
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         EventModel event = eventList.get(position);
 
-        holder.tvTitle.setText(event.getTitle() != null ? event.getTitle() : "Sự kiện chưa có tên");
-        holder.tvDate.setText(event.getDate() != null && !event.getDate().isEmpty() ? event.getDate() : "???");
+        String cleanTitle = MainActivity.getCleanTitleForExport(event);
+        holder.tvTitle.setText(!cleanTitle.isEmpty() ? cleanTitle : "Sự kiện chưa có tên");
+        holder.tvDate.setText(event.getDate() != null && !event.getDate().isEmpty() ? MainActivity.formatIsoToVnDate(event.getDate()) : "???");
 
         String timeStr = "";
         if (event.getStartTime() != null && !event.getStartTime().isEmpty()) {
@@ -56,12 +57,13 @@ public class StagingEventAdapter extends RecyclerView.Adapter<StagingEventAdapte
         }
         holder.tvTime.setText(timeStr);
 
-        String location = "";
-        if (event.getSchoolCode() != null && !event.getSchoolCode().isEmpty()) {
-            location += event.getSchoolCode();
-        }
-        if (event.getRoom() != null && !event.getRoom().isEmpty()) {
-            location += (location.isEmpty() ? "" : " - ") + event.getRoom();
+        String location = MainActivity.getCleanRoomForExport(event);
+        if (location.isEmpty()) {
+            if (event.getSchoolCode() != null && !event.getSchoolCode().isEmpty() && !"OTHER".equalsIgnoreCase(event.getSchoolCode())) {
+                location = event.getSchoolCode();
+            } else {
+                location = "-";
+            }
         }
         holder.tvLocation.setText(location);
 

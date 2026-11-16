@@ -33,8 +33,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="TÌM KHE NHÉT LỊCH THÔNG MINH"
-                    android:textSize="15sp"
+                    android:text="TÌM GIỜ RẢNH THÔNG MINH"
+                    android:textSize="17.5sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary" />
 
@@ -84,7 +84,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
                 android:layout_marginStart="8dp"
-                android:text="Tìm khe"
+                android:text="Tìm lịch"
                 android:textColor="#FFFFFF"
                 android:backgroundTint="#2563EB"
                 android:textSize="12.5sp"
@@ -136,7 +136,7 @@
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="5dp"
                     android:layout_marginEnd="6dp"
-                    android:text="120 phút (2h - Chuẩn chấm đồ án)"
+                    android:text="120 phút (2h)"
                     android:textColor="#FFFFFF"
                     android:textStyle="bold"
                     android:textSize="11.5sp" />
@@ -148,7 +148,7 @@
                     android:background="@drawable/bg_chip_unselected"
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="5dp"
-                    android:text="180 phút (3h - Hội đồng/Ca dạy)"
+                    android:text="180 phút (3h)"
                     android:textColor="@color/text_secondary"
                     android:textSize="11.5sp" />
             </LinearLayout>
@@ -170,36 +170,34 @@
                 android:text="Đang quét lịch trong 7 ngày tới..."
                 android:textColor="@color/accent_green"
                 android:textStyle="bold"
-                android:textSize="12sp" />
+                android:textSize="13.5sp" />
 
-            <TextView
+            <ImageButton
                 android:id="@+id/btnSlotFinderScrollTop"
-                android:layout_width="wrap_content"
-                android:layout_height="28dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:background="@drawable/bg_search_input"
-                android:gravity="center"
-                android:paddingHorizontal="8dp"
-                android:text="Đầu"
-                android:textColor="@color/accent_blue"
-                android:textSize="11sp"
-                android:textStyle="bold"
+                android:contentDescription="Lên đầu"
+                android:src="@drawable/ic_arrow_upward"
+                app:tint="@color/accent_blue"
                 android:clickable="true"
                 android:focusable="true"
-                android:layout_marginEnd="4dp" />
+                android:layout_marginEnd="6dp"
+                android:scaleType="centerInside"
+                android:padding="6dp" />
 
-            <TextView
+            <ImageButton
                 android:id="@+id/btnSlotFinderScrollBottom"
-                android:layout_width="wrap_content"
-                android:layout_height="28dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:background="@drawable/bg_search_input"
-                android:gravity="center"
-                android:paddingHorizontal="8dp"
-                android:text="Cuối"
-                android:textColor="@color/accent_blue"
-                android:textSize="11sp"
-                android:textStyle="bold"
+                android:contentDescription="Xuống cuối"
+                android:src="@drawable/ic_arrow_downward"
+                app:tint="@color/accent_blue"
                 android:clickable="true"
-                android:focusable="true" />
+                android:focusable="true"
+                android:scaleType="centerInside"
+                android:padding="6dp" />
         </LinearLayout>
 
         <!-- Danh sách khe rảnh tìm thấy -->

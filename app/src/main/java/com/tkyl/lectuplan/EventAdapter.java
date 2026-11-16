@@ -237,7 +237,12 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
 
         EventFieldBreakdown bd = parseEventDetails(event);
 
+        if (holder.tvDateHeaderBadge != null) {
+            holder.tvDateHeaderBadge.setTextColor(titleTextColor);
+        }
+
         if (holder.tvPeriodLeft != null) {
+            holder.tvPeriodLeft.setTextColor(titleTextColor);
             if (bd.period != null && !bd.period.trim().isEmpty()) {
                 holder.tvPeriodLeft.setText("Tiết " + bd.period.trim());
             } else if (bd.time != null && !bd.time.trim().isEmpty()) {
@@ -248,6 +253,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
         }
 
         if (holder.tvTimeLeft != null) {
+            holder.tvTimeLeft.setTextColor(isNight ? Color.parseColor("#38BDF8") : Color.parseColor("#2563EB"));
             if (bd.time != null && !bd.time.trim().isEmpty() && bd.period != null && !bd.period.trim().isEmpty()) {
                 holder.tvTimeLeft.setText(bd.time.trim());
                 holder.tvTimeLeft.setVisibility(View.VISIBLE);

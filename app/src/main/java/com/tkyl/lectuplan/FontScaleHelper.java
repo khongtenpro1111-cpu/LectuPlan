@@ -14,7 +14,7 @@ public class FontScaleHelper {
 
     public static int getFontSizeMode(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        return prefs.getInt(KEY_FONT_SIZE_MODE, FONT_MEDIUM);
+        return prefs.getInt(KEY_FONT_SIZE_MODE, FONT_LARGE);
     }
 
     public static void setFontSizeMode(Context context, int mode) {
@@ -30,16 +30,15 @@ public class FontScaleHelper {
 
         float fontScale;
         if (mode == FONT_SMALL) {
-            fontScale = systemScale * 0.88f;
-        } else if (mode == FONT_LARGE) {
-            fontScale = systemScale * 1.18f;
+            fontScale = systemScale * 0.95f;
+        } else if (mode == FONT_MEDIUM) {
+            fontScale = systemScale * 1.12f;
         } else {
-            fontScale = systemScale;
+            fontScale = systemScale * 1.25f;
         }
 
-        // Cap max font scale to prevent UI clipping/breakage on small screen phones with large system font setting
-        if (fontScale > 1.25f) {
-            fontScale = 1.25f;
+        if (fontScale > 1.35f) {
+            fontScale = 1.35f;
         }
 
         configuration.fontScale = fontScale;

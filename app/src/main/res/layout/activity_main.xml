@@ -168,171 +168,146 @@
                         android:contentDescription="Xóa tìm kiếm" />
                 </LinearLayout>
 
-                <!-- Thanh Chips Phân Loại Công Việc Giảng Viên Duy Nhất -->
-                <HorizontalScrollView
+                <!-- Cụm Thanh Chọn Lọc Cố Định Không Cần Vuốt Ngang (2 Hàng Vừa Vặn Màn Hình 100%) -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:scrollbars="none"
+                    android:orientation="vertical"
                     android:layout_marginBottom="10dp">
 
+                    <!-- Hàng 1: Mốc Thời Gian & Tiện ích -->
                     <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:id="@+id/chipAll"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:minHeight="34dp"
-                            android:background="@drawable/bg_chip_selected"
-                            android:gravity="center"
-                            android:paddingHorizontal="16dp"
-                            android:paddingVertical="6dp"
-                            android:text="Tất cả"
-                            android:textColor="#FFFFFF"
-                            android:textSize="13sp"
-                            android:textStyle="bold"
-                            android:clickable="true"
-                            android:focusable="true" />
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:background="@drawable/bg_search_input"
+                        android:padding="3dp"
+                        android:orientation="horizontal"
+                        android:baselineAligned="false"
+                        android:layout_marginBottom="6dp">
 
                         <TextView
                             android:id="@+id/chipToday"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:minHeight="34dp"
-                            android:layout_marginStart="8dp"
-                            android:background="@drawable/bg_chip_unselected"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_chip_selected"
                             android:gravity="center"
-                            android:paddingHorizontal="14dp"
-                            android:paddingVertical="6dp"
                             android:text="Hôm nay"
-                            android:textColor="@color/chip_unselected_text"
-                            android:textSize="13sp"
+                            android:textColor="#FFFFFF"
+                            android:textSize="13.5sp"
                             android:textStyle="bold"
                             android:clickable="true"
                             android:focusable="true" />
 
                         <TextView
-                            android:id="@+id/chipTeaching"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:minHeight="34dp"
-                            android:layout_marginStart="8dp"
+                            android:id="@+id/chipAll"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
                             android:background="@drawable/bg_chip_unselected"
                             android:gravity="center"
-                            android:paddingHorizontal="14dp"
-                            android:paddingVertical="6dp"
-                            android:text="Lịch dạy/học"
+                            android:text="Tất cả"
                             android:textColor="@color/chip_unselected_text"
-                            android:textSize="13sp"
-                            android:textStyle="bold"
-                            android:clickable="true"
-                            android:focusable="true" />
-
-                        <TextView
-                            android:id="@+id/chipMeeting"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:minHeight="34dp"
-                            android:layout_marginStart="8dp"
-                            android:background="@drawable/bg_chip_unselected"
-                            android:gravity="center"
-                            android:paddingHorizontal="14dp"
-                            android:paddingVertical="6dp"
-                            android:text="Lịch sự kiện"
-                            android:textColor="@color/chip_unselected_text"
-                            android:textSize="13sp"
-                            android:textStyle="bold"
-                            android:clickable="true"
-                            android:focusable="true" />
-
-                        <TextView
-                            android:id="@+id/chipIncident"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:minHeight="34dp"
-                            android:layout_marginStart="8dp"
-                            android:background="@drawable/bg_chip_unselected"
-                            android:gravity="center"
-                            android:paddingHorizontal="14dp"
-                            android:paddingVertical="6dp"
-                            android:text="Lịch phát sinh"
-                            android:textColor="@color/chip_unselected_text"
-                            android:textSize="13sp"
-                            android:textStyle="bold"
-                            android:clickable="true"
-                            android:focusable="true" />
-
-                        <TextView
-                            android:id="@+id/chipManual"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:minHeight="34dp"
-                            android:layout_marginStart="8dp"
-                            android:background="@drawable/bg_chip_unselected"
-                            android:gravity="center"
-                            android:paddingHorizontal="14dp"
-                            android:paddingVertical="6dp"
-                            android:text="Lịch khác"
-                            android:textColor="@color/chip_unselected_text"
-                            android:textSize="13sp"
+                            android:textSize="13.5sp"
                             android:textStyle="bold"
                             android:clickable="true"
                             android:focusable="true" />
 
                         <TextView
                             android:id="@+id/chipFreeTime"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:minHeight="34dp"
-                            android:layout_marginStart="8dp"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
                             android:background="@drawable/bg_chip_unselected"
                             android:gravity="center"
-                            android:paddingHorizontal="14dp"
-                            android:paddingVertical="6dp"
                             android:text="Lịch trống"
-                            android:textColor="@color/accent_amber"
-                            android:textSize="13sp"
+                            android:textColor="@color/chip_unselected_text"
+                            android:textSize="13.5sp"
                             android:textStyle="bold"
                             android:clickable="true"
                             android:focusable="true" />
 
                         <TextView
                             android:id="@+id/chipTimeline"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:minHeight="34dp"
-                            android:layout_marginStart="8dp"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
                             android:background="@drawable/bg_chip_unselected"
                             android:gravity="center"
-                            android:paddingHorizontal="14dp"
-                            android:paddingVertical="6dp"
-                            android:text="Dòng chảy thời gian"
-                            android:textColor="@color/accent_blue"
-                            android:textSize="13sp"
+                            android:text="Lịch trùng"
+                            android:textColor="@color/chip_unselected_text"
+                            android:textSize="13.5sp"
+                            android:textStyle="bold"
+                            android:clickable="true"
+                            android:focusable="true" />
+                    </LinearLayout>
+
+                    <!-- Hàng 2: Phân Loại Công Việc -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:background="@drawable/bg_search_input"
+                        android:padding="3dp"
+                        android:orientation="horizontal"
+                        android:baselineAligned="false">
+
+                        <TextView
+                            android:id="@+id/chipTeaching"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_chip_unselected"
+                            android:gravity="center"
+                            android:text="Dạy/Học"
+                            android:textColor="@color/chip_unselected_text"
+                            android:textSize="13.5sp"
                             android:textStyle="bold"
                             android:clickable="true"
                             android:focusable="true" />
 
                         <TextView
-                            android:id="@+id/chipSmartFinder"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:minHeight="34dp"
-                            android:layout_marginStart="8dp"
+                            android:id="@+id/chipMeeting"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
                             android:background="@drawable/bg_chip_unselected"
                             android:gravity="center"
-                            android:paddingHorizontal="14dp"
-                            android:paddingVertical="6dp"
-                            android:text="Tìm khe nhét lịch"
-                            android:textColor="@color/accent_green"
-                            android:textSize="13sp"
+                            android:text="Sự kiện"
+                            android:textColor="@color/chip_unselected_text"
+                            android:textSize="13.5sp"
+                            android:textStyle="bold"
+                            android:clickable="true"
+                            android:focusable="true" />
+
+                        <TextView
+                            android:id="@+id/chipIncident"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_chip_unselected"
+                            android:gravity="center"
+                            android:text="Phát sinh"
+                            android:textColor="@color/chip_unselected_text"
+                            android:textSize="13.5sp"
+                            android:textStyle="bold"
+                            android:clickable="true"
+                            android:focusable="true" />
+
+                        <TextView
+                            android:id="@+id/chipManual"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_chip_unselected"
+                            android:gravity="center"
+                            android:text="Lịch khác"
+                            android:textColor="@color/chip_unselected_text"
+                            android:textSize="13.5sp"
                             android:textStyle="bold"
                             android:clickable="true"
                             android:focusable="true" />
                     </LinearLayout>
-                </HorizontalScrollView>
+                </LinearLayout>
 
                 <!-- Hidden Spinners & Buttons for compatibility -->
                 <LinearLayout
@@ -362,54 +337,37 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="DANH SÁCH CÔNG VIỆC GIẢNG VIÊN"
+                        android:text="DANH SÁCH CÔNG VIỆC"
                         android:textColor="@color/text_primary"
-                        android:textSize="13sp"
+                        android:textSize="16.5sp"
                         android:textStyle="bold" />
 
-                    <TextView
+                    <ImageButton
                         android:id="@+id/btnScrollTop"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
                         android:background="@drawable/bg_search_input"
-                        android:paddingHorizontal="8dp"
-                        android:paddingVertical="4dp"
-                        android:text="Đầu"
-                        android:textColor="@color/accent_blue"
-                        android:textSize="11.5sp"
-                        android:textStyle="bold"
+                        android:contentDescription="Lên đầu"
+                        android:src="@drawable/ic_arrow_upward"
+                        app:tint="@color/accent_blue"
                         android:clickable="true"
                         android:focusable="true"
-                        android:layout_marginEnd="4dp" />
+                        android:layout_marginEnd="6dp"
+                        android:scaleType="centerInside"
+                        android:padding="6dp" />
 
-                    <TextView
+                    <ImageButton
                         android:id="@+id/btnScrollBottom"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
                         android:background="@drawable/bg_search_input"
-                        android:paddingHorizontal="8dp"
-                        android:paddingVertical="4dp"
-                        android:text="Cuối"
-                        android:textColor="@color/accent_blue"
-                        android:textSize="11.5sp"
-                        android:textStyle="bold"
+                        android:contentDescription="Xuống cuối"
+                        android:src="@drawable/ic_arrow_downward"
+                        app:tint="@color/accent_blue"
                         android:clickable="true"
                         android:focusable="true"
-                        android:layout_marginEnd="6dp" />
-
-                    <TextView
-                        android:id="@+id/btnEnableMultiSelect"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_search_input"
-                        android:paddingHorizontal="10dp"
-                        android:paddingVertical="4dp"
-                        android:text="Chọn nhiều"
-                        android:textColor="@color/accent_blue"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:clickable="true"
-                        android:focusable="true" />
+                        android:scaleType="centerInside"
+                        android:padding="6dp" />
                 </LinearLayout>
 
                 <!-- RecyclerView danh sách -->
@@ -454,7 +412,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="TKB Giảng dạy"
+                    android:text="Lịch biểu"
                     android:textSize="20sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary" />
@@ -598,6 +556,7 @@
 
                 <TextView android:id="@+id/btnTab2OpenTimeline" android:layout_width="0dp" android:layout_height="0dp" />
                 <TextView android:id="@+id/btnTab2SmartFinder" android:layout_width="0dp" android:layout_height="0dp" />
+                <TextView android:id="@+id/btnTab2VoiceNote" android:layout_width="0dp" android:layout_height="0dp" />
                 <TextView android:id="@+id/tvTab2Header" android:layout_width="0dp" android:layout_height="0dp" />
                 <TextView android:id="@+id/btnTab2ScrollTop" android:layout_width="0dp" android:layout_height="0dp" />
                 <TextView android:id="@+id/btnTab2ScrollBottom" android:layout_width="0dp" android:layout_height="0dp" />
@@ -649,13 +608,13 @@
                     android:layout_marginTop="2dp"
                     android:layout_marginBottom="12dp" />
 
-                <!-- CARD 1: BỘ LỌC ĐA CHIỀU (THỜI GIAN & TRƯỜNG/ĐƠN VỊ) -->
+                <!-- BỘ LỌC ĐA CHIỀU (Thanh lọc gọn gàng 2 cột) -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
                     app:cardCornerRadius="16dp"
-                    app:cardElevation="2dp"
+                    app:cardElevation="1dp"
                     app:strokeWidth="1dp"
                     app:cardBackgroundColor="@color/surface_card"
                     app:strokeColor="@color/border_default">
@@ -663,56 +622,63 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="12dp">
+                        android:orientation="horizontal"
+                        android:padding="10dp"
+                        android:baselineAligned="false">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="BỘ LỌC DỮ LIỆU THỐNG KÊ"
-                            android:textSize="11.5sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/accent_purple"
-                            android:layout_marginBottom="8dp" />
-
-                        <!-- Row 1: Chọn Mốc Thời gian -->
+                        <!-- Mốc thời gian -->
                         <LinearLayout
-                            android:layout_width="match_parent"
+                            android:id="@+id/layoutChartTimeFilterBox"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:minHeight="44dp"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="4dp"
+                            android:minHeight="42dp"
                             android:orientation="horizontal"
                             android:gravity="center_vertical"
-                            android:paddingHorizontal="12dp"
+                            android:paddingHorizontal="10dp"
                             android:paddingVertical="4dp"
                             android:background="@drawable/bg_chart_spinner_box"
-                            android:layout_marginBottom="8dp">
+                            android:clickable="true"
+                            android:focusable="true">
 
                             <ImageView
                                 android:layout_width="16dp"
                                 android:layout_height="16dp"
                                 android:src="@drawable/ic_calendar"
                                 app:tint="#2563EB"
-                                android:layout_marginEnd="8dp"
+                                android:layout_marginEnd="6dp"
                                 android:contentDescription="Lịch" />
 
-                            <Spinner
-                                android:id="@+id/spnChartTimeFilter"
+                            <TextView
+                                android:id="@+id/tvChartTimeFilter"
                                 android:layout_width="0dp"
-                                android:layout_height="match_parent"
+                                android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:spinnerMode="dropdown"
-                                android:popupBackground="@drawable/bg_spinner_popup_rounded"
-                                android:popupElevation="8dp" />
+                                android:text="Tất cả thời gian"
+                                android:textSize="12.5sp"
+                                android:textColor="@color/text_primary"
+                                android:ellipsize="end"
+                                android:maxLines="1" />
+
+                            <ImageView
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
+                                android:src="@drawable/ic_arrow_downward"
+                                app:tint="@color/text_secondary"
+                                android:contentDescription="Mở mốc thời gian" />
                         </LinearLayout>
 
-                        <!-- Row 2: Chọn Trường / Đơn vị -->
+                        <!-- Chọn Trường / Đơn vị -->
                         <LinearLayout
-                            android:layout_width="match_parent"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:minHeight="44dp"
+                            android:layout_weight="1"
+                            android:layout_marginStart="4dp"
+                            android:minHeight="42dp"
                             android:orientation="horizontal"
                             android:gravity="center_vertical"
-                            android:paddingHorizontal="12dp"
+                            android:paddingHorizontal="10dp"
                             android:paddingVertical="4dp"
                             android:background="@drawable/bg_chart_spinner_box">
 
@@ -721,7 +687,7 @@
                                 android:layout_height="16dp"
                                 android:src="@drawable/ic_school"
                                 app:tint="#2563EB"
-                                android:layout_marginEnd="8dp"
+                                android:layout_marginEnd="6dp"
                                 android:contentDescription="Trường" />
 
                             <Spinner
@@ -736,44 +702,56 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- CARD 2: CỤM 4 THẺ KPI TỔNG QUAN -->
-                <LinearLayout
+                <!-- BẢNG TỔNG QUAN KPI & THÙ LAO (Unified Dashboard Overview Card) -->
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="12dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="1dp"
+                    app:cardBackgroundColor="@color/surface_card"
+                    app:strokeColor="@color/border_default">
 
-                    <!-- Hàng KPI 1: Tổng tiết/giờ & Tổng buổi -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="8dp">
+                        android:orientation="vertical"
+                        android:padding="14dp">
 
-                        <!-- Thẻ 1: Tiết & Giờ -->
-                        <com.google.android.material.card.MaterialCardView
-                            android:id="@+id/cardKpiPeriods"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="4dp"
-                            app:cardCornerRadius="14dp"
-                            app:cardElevation="1dp"
-                            app:strokeWidth="1dp"
-                            app:cardBackgroundColor="@color/surface_card"
-                            app:strokeColor="@color/border_default">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="KPI &amp; TỔNG QUAN KHỐI LƯỢNG"
+                            android:textSize="11.5sp"
+                            android:textStyle="bold"
+                            android:textColor="#2563EB"
+                            android:layout_marginBottom="10dp" />
 
+                        <!-- Hàng KPI 1: Tổng tiết/giờ & Tổng buổi -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:baselineAligned="false"
+                            android:layout_marginBottom="8dp">
+
+                            <!-- Thẻ 1: Tiết & Giờ -->
                             <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
+                                android:id="@+id/cardKpiPeriods"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="4dp"
                                 android:orientation="vertical"
-                                android:padding="12dp">
+                                android:background="@color/surface_card_secondary"
+                                android:padding="10dp">
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="TỔNG TIẾT / GIỜ"
-                                    android:textSize="10.5sp"
+                                    android:textSize="10sp"
                                     android:textStyle="bold"
                                     android:textColor="@color/accent_blue" />
 
@@ -781,7 +759,7 @@
                                     android:id="@+id/tvKpiPeriods"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginTop="4dp"
+                                    android:layout_marginTop="3dp"
                                     android:text="0 Tiết"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -793,37 +771,28 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:text="0.0 giờ giảng"
-                                    android:textSize="10.5sp"
+                                    android:textSize="10sp"
                                     android:textColor="@color/text_secondary"
-                                    android:maxLines="2"
+                                    android:maxLines="1"
                                     android:ellipsize="end" />
                             </LinearLayout>
-                        </com.google.android.material.card.MaterialCardView>
 
-                        <!-- Thẻ 2: Tổng buổi & Hoàn thành -->
-                        <com.google.android.material.card.MaterialCardView
-                            android:id="@+id/cardKpiEvents"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:layout_marginStart="4dp"
-                            app:cardCornerRadius="14dp"
-                            app:cardElevation="1dp"
-                            app:strokeWidth="1dp"
-                            app:cardBackgroundColor="@color/surface_card"
-                            app:strokeColor="@color/border_default">
-
+                            <!-- Thẻ 2: Tổng buổi & Hoàn thành -->
                             <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
+                                android:id="@+id/cardKpiEvents"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="4dp"
                                 android:orientation="vertical"
-                                android:padding="12dp">
+                                android:background="@color/surface_card_secondary"
+                                android:padding="10dp">
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="TỔNG BUỔI CÔNG VIỆC"
-                                    android:textSize="10.5sp"
+                                    android:textSize="10sp"
                                     android:textStyle="bold"
                                     android:textColor="@color/accent_green" />
 
@@ -831,7 +800,7 @@
                                     android:id="@+id/tvKpiEvents"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginTop="4dp"
+                                    android:layout_marginTop="3dp"
                                     android:text="0 Buổi"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -843,44 +812,37 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:text="0 đã xong • 0 sắp tới"
-                                    android:textSize="10.5sp"
+                                    android:textSize="10sp"
                                     android:textColor="@color/text_secondary"
-                                    android:maxLines="2"
+                                    android:maxLines="1"
                                     android:ellipsize="end" />
                             </LinearLayout>
-                        </com.google.android.material.card.MaterialCardView>
-                    </LinearLayout>
+                        </LinearLayout>
 
-                    <!-- Hàng KPI 2: Số trường & Tỷ lệ việc phát sinh -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        <!-- Hàng KPI 2: Số trường & Tỷ lệ việc phát sinh -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:baselineAligned="false"
+                            android:layout_marginBottom="10dp">
 
-                        <!-- Thẻ 3: Số đơn vị -->
-                        <com.google.android.material.card.MaterialCardView
-                            android:id="@+id/cardKpiSchools"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="4dp"
-                            app:cardCornerRadius="14dp"
-                            app:cardElevation="1dp"
-                            app:strokeWidth="1dp"
-                            app:cardBackgroundColor="@color/surface_card"
-                            app:strokeColor="@color/border_default">
-
+                            <!-- Thẻ 3: Số đơn vị -->
                             <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
+                                android:id="@+id/cardKpiSchools"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="4dp"
                                 android:orientation="vertical"
-                                android:padding="12dp">
+                                android:background="@color/surface_card_secondary"
+                                android:padding="10dp">
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="TRƯỜNG / ĐƠN VỊ"
-                                    android:textSize="10.5sp"
+                                    android:textSize="10sp"
                                     android:textStyle="bold"
                                     android:textColor="@color/accent_purple" />
 
@@ -888,7 +850,7 @@
                                     android:id="@+id/tvKpiSchools"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginTop="4dp"
+                                    android:layout_marginTop="3dp"
                                     android:text="0 Trường"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -900,37 +862,28 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:text="Đang có lịch làm việc"
-                                    android:textSize="10.5sp"
+                                    android:textSize="10sp"
                                     android:textColor="@color/text_secondary"
-                                    android:maxLines="2"
+                                    android:maxLines="1"
                                     android:ellipsize="end" />
                             </LinearLayout>
-                        </com.google.android.material.card.MaterialCardView>
 
-                        <!-- Thẻ 4: Việc phát sinh & ngẫu nhiên -->
-                        <com.google.android.material.card.MaterialCardView
-                            android:id="@+id/cardKpiIncidents"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:layout_marginStart="4dp"
-                            app:cardCornerRadius="14dp"
-                            app:cardElevation="1dp"
-                            app:strokeWidth="1dp"
-                            app:cardBackgroundColor="@color/surface_card"
-                            app:strokeColor="@color/border_default">
-
+                            <!-- Thẻ 4: Việc phát sinh -->
                             <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
+                                android:id="@+id/cardKpiIncidents"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="4dp"
                                 android:orientation="vertical"
-                                android:padding="12dp">
+                                android:background="@color/surface_card_secondary"
+                                android:padding="10dp">
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="VIỆC PHÁT SINH"
-                                    android:textSize="10.5sp"
+                                    android:textSize="10sp"
                                     android:textStyle="bold"
                                     android:textColor="@color/accent_amber" />
 
@@ -938,7 +891,7 @@
                                     android:id="@+id/tvKpiIncidents"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginTop="4dp"
+                                    android:layout_marginTop="3dp"
                                     android:text="0 Buổi"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
@@ -950,69 +903,53 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:text="Dạy bù, coi thi, họp..."
-                                    android:textSize="10.5sp"
+                                    android:textSize="10sp"
                                     android:textColor="@color/text_secondary"
-                                    android:maxLines="2"
+                                    android:maxLines="1"
                                     android:ellipsize="end" />
                             </LinearLayout>
-                        </com.google.android.material.card.MaterialCardView>
-                    </LinearLayout>
+                        </LinearLayout>
 
-                    <!-- Hàng KPI 3: Dự toán thu nhập -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:orientation="horizontal">
-
-                        <com.google.android.material.card.MaterialCardView
+                        <!-- Banner Dự toán thu nhập -->
+                        <LinearLayout
                             android:id="@+id/cardKpiIncome"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            app:cardCornerRadius="14dp"
-                            app:cardElevation="1dp"
-                            app:strokeWidth="1dp"
-                            app:cardBackgroundColor="@color/surface_card"
-                            app:strokeColor="@color/border_default">
+                            android:orientation="vertical"
+                            android:background="@color/surface_card_secondary"
+                            android:padding="12dp">
 
-                            <LinearLayout
-                                android:layout_width="match_parent"
+                            <TextView
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:padding="12dp">
+                                android:text="DỰ TOÁN THU NHẬP (Thỉnh giảng)"
+                                android:textSize="10.5sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/accent_green" />
 
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="DỰ TOÁN THU NHẬP (Thỉnh giảng)"
-                                    android:textSize="10.5sp"
-                                    android:textStyle="bold"
-                                    android:textColor="#16A34A" />
+                            <TextView
+                                android:id="@+id/tvKpiIncome"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="3dp"
+                                android:text="0 VNĐ"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/accent_green" />
 
-                                <TextView
-                                    android:id="@+id/tvKpiIncome"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="4dp"
-                                    android:text="0 VNĐ"
-                                    android:textSize="18sp"
-                                    android:textStyle="bold"
-                                    android:textColor="@color/text_primary" />
-
-                                <TextView
-                                    android:id="@+id/tvKpiIncomeSub"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="2dp"
-                                    android:text="Đã tính 0 tiết dạy hoàn thành. (Đơn giá tham khảo)"
-                                    android:textSize="10.5sp"
-                                    android:textColor="@color/text_secondary" />
-                            </LinearLayout>
-                        </com.google.android.material.card.MaterialCardView>
+                            <TextView
+                                android:id="@+id/tvKpiIncomeSub"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Đã tính 0 tiết dạy hoàn thành. (Đơn giá tham khảo)"
+                                android:textSize="10.5sp"
+                                android:textColor="@color/text_secondary" />
+                        </LinearLayout>
                     </LinearLayout>
-                </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-                <!-- CARD 3: CẢNH BÁO DI CHUYỂN ĐA TRƯỜNG TRONG NGÀY -->
+                <!-- CARD CẢNH BÁO DI CHUYỂN ĐA TRƯỜNG -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardCrossSchoolAlert"
                     android:layout_width="match_parent"
@@ -1021,8 +958,8 @@
                     android:visibility="gone"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="2dp"
-                    app:strokeWidth="1.5dp"
-                    app:cardBackgroundColor="@color/surface_card"
+                    app:strokeWidth="1dp"
+                    app:cardBackgroundColor="@color/surface_card_secondary"
                     app:strokeColor="@color/accent_amber">
 
                     <LinearLayout
@@ -1041,7 +978,7 @@
                                 android:layout_width="20dp"
                                 android:layout_height="20dp"
                                 android:src="@drawable/ic_car"
-                                app:tint="#D97706"
+                                app:tint="@color/accent_amber"
                                 android:layout_marginEnd="8dp"
                                 android:contentDescription="Di chuyển" />
 
@@ -1317,10 +1254,10 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="BÁO CÁO &amp; NHẬP XUẤT ĐA ĐỊNH DẠNG"
-                    android:textSize="18sp"
+                    android:text="BÁO CÁO &amp; NHẬP XUẤT"
+                    android:textSize="20sp"
                     android:textStyle="bold"
-                    android:textColor="@color/tab_header_title"
+                    android:textColor="@color/text_primary"
                     android:layout_marginBottom="14dp" />
 
                 <!-- Card Nhập File Đa Dạng -->
@@ -1343,18 +1280,10 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="NHẬP DỮ LIỆU TỪ NHIỀU NGUỒN FILE"
-                            android:textSize="15sp"
+                            android:text="NHẬP DỮ LIỆU"
+                            android:textSize="16sp"
                             android:textStyle="bold"
-                            android:textColor="@color/accent_green" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="Hỗ trợ Excel, PDF, Word, CSV/TXT &amp; Ảnh/Tài liệu ghi tay"
-                            android:textSize="11sp"
-                            android:textColor="@color/text_secondary"
+                            android:textColor="@color/text_primary"
                             android:layout_marginBottom="12dp" />
 
                         <Button
@@ -1368,8 +1297,8 @@
                             android:visibility="gone"
                             android:text="ĐỌC &amp; PHÂN TÍCH MỌI LOẠI FILE (TỰ NHẬN DIỆN + GHI TAY)"
                             android:textColor="#FFFFFF"
-                            android:backgroundTint="#6D28D9"
-                            android:textSize="11.5sp"
+                            android:backgroundTint="@color/accent_blue"
+                            android:textSize="12sp"
                             android:textStyle="bold"
                             android:lineSpacingExtra="2dp"
                             app:cornerRadius="12dp" />
@@ -1383,15 +1312,15 @@
                                 android:id="@+id/btnImportExcelTab"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:minHeight="46dp"
+                                android:minHeight="48dp"
                                 android:layout_weight="1"
-                                android:text="Excel"
+                                android:text="Nhập Excel"
                                 android:textColor="#FFFFFF"
-                                android:backgroundTint="#10B981"
-                                android:textSize="11sp"
+                                android:backgroundTint="@color/accent_blue"
+                                android:textSize="13.5sp"
                                 android:textStyle="bold"
                                 android:ellipsize="end"
-                                android:paddingHorizontal="2dp"
+                                android:paddingHorizontal="4dp"
                                 android:paddingVertical="4dp"
                                 app:cornerRadius="12dp" />
 
@@ -1399,16 +1328,16 @@
                                 android:id="@+id/btnImportPdfTab"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:minHeight="46dp"
+                                android:minHeight="48dp"
                                 android:layout_weight="1"
-                                android:layout_marginStart="6dp"
-                                android:text="PDF"
+                                android:layout_marginStart="8dp"
+                                android:text="Nhập PDF"
                                 android:textColor="#FFFFFF"
-                                android:backgroundTint="#DC2626"
-                                android:textSize="11sp"
+                                android:backgroundTint="@color/accent_blue"
+                                android:textSize="13.5sp"
                                 android:textStyle="bold"
                                 android:ellipsize="end"
-                                android:paddingHorizontal="2dp"
+                                android:paddingHorizontal="4dp"
                                 android:paddingVertical="4dp"
                                 app:cornerRadius="12dp" />
 
@@ -1416,14 +1345,14 @@
                                 android:id="@+id/btnImportOcrTab"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:minHeight="46dp"
+                                android:minHeight="48dp"
                                 android:layout_weight="1"
                                 android:layout_marginStart="6dp"
                                 android:visibility="gone"
                                 android:text="Ảnh OCR"
                                 android:textColor="#FFFFFF"
-                                android:backgroundTint="#D97706"
-                                android:textSize="11sp"
+                                android:backgroundTint="@color/accent_blue"
+                                android:textSize="12sp"
                                 android:textStyle="bold"
                                 android:singleLine="true"
                                 android:maxLines="1"
@@ -1435,16 +1364,16 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="20dp"
+                            android:layout_marginTop="18dp"
                             android:text="XUẤT BÁO CÁO EXCEL &amp; PDF"
-                            android:textSize="15sp"
+                            android:textSize="16sp"
                             android:textStyle="bold"
-                            android:textColor="@color/accent_blue" />
+                            android:textColor="@color/text_primary" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
+                            android:layout_marginTop="10dp"
                             android:orientation="horizontal">
 
                             <Button
@@ -1455,10 +1384,10 @@
                                 android:layout_weight="1"
                                 android:text="Xuất Excel (.xlsx)"
                                 android:textColor="#FFFFFF"
-                                android:backgroundTint="#2563EB"
-                                android:textSize="11.5sp"
+                                android:backgroundTint="@color/accent_blue"
+                                android:textSize="13.5sp"
                                 android:textStyle="bold"
-                                android:paddingHorizontal="2dp"
+                                android:paddingHorizontal="4dp"
                                 android:paddingVertical="4dp"
                                 app:cornerRadius="12dp" />
 
@@ -1471,10 +1400,10 @@
                                 android:layout_marginStart="8dp"
                                 android:text="Xuất PDF (.pdf)"
                                 android:textColor="#FFFFFF"
-                                android:backgroundTint="#DC2626"
-                                android:textSize="11.5sp"
+                                android:backgroundTint="@color/accent_blue"
+                                android:textSize="13.5sp"
                                 android:textStyle="bold"
-                                android:paddingHorizontal="2dp"
+                                android:paddingHorizontal="4dp"
                                 android:paddingVertical="4dp"
                                 app:cornerRadius="12dp" />
                         </LinearLayout>
@@ -1515,7 +1444,7 @@
                                 android:textColor="@color/tab_header_title"
                                 android:layout_marginBottom="9dp" />
 
-                            <!-- Hàng 2: Ba nút hành động dàn đều cân đối, bo góc hiện đại, cực kỳ đẹp mắt -->
+                            <!-- Hàng 2: Hai nút hành động dàn đều cân đối, bo góc hiện đại -->
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -1523,29 +1452,12 @@
                                 android:gravity="center_vertical">
 
                                 <TextView
-                                    android:id="@+id/btnFileEnableMultiSelect"
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:minHeight="34dp"
-                                    android:layout_weight="1"
-                                    android:layout_marginEnd="6dp"
-                                    android:background="@drawable/bg_btn_pill_blue"
-                                    android:gravity="center"
-                                    android:paddingVertical="5dp"
-                                    android:text="Chọn nhiều"
-                                    android:textColor="#FFFFFF"
-                                    android:textSize="11.5sp"
-                                    android:textStyle="bold"
-                                    android:clickable="true"
-                                    android:focusable="true" />
-
-                                <TextView
                                     android:id="@+id/btnManageFileEvents"
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:minHeight="34dp"
                                     android:layout_weight="1"
-                                    android:layout_marginEnd="6dp"
+                                    android:layout_marginEnd="8dp"
                                     android:background="@drawable/bg_btn_pill_blue"
                                     android:gravity="center"
                                     android:paddingVertical="5dp"
@@ -1561,7 +1473,7 @@
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:minHeight="34dp"
-                                    android:layout_weight="0.85"
+                                    android:layout_weight="1"
                                     android:background="@drawable/bg_btn_pill_red"
                                     android:gravity="center"
                                     android:paddingVertical="5dp"
@@ -1612,7 +1524,7 @@
                     android:textColor="@color/tab_header_title"
                     android:layout_marginBottom="14dp" />
 
-                <!-- Card Tự Động Hóa DND & GPS -->
+                                                <!-- Card Tự Động Hóa DND & GPS -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -1627,21 +1539,21 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="18dp">
+                        android:padding="16dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="TRỢ LÝ TỰ ĐỘNG (DND &amp; Check-in)"
-                            android:textSize="15sp"
+                            android:textSize="14sp"
                             android:textStyle="bold"
-                            android:textColor="#F59E0B" />
+                            android:textColor="@color/accent_blue" />
 
                         <com.google.android.material.switchmaterial.SwitchMaterial
                             android:id="@+id/swAutoDnd"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
+                            android:layout_marginTop="10dp"
                             android:text="Tự động Tắt Chuông khi đứng lớp"
                             android:textColor="@color/text_primary"
                             android:textSize="13.5sp" />
@@ -1650,7 +1562,7 @@
                             android:id="@+id/swAutoCheckin"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginTop="6dp"
                             android:text="Tự động Check-in GPS minh chứng"
                             android:textColor="@color/text_primary"
                             android:textSize="13.5sp" />
@@ -1672,17 +1584,15 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="16dp">
+                        android:padding="16dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
                             android:text="CHỦ ĐỀ GIAO DIỆN"
-                            android:textSize="15sp"
+                            android:textSize="14sp"
                             android:textStyle="bold"
-                            android:textColor="@color/accent_purple" />
+                            android:textColor="@color/accent_blue" />
 
                         <RadioGroup
                             android:id="@+id/rgThemeMode"
@@ -1698,7 +1608,7 @@
                                 android:layout_weight="1"
                                 android:text="Hệ thống"
                                 android:textColor="@color/text_primary"
-                                android:textSize="12sp"
+                                android:textSize="13sp"
                                 android:maxLines="1"
                                 android:ellipsize="end"
                                 android:paddingStart="0dp"
@@ -1711,7 +1621,7 @@
                                 android:layout_weight="1"
                                 android:text="Sáng"
                                 android:textColor="@color/text_primary"
-                                android:textSize="12sp"
+                                android:textSize="13sp"
                                 android:maxLines="1"
                                 android:ellipsize="end"
                                 android:paddingStart="0dp"
@@ -1724,7 +1634,7 @@
                                 android:layout_weight="1"
                                 android:text="Tối"
                                 android:textColor="@color/text_primary"
-                                android:textSize="12sp"
+                                android:textSize="13sp"
                                 android:maxLines="1"
                                 android:ellipsize="end"
                                 android:paddingStart="0dp"
@@ -1748,17 +1658,15 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="16dp">
+                        android:padding="16dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
                             android:text="CỠ CHỮ &amp; HIỂN THỊ TOÀN APP"
-                            android:textSize="15sp"
+                            android:textSize="14sp"
                             android:textStyle="bold"
-                            android:textColor="@color/accent_purple" />
+                            android:textColor="@color/accent_blue" />
 
                         <RadioGroup
                             android:id="@+id/rgFontSizeMode"
@@ -1774,7 +1682,7 @@
                                 android:layout_weight="1"
                                 android:text="Nhỏ"
                                 android:textColor="@color/text_primary"
-                                android:textSize="12sp"
+                                android:textSize="13sp"
                                 android:maxLines="1"
                                 android:ellipsize="end"
                                 android:paddingStart="0dp"
@@ -1787,7 +1695,7 @@
                                 android:layout_weight="1"
                                 android:text="Vừa"
                                 android:textColor="@color/text_primary"
-                                android:textSize="12sp"
+                                android:textSize="13sp"
                                 android:maxLines="1"
                                 android:ellipsize="end"
                                 android:paddingStart="0dp"
@@ -1800,7 +1708,8 @@
                                 android:layout_weight="1"
                                 android:text="Lớn"
                                 android:textColor="@color/text_primary"
-                                android:textSize="12sp"
+                                android:textSize="13sp"
+                                android:checked="true"
                                 android:maxLines="1"
                                 android:ellipsize="end"
                                 android:paddingStart="0dp"
@@ -1809,7 +1718,7 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Card Báo Thức & Nhắc Lịch Tự Động (Tùy chỉnh giờ, Bật/Tắt, Chế độ Thông minh) -->
+                <!-- Card Báo Thức & Nhắc Lịch Tự Động -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -1824,9 +1733,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="18dp">
+                        android:padding="16dp">
 
-                        <!-- Header Card với Nút Bật/Tắt (Switch) -->
                         <RelativeLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content">
@@ -1842,9 +1750,9 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="BÁO THỨC &amp; NHẮC LỊCH"
-                                    android:textSize="15sp"
+                                    android:textSize="14sp"
                                     android:textStyle="bold"
-                                    android:textColor="@color/accent_purple" />
+                                    android:textColor="@color/accent_blue" />
 
                                 <TextView
                                     android:id="@+id/tvAlarmCountdownInfo"
@@ -1871,7 +1779,7 @@
                             android:id="@+id/layoutAlarmTimeBox"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="14dp"
+                            android:layout_marginTop="12dp"
                             android:orientation="horizontal"
                             android:gravity="center_vertical"
                             android:padding="12dp"
@@ -1883,23 +1791,22 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:text="06:00 AM"
-                                android:textSize="26sp"
+                                android:textSize="24sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/accent_purple" />
+                                android:textColor="@color/accent_blue" />
 
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnChangeAlarmTime"
                                 android:layout_width="wrap_content"
-                                android:layout_height="38dp"
-                                android:text="Đổi giờ báo"
+                                android:layout_height="36dp"
+                                android:text="Đổi giờ"
                                 android:textSize="12sp"
                                 android:textColor="#FFFFFF"
-                                android:backgroundTint="@color/accent_purple"
+                                android:backgroundTint="@color/accent_blue"
                                 app:cornerRadius="10dp"
                                 android:paddingHorizontal="12dp" />
                         </LinearLayout>
 
-                        <!-- Tùy chọn Báo thức thông minh (Smart Alarm) -->
                         <CheckBox
                             android:id="@+id/cbAlarmOnlyIfEvents"
                             android:layout_width="match_parent"
@@ -1918,22 +1825,21 @@
                             android:textSize="11.5sp"
                             android:textColor="@color/text_tertiary" />
 
-                        <!-- Nút Thử phát chuông báo -->
                         <Button
                             android:id="@+id/btnTestAlarmTab"
                             android:layout_width="match_parent"
-                            android:layout_height="44dp"
-                            android:layout_marginTop="14dp"
+                            android:layout_height="42dp"
+                            android:layout_marginTop="12dp"
                             android:text="Thử Phát Chuông Báo Ngay"
                             android:textColor="#FFFFFF"
-                            android:backgroundTint="#7C3AED"
+                            android:backgroundTint="@color/accent_blue"
                             android:textSize="13sp"
                             android:textStyle="bold"
                             app:cornerRadius="12dp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Card Âm Thanh & Phản Hồi Thao Tác (Tùy chỉnh Bật/Tắt Âm thanh, Rung nhẹ & Kiểu Âm thanh) -->
+                <!-- Card Âm Thanh & Phản Hồi Thao Tác -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -1948,9 +1854,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="18dp">
+                        android:padding="16dp">
 
-                        <!-- Header Card với Nút Bật/Tắt Âm Thanh -->
                         <RelativeLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content">
@@ -1966,16 +1871,16 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="ÂM THANH &amp; PHẢN HỒI THAO TÁC"
-                                    android:textSize="15sp"
+                                    android:textSize="14sp"
                                     android:textStyle="bold"
-                                    android:textColor="@color/accent_purple" />
+                                    android:textColor="@color/accent_blue" />
 
                                 <TextView
                                     android:id="@+id/tvSoundStatusInfo"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
-                                    android:text="Phát âm thanh và rung phản hồi khi nhấn phím chức năng."
+                                    android:text="Phát âm thanh và rung phản hồi khi thao tác."
                                     android:textSize="12sp"
                                     android:textColor="@color/text_secondary" />
                             </LinearLayout>
@@ -1990,7 +1895,6 @@
                                 app:useMaterialThemeColors="true" />
                         </RelativeLayout>
 
-                        <!-- Tùy chọn Rung Phản Hồi Xúc Giác (Haptic Feedback) -->
                         <CheckBox
                             android:id="@+id/cbHapticEnable"
                             android:layout_width="match_parent"
@@ -2001,7 +1905,6 @@
                             android:textSize="13sp"
                             android:checked="true" />
 
-                        <!-- Box Chọn Kiểu Âm Thanh Phản Hồi -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -2023,27 +1926,26 @@
                             <Spinner
                                 android:id="@+id/spnSoundStyle"
                                 android:layout_width="wrap_content"
-                                android:layout_height="38dp"
+                                android:layout_height="36dp"
                                 android:background="@drawable/bg_chart_spinner_box"
                                 android:paddingHorizontal="10dp" />
                         </LinearLayout>
 
-                        <!-- Nút Thử Âm Thanh & Rung Phản Hồi -->
                         <Button
                             android:id="@+id/btnTestSoundEffect"
                             android:layout_width="match_parent"
-                            android:layout_height="44dp"
-                            android:layout_marginTop="14dp"
+                            android:layout_height="42dp"
+                            android:layout_marginTop="12dp"
                             android:text="Thử Âm Thanh &amp; Rung Phản Hồi Ngay"
                             android:textColor="#FFFFFF"
-                            android:backgroundTint="#2563EB"
+                            android:backgroundTint="@color/accent_blue"
                             android:textSize="13sp"
                             android:textStyle="bold"
                             app:cornerRadius="12dp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Card Tự Động Xóa Dữ Liệu Cũ (Tùy chỉnh thời hạn, Bật/Tắt, Thống kê dữ liệu) -->
+                <!-- Card Tự Động Xóa Dữ Liệu Cũ -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -2058,9 +1960,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="18dp">
+                        android:padding="16dp">
 
-                        <!-- Header với Switch Bật/Tắt -->
                         <RelativeLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content">
@@ -2076,16 +1977,16 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="TỰ ĐỘNG XÓA DỮ LIỆU CŨ"
-                                    android:textSize="15sp"
+                                    android:textSize="14sp"
                                     android:textStyle="bold"
-                                    android:textColor="@color/accent_red" />
+                                    android:textColor="@color/accent_blue" />
 
                                 <TextView
                                     android:id="@+id/tvAutoDeleteStatus"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
-                                    android:text="Tự động dọn dẹp các lịch và tệp tin đã tạo lâu hơn thời hạn."
+                                    android:text="Dọn dẹp các lịch và tệp tin cũ theo thời hạn."
                                     android:textSize="12sp"
                                     android:textColor="@color/text_secondary" />
                             </LinearLayout>
@@ -2100,11 +2001,10 @@
                                 app:useMaterialThemeColors="true" />
                         </RelativeLayout>
 
-                        <!-- Box Chọn Thời Hạn Lưu Trữ -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="14dp"
+                            android:layout_marginTop="12dp"
                             android:orientation="horizontal"
                             android:gravity="center_vertical"
                             android:padding="12dp"
@@ -2122,16 +2022,15 @@
                             <Spinner
                                 android:id="@+id/spnAutoDeleteRetention"
                                 android:layout_width="wrap_content"
-                                android:layout_height="38dp"
+                                android:layout_height="36dp"
                                 android:background="@drawable/bg_chart_spinner_box"
                                 android:paddingHorizontal="10dp" />
                         </LinearLayout>
 
-                        <!-- Thống kê Dữ liệu Cũ Quá Hạn -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
+                            android:layout_marginTop="10dp"
                             android:orientation="vertical"
                             android:padding="12dp"
                             android:background="@color/surface_card_secondary">
@@ -2155,24 +2054,51 @@
                                 android:textColor="@color/text_tertiary" />
                         </LinearLayout>
 
-                        <!-- Nút Dọn Dẹp Ngay -->
                         <Button
                             android:id="@+id/btnCleanDataNow"
                             android:layout_width="match_parent"
-                            android:layout_height="44dp"
-                            android:layout_marginTop="14dp"
-                            android:text="Dọn Dẹp Dữ Liệu Cũ Ngay"
+                            android:layout_height="42dp"
+                            android:layout_marginTop="12dp"
+                            android:text="Dọn Dẹp Dữ Liệu Tự Động"
                             android:textColor="#DC2626"
                             android:backgroundTint="#FEE2E2"
-                            android:textSize="13sp"
+                            android:textSize="13.5sp"
                             android:textStyle="bold"
                             app:strokeColor="#FCA5A5"
-                            app:strokeWidth="1.5dp"
+                            app:strokeWidth="1.2dp"
+                            app:cornerRadius="12dp" />
+
+                        <Button
+                            android:id="@+id/btnManualCleanData"
+                            android:layout_width="match_parent"
+                            android:layout_height="42dp"
+                            android:layout_marginTop="8dp"
+                            android:text="Dọn Dẹp Dữ Liệu Thủ Công"
+                            android:textColor="@color/accent_blue"
+                            android:backgroundTint="@color/surface_card_secondary"
+                            android:textSize="13.5sp"
+                            android:textStyle="bold"
+                            app:strokeColor="@color/accent_blue"
+                            app:strokeWidth="1dp"
+                            app:cornerRadius="12dp" />
+
+                        <Button
+                            android:id="@+id/btnClearAppCache"
+                            android:layout_width="match_parent"
+                            android:layout_height="42dp"
+                            android:layout_marginTop="8dp"
+                            android:text="Xóa Bộ Nhớ Cache &amp; File Tạm"
+                            android:textColor="@color/text_primary"
+                            android:backgroundTint="@color/surface_card_secondary"
+                            android:textSize="13.5sp"
+                            android:textStyle="bold"
+                            app:strokeColor="@color/border_default"
+                            app:strokeWidth="1dp"
                             app:cornerRadius="12dp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Card Giới Thiệu & Thông Tin Ứng Dụng (Detailed App Introduction & Info) -->
+                <!-- Card Giới Thiệu & Thông Tin Ứng Dụng -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardAppIntro"
                     android:layout_width="match_parent"
@@ -2188,13 +2114,13 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="18dp">
+                        android:padding="16dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="GIỚI THIỆU &amp; THÔNG TIN ỨNG DỤNG"
-                            android:textSize="15sp"
+                            android:textSize="14sp"
                             android:textStyle="bold"
                             android:textColor="@color/accent_blue" />
 
@@ -2207,31 +2133,29 @@
                             android:textColor="@color/text_secondary"
                             android:layout_marginBottom="12dp" />
 
-                        <!-- Nút Mở Giới Thiệu Chi Tiết Toàn Bộ App -->
                         <Button
                             android:id="@+id/btnOpenDetailedAppIntro"
                             android:layout_width="match_parent"
-                            android:layout_height="44dp"
+                            android:layout_height="42dp"
                             android:text="Xem Hướng Dẫn &amp; Giới Thiệu Chi Tiết"
                             android:textColor="#FFFFFF"
-                            android:backgroundTint="#2563EB"
+                            android:backgroundTint="@color/accent_blue"
                             android:textSize="13sp"
                             android:textStyle="bold"
                             app:cornerRadius="12dp" />
 
-                        <!-- Nút Kiểm tra Bản Cập Nhật -->
                         <Button
                             android:id="@+id/btnCheckUpdate"
                             android:layout_width="match_parent"
-                            android:layout_height="44dp"
+                            android:layout_height="42dp"
                             android:layout_marginTop="8dp"
                             android:text="Kiểm tra bản cập nhật mới"
-                            android:textColor="#2563EB"
-                            android:backgroundTint="#EFF6FF"
+                            android:textColor="@color/accent_blue"
+                            android:backgroundTint="@color/surface_card_secondary"
                             android:textSize="13sp"
                             android:textStyle="bold"
                             style="?attr/materialButtonOutlinedStyle"
-                            app:strokeColor="#BFDBFE"
+                            app:strokeColor="@color/border_default"
                             app:cornerRadius="12dp" />
 
                     </LinearLayout>
@@ -2241,7 +2165,7 @@
                     android:id="@+id/tvFooterVersion"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="LectuPlan v1.1.3 • Ứng dụng Quản lý Lịch giảng dạy"
+                    android:text="LectuPlan v1.1.4 • Ứng dụng Quản lý Lịch giảng dạy"
                     android:textSize="12sp"
                     android:gravity="center"
                     android:textColor="@color/text_tertiary"
@@ -2382,7 +2306,8 @@
                 app:iconSize="16dp"
                 app:iconGravity="textStart"
                 app:iconPadding="0dp"
-                android:textColor="@color/text_secondary"
+                app:iconTint="@color/text_primary"
+                android:textColor="@color/text_primary"
                 android:backgroundTint="@color/surface_card_secondary"
                 android:padding="0dp"
                 android:insetTop="0dp"
@@ -2472,7 +2397,8 @@
                 app:iconSize="16dp"
                 app:iconGravity="textStart"
                 app:iconPadding="0dp"
-                android:textColor="@color/text_secondary"
+                app:iconTint="@color/text_primary"
+                android:textColor="@color/text_primary"
                 android:backgroundTint="@color/surface_card_secondary"
                 android:padding="0dp"
                 android:insetTop="0dp"

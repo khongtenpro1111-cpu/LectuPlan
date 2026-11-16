@@ -14,7 +14,7 @@
         android:layout_height="32dp"
         android:gravity="center"
         android:textSize="13sp"
-        android:textColor="#1E293B"
+        android:textColor="@color/calendar_day_current_month"
         android:text="15" />
 
     <!-- Container chứa các dấu chấm tròn nhỏ phía dưới ngày -->

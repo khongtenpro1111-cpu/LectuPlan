@@ -1,8 +1,8 @@
 {
-  "latest_version_code": 5,
-  "latest_version_name": "1.1.3",
+  "latest_version_code": 6,
+  "latest_version_name": "1.1.4",
   "apk_url": "https://github.com/khongtenpro1111-cpu/LectuPlan/raw/main/LectuPlan.apk",
   "apk_download_url": "https://github.com/khongtenpro1111-cpu/LectuPlan/raw/main/LectuPlan.apk",
-  "release_notes": "• 🏫 Hỗ trợ cấu hình Trường học & Khung giờ Tiết học đa dạng (NTTU, HUTECH, UEF...).\n• 📊 Nâng cấp Giao diện & Dialog: Phân tích Khung giờ trống, Tìm Slot thông minh, Báo cáo File & Drilldown biểu đồ.\n• ⚡ Tối ưu Bộ phân tích Lịch (UniversalScheduleParser & ThumoiGiangParser) nhận diện chuẩn xác mọi định dạng.\n• 🎨 Tùy chỉnh Thiệp Office Hours, Thẻ sự kiện & Thông báo mượt mà hơn.\n• 🛠️ Bổ sung bộ Unit Test tự động đảm bảo tính chính xác của dữ liệu.",
+  "release_notes": "• 📂 Tự động lọc định dạng file chuẩn SAF (PDF, Excel, Ảnh/OCR) & Cảnh báo chọn sai file.\n• ⚠️ Cảnh báo & Hiển thị chi tiết trùng lịch trực tiếp trong Popup Chi tiết lịch.\n• 🧹 Thêm tính năng Dọn dẹp dữ liệu thủ công theo khoảng ngày & Nút Xóa Cache giải phóng bộ nhớ.\n• 🎯 Thanh lọc cố định 2 hàng vừa vặn 100% màn hình, không cần vuốt ngang.\n• 🌙 Tối ưu 100% Giao diện Tối (Dark Mode) sắc nét, tăng cỡ chữ chuẩn Lớn dễ đọc.",
   "force_update": false
 }

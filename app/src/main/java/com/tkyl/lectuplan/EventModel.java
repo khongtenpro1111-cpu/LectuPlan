@@ -277,6 +277,7 @@ public class EventModel {
                 .replaceAll("(?i)\\s*\\|\\s*tiết\\b.*", "")
                 .replaceAll("(?i)\\s*[-–—]\\s*(?:phòng|room|địa\\s*điểm)\\b.*", "")
                 .replaceAll("(?i)\\s*-\\s*(?:phòng|room|địa\\s*điểm).*", "")
+                .replaceAll("(?i)[\\s•,\\-–—(\\[|]+$", "")
                 .trim();
         return clean.isEmpty() ? rawTitle : clean;
     }

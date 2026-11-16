@@ -444,10 +444,12 @@ public class UniversalScheduleParser {
             return true;
         }
 
-        // 7. Bảng chuông báo giờ học chuẩn của trường (Sáng / Chiều / Tối, Ca 1..5, Tiết 1..15 kèm giờ)
+        // 7. Bảng chuông báo giờ học chuẩn của trường (Sáng / Chiều / Tối, Ca 1..5, Tiết 1..15 kèm giờ, 2-6 [07 30 - 11 35])
         if (lower.matches("^(?:sáng|chiều|tối)(?:\\s*\\d+)?$") || lower.matches("^ca\\s*[1-5]$")
                 || lower.matches("^tiết$")
-                || lower.matches("^\\d{1,2}\\s+\\d{1,2}h\\d{2}\\s*[-–]\\s*\\d{1,2}h\\d{2}$")) {
+                || lower.matches("^\\d{1,2}\\s+\\d{1,2}h\\d{2}\\s*[-–]\\s*\\d{1,2}h\\d{2}$")
+                || lower.matches("^(?:ca\\s*\\d+|tiết\\s*\\d+.*|\\d{1,2}\\s*[-–]\\s*\\d{1,2})?\\s*\\[?\\s*\\d{1,2}[:h\\s]+\\d{2}\\s*[-–]\\s*\\d{1,2}[:h\\s]+\\d{2}\\s*\\]?$")
+                || lower.matches("^\\d{1,2}\\s*[-–]\\s*\\d{1,2}\\s*\\[?.*?\\]?$")) {
             return true;
         }
 

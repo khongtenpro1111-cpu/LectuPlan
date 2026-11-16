@@ -43,50 +43,40 @@
                 app:tint="@color/nav_item_unselected_tint" />
         </LinearLayout>
 
-        <!-- Subheader: Thông tin & Nút cuộn -->
+        <!-- Subheader: Nút cuộn -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="12dp">
+            android:gravity="end"
+            android:layout_marginBottom="8dp">
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Khung giờ chuẩn: Sáng (06:45-11:35) • Chiều (12:30-16:35)"
-                android:textSize="11sp"
-                android:textColor="@color/text_secondary" />
-
-            <TextView
+            <ImageButton
                 android:id="@+id/btnFreeTimeScrollTop"
-                android:layout_width="wrap_content"
-                android:layout_height="28dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:background="@drawable/bg_search_input"
-                android:gravity="center"
-                android:paddingHorizontal="8dp"
-                android:text="Đầu"
-                android:textColor="@color/accent_blue"
-                android:textSize="11sp"
-                android:textStyle="bold"
+                android:contentDescription="Lên đầu"
+                android:src="@drawable/ic_arrow_upward"
+                app:tint="@color/accent_blue"
                 android:clickable="true"
                 android:focusable="true"
-                android:layout_marginEnd="4dp" />
+                android:layout_marginEnd="6dp"
+                android:scaleType="centerInside"
+                android:padding="6dp" />
 
-            <TextView
+            <ImageButton
                 android:id="@+id/btnFreeTimeScrollBottom"
-                android:layout_width="wrap_content"
-                android:layout_height="28dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:background="@drawable/bg_search_input"
-                android:gravity="center"
-                android:paddingHorizontal="8dp"
-                android:text="Cuối"
-                android:textColor="@color/accent_blue"
-                android:textSize="11sp"
-                android:textStyle="bold"
+                android:contentDescription="Xuống cuối"
+                android:src="@drawable/ic_arrow_downward"
+                app:tint="@color/accent_blue"
                 android:clickable="true"
-                android:focusable="true" />
+                android:focusable="true"
+                android:scaleType="centerInside"
+                android:padding="6dp" />
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
@@ -110,7 +100,7 @@
                 android:minHeight="48dp"
                 android:layout_weight="1"
                 android:layout_marginEnd="6dp"
-                android:text="Tìm khe nhét"
+                android:text="Tìm giờ rảnh"
                 android:textColor="#FFFFFF"
                 android:backgroundTint="#059669"
                 android:textSize="13.5sp"
@@ -123,7 +113,7 @@
                 android:layout_height="match_parent"
                 android:minHeight="48dp"
                 android:layout_weight="1"
-                android:text="Dòng chảy\nhôm nay"
+                android:text="Lịch trình\nhôm nay"
                 android:textColor="#FFFFFF"
                 android:backgroundTint="#2563EB"
                 android:textSize="13.5sp"

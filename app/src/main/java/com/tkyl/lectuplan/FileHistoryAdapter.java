@@ -27,7 +27,6 @@ public class FileHistoryAdapter extends RecyclerView.Adapter<FileHistoryAdapter.
 
     public interface OnHistoryClickListener {
         void onItemClick(FileHistoryModel item);
-        void onViewContentClick(FileHistoryModel item);
         void onDownloadClick(FileHistoryModel item);
         void onDeleteClick(FileHistoryModel item);
         void onSelectionChanged(int selectedCount);
@@ -174,10 +173,6 @@ public class FileHistoryAdapter extends RecyclerView.Adapter<FileHistoryAdapter.
         }
 
         // Tùy biến nút hành động phù hợp Dark Mode & Light Mode
-        if (holder.btnViewContent != null) {
-            holder.btnViewContent.setBackgroundColor(isNight ? Color.parseColor("#3B0764") : Color.parseColor("#EDE9FE"));
-            holder.btnViewContent.setTextColor(isNight ? Color.parseColor("#C4B5FD") : Color.parseColor("#6D28D9"));
-        }
         if (holder.btnOpenFile != null) {
             holder.btnOpenFile.setBackgroundColor(isNight ? Color.parseColor("#1E3A8A") : Color.parseColor("#EFF6FF"));
             holder.btnOpenFile.setTextColor(isNight ? Color.parseColor("#93C5FD") : Color.parseColor("#2563EB"));
@@ -198,7 +193,7 @@ public class FileHistoryAdapter extends RecyclerView.Adapter<FileHistoryAdapter.
                 notifyItemChanged(position);
                 if (listener != null) listener.onSelectionChanged(selectedHistoryIds.size());
             } else {
-                if (listener != null) listener.onViewContentClick(item);
+                if (listener != null) listener.onItemClick(item);
             }
         };
         holder.itemView.setOnClickListener(clickListener);
@@ -214,16 +209,6 @@ public class FileHistoryAdapter extends RecyclerView.Adapter<FileHistoryAdapter.
             }
             return false;
         });
-
-        if (holder.btnViewContent != null) {
-            holder.btnViewContent.setOnClickListener(v -> {
-                if (isMultiSelectMode) {
-                    clickListener.onClick(v);
-                } else if (listener != null) {
-                    listener.onViewContentClick(item);
-                }
-            });
-        }
 
         // Bấm nút "Mở file" sẽ mở bằng ứng dụng đọc file bên ngoài
         if (holder.btnOpenFile != null) {
@@ -260,7 +245,7 @@ public class FileHistoryAdapter extends RecyclerView.Adapter<FileHistoryAdapter.
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvIcon, tvFileName, tvBadge, tvTime, btnViewContent, btnOpenFile, btnDownloadFile;
+        TextView tvIcon, tvFileName, tvBadge, tvTime, btnOpenFile, btnDownloadFile;
         ImageButton btnDeleteHistory;
         ImageView ivSelectHistory;
         View layoutHistoryActions;
@@ -271,7 +256,6 @@ public class FileHistoryAdapter extends RecyclerView.Adapter<FileHistoryAdapter.
             tvFileName = itemView.findViewById(R.id.tvHistoryFileName);
             tvBadge = itemView.findViewById(R.id.tvHistoryBadge);
             tvTime = itemView.findViewById(R.id.tvHistoryTime);
-            btnViewContent = itemView.findViewById(R.id.btnViewContent);
             btnOpenFile = itemView.findViewById(R.id.btnOpenFile);
             btnDownloadFile = itemView.findViewById(R.id.btnDownloadFile);
             btnDeleteHistory = itemView.findViewById(R.id.btnDeleteHistory);

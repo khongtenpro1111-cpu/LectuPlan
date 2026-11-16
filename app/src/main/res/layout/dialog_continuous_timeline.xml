@@ -8,7 +8,7 @@
     app:cardElevation="8dp"
     app:strokeWidth="1dp"
     app:strokeColor="@color/border_default"
-    app:cardBackgroundColor="@color/surface_card">
+    app:cardBackgroundColor="@color/window_background">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -118,34 +118,32 @@
             android:gravity="end"
             android:layout_marginBottom="6dp">
 
-            <TextView
+            <ImageButton
                 android:id="@+id/btnTimelineScrollTop"
-                android:layout_width="wrap_content"
-                android:layout_height="28dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:background="@drawable/bg_search_input"
-                android:gravity="center"
-                android:paddingHorizontal="10dp"
-                android:text="Lên đầu"
-                android:textColor="@color/accent_blue"
-                android:textSize="11sp"
-                android:textStyle="bold"
+                android:contentDescription="Lên đầu"
+                android:src="@drawable/ic_arrow_upward"
+                app:tint="@color/accent_blue"
                 android:clickable="true"
                 android:focusable="true"
-                android:layout_marginEnd="6dp" />
+                android:layout_marginEnd="6dp"
+                android:scaleType="centerInside"
+                android:padding="6dp" />
 
-            <TextView
+            <ImageButton
                 android:id="@+id/btnTimelineScrollBottom"
-                android:layout_width="wrap_content"
-                android:layout_height="28dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:background="@drawable/bg_search_input"
-                android:gravity="center"
-                android:paddingHorizontal="10dp"
-                android:text="Cuối trang"
-                android:textColor="@color/accent_blue"
-                android:textSize="11sp"
-                android:textStyle="bold"
+                android:contentDescription="Xuống cuối"
+                android:src="@drawable/ic_arrow_downward"
+                app:tint="@color/accent_blue"
                 android:clickable="true"
-                android:focusable="true" />
+                android:focusable="true"
+                android:scaleType="centerInside"
+                android:padding="6dp" />
         </LinearLayout>
 
         <!-- Thước đo Dòng chảy Thời gian (Continuous Timeline Stream) -->
@@ -171,7 +169,7 @@
                 android:minHeight="48dp"
                 android:layout_weight="1"
                 android:layout_marginEnd="6dp"
-                android:text="Tìm khe\nnhét lịch"
+                android:text="Tìm giờ\nrảnh"
                 android:textColor="#FFFFFF"
                 android:backgroundTint="#2563EB"
                 android:textSize="13.5sp"

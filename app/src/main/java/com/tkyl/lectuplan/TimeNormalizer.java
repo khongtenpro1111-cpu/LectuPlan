@@ -112,7 +112,23 @@ public class TimeNormalizer {
             return new NormalizedRange(7 * 60 + 30, 9 * 60 + 30, "Mặc định", false);
         }
 
-        // 1. Quét khung giờ hành chính trước (VD: 14:00 - 16:00, 08:00 đến 09:30, 13h30 - 15h30, 8g30 - 10g00)
+        // 1. Quét khung giờ hành chính trước (VD: 14:00 - 16:00, 08:00 đến 09:30, 13h30 - 15h30, 8g30 - 10g00, [07 30 - 11 35])
+        Pattern spaceTimePattern = Pattern.compile("\\[?\\s*(\\d{1,2})[h:g\\s]+(\\d{2})\\s*[-–đếnto]+\\s*(\\d{1,2})[h:g\\s]+(\\d{2})\\s*\\]?", Pattern.CASE_INSENSITIVE);
+        Matcher mSpaceTime = spaceTimePattern.matcher(text);
+        if (mSpaceTime.find()) {
+            try {
+                int h1 = Integer.parseInt(mSpaceTime.group(1));
+                int m1 = Integer.parseInt(mSpaceTime.group(2));
+                int h2 = Integer.parseInt(mSpaceTime.group(3));
+                int m2 = Integer.parseInt(mSpaceTime.group(4));
+                int startMin = h1 * 60 + m1;
+                int endMin = h2 * 60 + m2;
+                if (startMin >= 6 * 60 && endMin > startMin && endMin <= 23 * 60) {
+                    return new NormalizedRange(startMin, endMin, minuteToTimeString(startMin) + " - " + minuteToTimeString(endMin), false);
+                }
+            } catch (Exception ignored) {}
+        }
+
         Pattern timePattern = Pattern.compile("(\\d{1,2})[h:g](\\d{0,2})\\s*[-–đếnto]+\\s*(\\d{1,2})[h:g](\\d{0,2})", Pattern.CASE_INSENSITIVE);
         Matcher mTime = timePattern.matcher(text);
         if (mTime.find()) {

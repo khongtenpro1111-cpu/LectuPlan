@@ -840,6 +840,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return autoDeleteOldData(12, null);
     }
 
+    public int deleteEventsByDateRange(String fromIsoDate, String toIsoDate) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        if (db == null) return 0;
+        int count = 0;
+        try {
+            if (fromIsoDate != null && !fromIsoDate.isEmpty() && toIsoDate != null && !toIsoDate.isEmpty()) {
+                count = db.delete(TABLE_EVENTS, "event_date >= ? AND event_date <= ?", new String[]{fromIsoDate, toIsoDate});
+            } else if (fromIsoDate != null && !fromIsoDate.isEmpty()) {
+                count = db.delete(TABLE_EVENTS, "event_date >= ?", new String[]{fromIsoDate});
+            } else if (toIsoDate != null && !toIsoDate.isEmpty()) {
+                count = db.delete(TABLE_EVENTS, "event_date <= ?", new String[]{toIsoDate});
+            } else {
+                count = db.delete(TABLE_EVENTS, null, null);
+            }
+            normalizeSttNumbers();
+        } catch (Exception e) {
+            android.util.Log.e("LectuPlan", "Lỗi deleteEventsByDateRange: " + e.getMessage(), e);
+        }
+        return count;
+    }
+
     // Đếm số lượng lịch công việc cũ hơn thời hạn
     public int getOldEventsCount(int retentionMonths) {
         if (retentionMonths <= 0) return 0;

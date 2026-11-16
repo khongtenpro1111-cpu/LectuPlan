@@ -13,7 +13,7 @@
     <color name="text_secondary">#E2E8F0</color>
     <color name="text_tertiary">#CBD5E1</color>
     <color name="border_subtle">#334155</color>
-    <color name="border_default">#475569</color>
+    <color name="border_default">#64748B</color>
     <color name="bottom_nav_bg">#F21E293B</color>
     <color name="bottom_nav_card_stroke">#4064748B</color>
     <color name="calendar_day_current_month">#FFFFFF</color>
