@@ -84,7 +84,7 @@ public class CustomCalendarAdapter extends RecyclerView.Adapter<CustomCalendarAd
             holder.tvDayNumber.setTypeface(null, Typeface.BOLD);
         } else if (cell.isToday) {
             holder.tvDayNumber.setBackground(null);
-            holder.tvDayNumber.setTextColor(isNight ? Color.parseColor("#C4B5FD") : Color.parseColor("#7C3AED"));
+            holder.tvDayNumber.setTextColor(isNight ? Color.parseColor("#60A5FA") : Color.parseColor("#2563EB"));
             holder.tvDayNumber.setTypeface(null, Typeface.BOLD);
         } else if (cell.isCurrentMonth) {
             holder.tvDayNumber.setBackground(null);

@@ -19,7 +19,7 @@
     <color name="calendar_day_current_month">#FFFFFF</color>
     <color name="calendar_day_other_month">#94A3B8</color>
     <color name="calendar_day_selected_text">#FFFFFF</color>
-    <color name="calendar_day_today_text">#C4B5FD</color>
+    <color name="calendar_day_today_text">#60A5FA</color>
     <color name="tab_header_title">#93C5FD</color>
     <color name="search_box_bg">#1E293B</color>
     <color name="card_header_bg">#1E293B</color>
@@ -30,7 +30,7 @@
 
     <!-- Accent / Status Colors (Lightened for dark background contrast) -->
     <color name="accent_blue">#60A5FA</color>
-    <color name="accent_purple">#C4B5FD</color>
+    <color name="accent_purple">#60A5FA</color>
     <color name="accent_green">#34D399</color>
     <color name="accent_amber">#FBBF24</color>
     <color name="accent_red">#F87171</color>

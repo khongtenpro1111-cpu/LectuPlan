@@ -193,14 +193,14 @@
                     android:lineSpacingExtra="5dp"
                     android:layout_marginBottom="16dp" />
 
-                <!-- Mục 7: Nâng cấp Phiên bản v1.1.4 -->
+                <!-- Mục 7: Nâng cấp Phiên bản v1.4.5 -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="7. Nâng cấp Phiên bản v1.1.4 Mới nhất"
+                    android:text="7. Nâng cấp Phiên bản v1.4.5 Mới nhất"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    android:textColor="@color/accent_purple"
+                    android:textColor="#2563EB"
                     android:layout_marginBottom="5dp" />
 
                 <TextView
@@ -227,7 +227,7 @@
                     android:id="@+id/tvAppIntroTechnicalInfo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="• Phiên bản: v1.1.4 (Stable)\n• Tác giả / Phát triển: TKyl\n• Yêu cầu thiết bị: Android 8.0 trở lên (API 26+)\n• Nền tảng: Android (Java / Kotlin, Material Design 3)\n• Môn học: Lập trình Di động (LTDD)\n• Trường: Đại học Nguyễn Tất Thành (NTTU)"
+                    android:text="• Phiên bản: v1.4.5 (Stable)\n• Tác giả / Phát triển: TKyl\n• Yêu cầu thiết bị: Android 8.0 trở lên (API 26+)\n• Nền tảng: Android (Java / Kotlin, Material Design 3)\n• Môn học: Lập trình Di động (LTDD)\n• Trường: Đại học Nguyễn Tất Thành (NTTU)"
                     android:textSize="14sp"
                     android:textColor="@color/text_secondary"
                     android:justificationMode="inter_word"

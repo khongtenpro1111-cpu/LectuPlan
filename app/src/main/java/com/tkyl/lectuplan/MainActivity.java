@@ -216,6 +216,33 @@ public class MainActivity extends AppCompatActivity {
     private String currentCategoryFilter = "ALL";
     private LinearLayout layoutNavContainer;
 
+    // Pagination & Filter Bar fields
+    private static final int ITEMS_PER_PAGE = 4;
+    private int currentSchedulePage = 1;
+    private int totalSchedulePages = 1;
+    private View layoutPaginationBar;
+    private TextView tvPageIndicator;
+    private View btnPrevPage, btnNextPage;
+    private View layoutActiveFilterBar;
+    private TextView tvActiveFilterLabel;
+    private Button btnClearFilter;
+
+    // Tab 2 & Tab 4 Pagination fields
+    private int currentTab2Page = 1;
+    private int totalTab2Pages = 1;
+    private TextView tvTab2PageIndicator;
+    private View btnTab2PrevPage, btnTab2NextPage;
+
+    private int currentFilePage = 1;
+    private int totalFilePages = 1;
+    private TextView tvFilePageIndicator;
+    private View btnFilePrevPage, btnFileNextPage;
+
+    // Page Dots fields
+    private LinearLayout layoutPageDots;
+    private LinearLayout layoutTab2PageDots;
+    private LinearLayout layoutFilePageDots;
+
     // 1. Bộ chọn file Excel (.xlsx / .xls)
     private final ActivityResultLauncher<Intent> excelPickerLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -547,6 +574,291 @@ public class MainActivity extends AppCompatActivity {
         rvEvents = findViewById(R.id.rvEvents);
         RecyclerView rvFileHistory = findViewById(R.id.rvFileHistory);
 
+        layoutActiveFilterBar = findViewById(R.id.layoutActiveFilterBar);
+        tvActiveFilterLabel = findViewById(R.id.tvActiveFilterLabel);
+        btnClearFilter = findViewById(R.id.btnClearFilter);
+
+        layoutPaginationBar = findViewById(R.id.layoutPaginationBar);
+        layoutPageDots = findViewById(R.id.layoutPageDots);
+        tvPageIndicator = findViewById(R.id.tvPageIndicator);
+        btnPrevPage = findViewById(R.id.btnPrevPage);
+        btnNextPage = findViewById(R.id.btnNextPage);
+
+        // Cử chỉ vuốt ngang chuyển trang trực tiếp (Swipe Left / Right) cho Tab 1
+        android.view.GestureDetector scheduleSwipeDetector = new android.view.GestureDetector(this, new android.view.GestureDetector.SimpleOnGestureListener() {
+            private static final int SWIPE_THRESHOLD = 60;
+            private static final int SWIPE_VELOCITY_THRESHOLD = 60;
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                if (e1 == null || e2 == null) return false;
+                float diffX = e2.getX() - e1.getX();
+                float diffY = e2.getY() - e1.getY();
+
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                        if (diffX < 0) {
+                            // Vuốt sang trái -> Trang tiếp theo ►
+                            if (currentSchedulePage < totalSchedulePages) {
+                                currentSchedulePage++;
+                                refreshData();
+                                return true;
+                            }
+                        } else {
+                            // Vuốt sang phải -> Trang trước ◄
+                            if (currentSchedulePage > 1) {
+                                currentSchedulePage--;
+                                refreshData();
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+        });
+
+        if (rvEvents != null) {
+            rvEvents.addOnItemTouchListener(new RecyclerView.SimpleOnItemTouchListener() {
+                private float startX = 0f;
+                private float startY = 0f;
+
+                @Override
+                public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+                    scheduleSwipeDetector.onTouchEvent(e);
+                    switch (e.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            startX = e.getX();
+                            startY = e.getY();
+                            break;
+                        case MotionEvent.ACTION_MOVE:
+                            float dx = Math.abs(e.getX() - startX);
+                            float dy = Math.abs(e.getY() - startY);
+                            if (dx > 35 && dx > dy * 1.2f) {
+                                if (rv.getParent() != null) {
+                                    rv.getParent().requestDisallowInterceptTouchEvent(true);
+                                }
+                                return true;
+                            }
+                            break;
+                    }
+                    return false;
+                }
+
+                @Override
+                public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+                    scheduleSwipeDetector.onTouchEvent(e);
+                }
+            });
+        }
+
+        if (btnPrevPage != null) {
+            btnPrevPage.setOnClickListener(v -> {
+                if (currentSchedulePage > 1) {
+                    currentSchedulePage--;
+                    refreshData();
+                }
+            });
+        }
+
+        if (btnNextPage != null) {
+            btnNextPage.setOnClickListener(v -> {
+                if (currentSchedulePage < totalSchedulePages) {
+                    currentSchedulePage++;
+                    refreshData();
+                }
+            });
+        }
+
+        if (btnClearFilter != null) {
+            btnClearFilter.setOnClickListener(v -> resetAllFiltersAndSearch());
+        }
+
+        View btnOpenToolsMenu = findViewById(R.id.btnOpenToolsMenu);
+        if (btnOpenToolsMenu != null) {
+            btnOpenToolsMenu.setOnClickListener(v -> {
+                SoundHelper.playFeedback(MainActivity.this, v);
+                showToolsMenuDialog();
+            });
+        }
+
+        // Tab 2 Pagination
+        layoutTab2PageDots = findViewById(R.id.layoutTab2PageDots);
+        tvTab2PageIndicator = findViewById(R.id.tvTab2PageIndicator);
+        btnTab2PrevPage = findViewById(R.id.btnTab2PrevPage);
+        btnTab2NextPage = findViewById(R.id.btnTab2NextPage);
+
+        android.view.GestureDetector tab2SwipeDetector = new android.view.GestureDetector(this, new android.view.GestureDetector.SimpleOnGestureListener() {
+            private static final int SWIPE_THRESHOLD = 60;
+            private static final int SWIPE_VELOCITY_THRESHOLD = 60;
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                if (e1 == null || e2 == null) return false;
+                float diffX = e2.getX() - e1.getX();
+                float diffY = e2.getY() - e1.getY();
+
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                        if (diffX < 0) {
+                            if (currentTab2Page < totalTab2Pages) {
+                                currentTab2Page++;
+                                refreshTab2CalendarEvents();
+                                return true;
+                            }
+                        } else {
+                            if (currentTab2Page > 1) {
+                                currentTab2Page--;
+                                refreshTab2CalendarEvents();
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+        });
+
+        if (rvTab2Events != null) {
+            rvTab2Events.addOnItemTouchListener(new RecyclerView.SimpleOnItemTouchListener() {
+                private float startX = 0f;
+                private float startY = 0f;
+
+                @Override
+                public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+                    tab2SwipeDetector.onTouchEvent(e);
+                    switch (e.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            startX = e.getX();
+                            startY = e.getY();
+                            break;
+                        case MotionEvent.ACTION_MOVE:
+                            float dx = Math.abs(e.getX() - startX);
+                            float dy = Math.abs(e.getY() - startY);
+                            if (dx > 35 && dx > dy * 1.2f) {
+                                if (rv.getParent() != null) {
+                                    rv.getParent().requestDisallowInterceptTouchEvent(true);
+                                }
+                                return true;
+                            }
+                            break;
+                    }
+                    return false;
+                }
+
+                @Override
+                public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+                    tab2SwipeDetector.onTouchEvent(e);
+                }
+            });
+        }
+
+        if (btnTab2PrevPage != null) {
+            btnTab2PrevPage.setOnClickListener(v -> {
+                if (currentTab2Page > 1) {
+                    currentTab2Page--;
+                    refreshTab2CalendarEvents();
+                }
+            });
+        }
+        if (btnTab2NextPage != null) {
+            btnTab2NextPage.setOnClickListener(v -> {
+                if (currentTab2Page < totalTab2Pages) {
+                    currentTab2Page++;
+                    refreshTab2CalendarEvents();
+                }
+            });
+        }
+
+        // Tab 4 Pagination & Swipe Gestures
+        layoutFilePageDots = findViewById(R.id.layoutFilePageDots);
+        tvFilePageIndicator = findViewById(R.id.tvFilePageIndicator);
+        btnFilePrevPage = findViewById(R.id.btnFilePrevPage);
+        btnFileNextPage = findViewById(R.id.btnFileNextPage);
+
+        android.view.GestureDetector fileSwipeDetector = new android.view.GestureDetector(this, new android.view.GestureDetector.SimpleOnGestureListener() {
+            private static final int SWIPE_THRESHOLD = 60;
+            private static final int SWIPE_VELOCITY_THRESHOLD = 60;
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                if (e1 == null || e2 == null) return false;
+                float diffX = e2.getX() - e1.getX();
+                float diffY = e2.getY() - e1.getY();
+
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                        if (diffX < 0) {
+                            if (currentFilePage < totalFilePages) {
+                                currentFilePage++;
+                                refreshFileHistory();
+                                return true;
+                            }
+                        } else {
+                            if (currentFilePage > 1) {
+                                currentFilePage--;
+                                refreshFileHistory();
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+        });
+
+        RecyclerView rvFileHistoryTouch = findViewById(R.id.rvFileHistory);
+        if (rvFileHistoryTouch != null) {
+            rvFileHistoryTouch.addOnItemTouchListener(new RecyclerView.SimpleOnItemTouchListener() {
+                private float startX = 0f;
+                private float startY = 0f;
+
+                @Override
+                public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+                    fileSwipeDetector.onTouchEvent(e);
+                    switch (e.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            startX = e.getX();
+                            startY = e.getY();
+                            break;
+                        case MotionEvent.ACTION_MOVE:
+                            float dx = Math.abs(e.getX() - startX);
+                            float dy = Math.abs(e.getY() - startY);
+                            if (dx > 35 && dx > dy * 1.2f) {
+                                if (rv.getParent() != null) {
+                                    rv.getParent().requestDisallowInterceptTouchEvent(true);
+                                }
+                                return true;
+                            }
+                            break;
+                    }
+                    return false;
+                }
+
+                @Override
+                public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+                    fileSwipeDetector.onTouchEvent(e);
+                }
+            });
+        }
+
+        if (btnFilePrevPage != null) {
+            btnFilePrevPage.setOnClickListener(v -> {
+                if (currentFilePage > 1) {
+                    currentFilePage--;
+                    refreshFileHistory();
+                }
+            });
+        }
+        if (btnFileNextPage != null) {
+            btnFileNextPage.setOnClickListener(v -> {
+                if (currentFilePage < totalFilePages) {
+                    currentFilePage++;
+                    refreshFileHistory();
+                }
+            });
+        }
+
         // Chuyển đổi Lịch trình Tab 1
         TextView btnModeDay = findViewById(R.id.btnModeDay);
         TextView btnModeWeek = findViewById(R.id.btnModeWeek);
@@ -848,10 +1160,7 @@ public class MainActivity extends AppCompatActivity {
         fabScrollToTop = findViewById(R.id.fabScrollToTop);
 
         if (fabAddEvent != null) {
-            fabAddEvent.setOnClickListener(v -> {
-                SoundHelper.playFeedback(MainActivity.this, v);
-                showAddEventDialog();
-            });
+            fabAddEvent.setVisibility(View.GONE);
         }
 
         // Xử lý sự kiện nhấn nút cuộn lên đầu trang (Scroll to Top)
@@ -878,74 +1187,9 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-        // Lắng nghe sự kiện cuộn danh sách Tab 1 (Lịch trình) để hiện/ẩn nút lên đầu trang
-        if (rvEvents != null) {
-            rvEvents.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                @Override
-                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                    super.onScrolled(recyclerView, dx, dy);
-                    if (currentActiveTabIndex != 0) return;
-                    RecyclerView.LayoutManager lm = recyclerView.getLayoutManager();
-                    if (lm instanceof LinearLayoutManager) {
-                        int firstPos = ((LinearLayoutManager) lm).findFirstVisibleItemPosition();
-                        if (firstPos > 1 || dy > 10) {
-                            if (fabScrollToTop != null && fabScrollToTop.getVisibility() != View.VISIBLE) {
-                                fabScrollToTop.show();
-                            }
-                        } else if (firstPos == 0) {
-                            if (fabScrollToTop != null && fabScrollToTop.getVisibility() == View.VISIBLE) {
-                                fabScrollToTop.hide();
-                            }
-                        }
-                    }
-                }
-            });
+        if (fabScrollToTop != null) {
+            fabScrollToTop.setVisibility(View.GONE);
         }
-
-        // Lắng nghe sự kiện cuộn danh sách Tab 2 (Lịch biểu) để hiện/ẩn nút lên đầu trang
-        if (rvTab2Events != null) {
-            rvTab2Events.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                @Override
-                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                    super.onScrolled(recyclerView, dx, dy);
-                    if (currentActiveTabIndex != 1) return;
-                    RecyclerView.LayoutManager lm = recyclerView.getLayoutManager();
-                    if (lm instanceof LinearLayoutManager) {
-                        int firstPos = ((LinearLayoutManager) lm).findFirstVisibleItemPosition();
-                        if (firstPos > 1 || dy > 10) {
-                            if (fabScrollToTop != null && fabScrollToTop.getVisibility() != View.VISIBLE) {
-                                fabScrollToTop.show();
-                            }
-                        } else if (firstPos == 0) {
-                            if (fabScrollToTop != null && fabScrollToTop.getVisibility() == View.VISIBLE) {
-                                fabScrollToTop.hide();
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Lắng nghe sự kiện cuộn cho các tab lướt dọc (Lịch biểu, Biểu đồ, Báo cáo, Cài đặt)
-        NestedScrollView.OnScrollChangeListener nestedScrollListener = (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
-            if (scrollY > 250) {
-                if (fabScrollToTop != null && fabScrollToTop.getVisibility() != View.VISIBLE) {
-                    fabScrollToTop.show();
-                }
-            } else if (scrollY < 100) {
-                if (fabScrollToTop != null && fabScrollToTop.getVisibility() == View.VISIBLE) {
-                    fabScrollToTop.hide();
-                }
-            }
-        };
-        NestedScrollView svAlarm = findViewById(R.id.layoutAlarmTab);
-        if (svAlarm != null) svAlarm.setOnScrollChangeListener(nestedScrollListener);
-        NestedScrollView svChart = findViewById(R.id.layoutChartTab);
-        if (svChart != null) svChart.setOnScrollChangeListener(nestedScrollListener);
-        NestedScrollView svReport = findViewById(R.id.layoutReportTab);
-        if (svReport != null) svReport.setOnScrollChangeListener(nestedScrollListener);
-        NestedScrollView svSettings = findViewById(R.id.layoutSettingsTab);
-        if (svSettings != null) svSettings.setOnScrollChangeListener(nestedScrollListener);
 
         if (btnTestAlarmTab != null) {
             btnTestAlarmTab.setOnClickListener(v -> {
@@ -980,6 +1224,7 @@ public class MainActivity extends AppCompatActivity {
         setupAlarmSettings();
         setupAutoDeleteSettings();
         setupSoundSettings();
+        setupSettingsTabSegmentSwitcher();
         setupFilterChips();
 
         if (swipeRefreshLayout != null) {
@@ -1041,12 +1286,15 @@ public class MainActivity extends AppCompatActivity {
                 if (tvSelectedCount != null) {
                     tvSelectedCount.setText("Đã chọn: " + selectedCount + " lịch");
                 }
+                boolean isMulti = adapter.isMultiSelectMode();
                 if (layoutMultiSelectBar != null) {
-                    layoutMultiSelectBar.setVisibility(adapter.isMultiSelectMode() ? View.VISIBLE : View.GONE);
+                    layoutMultiSelectBar.setVisibility(isMulti ? View.VISIBLE : View.GONE);
+                }
+                if (layoutPaginationBar != null && currentActiveTabIndex == 0) {
+                    layoutPaginationBar.setVisibility(isMulti ? View.GONE : View.VISIBLE);
                 }
                 if (fabAddEvent != null) {
-                    if (adapter.isMultiSelectMode()) fabAddEvent.hide();
-                    else fabAddEvent.show();
+                    fabAddEvent.setVisibility(View.GONE);
                 }
             }
         });
@@ -1074,7 +1322,8 @@ public class MainActivity extends AppCompatActivity {
                 if (adapter != null) adapter.setMultiSelectMode(false);
                 if (tab2Adapter != null) tab2Adapter.setMultiSelectMode(false);
                 if (layoutMultiSelectBar != null) layoutMultiSelectBar.setVisibility(View.GONE);
-                if (fabAddEvent != null && currentActiveTabIndex == 0) fabAddEvent.show();
+                if (layoutPaginationBar != null && currentActiveTabIndex == 0) layoutPaginationBar.setVisibility(View.VISIBLE);
+                if (fabAddEvent != null) fabAddEvent.setVisibility(View.GONE);
             });
         }
 
@@ -1100,7 +1349,8 @@ public class MainActivity extends AppCompatActivity {
                             if (adapter != null) adapter.setMultiSelectMode(false);
                             if (tab2Adapter != null) tab2Adapter.setMultiSelectMode(false);
                             if (layoutMultiSelectBar != null) layoutMultiSelectBar.setVisibility(View.GONE);
-                            if (fabAddEvent != null && currentActiveTabIndex == 0) fabAddEvent.show();
+                            if (layoutPaginationBar != null && currentActiveTabIndex == 0) layoutPaginationBar.setVisibility(View.VISIBLE);
+                            if (fabAddEvent != null) fabAddEvent.setVisibility(View.GONE);
                             refreshData();
                             refreshTab2CalendarEvents();
                             updateChartTab();
@@ -1331,7 +1581,36 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        tab2Adapter.updateList(displayList);
+        // Phân trang Tab 2 (4 mục / trang)
+        int totalItemsTab2 = displayList.size();
+        totalTab2Pages = (int) Math.ceil((double) totalItemsTab2 / ITEMS_PER_PAGE);
+        if (totalTab2Pages < 1) totalTab2Pages = 1;
+        if (currentTab2Page > totalTab2Pages) currentTab2Page = totalTab2Pages;
+        if (currentTab2Page < 1) currentTab2Page = 1;
+
+        int fromIndexTab2 = (currentTab2Page - 1) * ITEMS_PER_PAGE;
+        int toIndexTab2 = Math.min(fromIndexTab2 + ITEMS_PER_PAGE, totalItemsTab2);
+
+        List<EventModel> pageListTab2 = new ArrayList<>();
+        if (fromIndexTab2 < totalItemsTab2 && fromIndexTab2 >= 0) {
+            pageListTab2 = new ArrayList<>(displayList.subList(fromIndexTab2, toIndexTab2));
+        }
+
+        tab2Adapter.updateList(pageListTab2);
+
+        if (tvTab2PageIndicator != null) {
+            tvTab2PageIndicator.setText(currentTab2Page + " / " + totalTab2Pages + " (" + totalItemsTab2 + " lịch)");
+        }
+        renderPageDots(layoutTab2PageDots, currentTab2Page, totalTab2Pages, page -> {
+            currentTab2Page = page;
+            refreshTab2CalendarEvents();
+        });
+
+        View cardTab2Pag = findViewById(R.id.layoutTab2PaginationCard);
+        if (cardTab2Pag != null) {
+            boolean hasMultiple = totalTab2Pages > 1 && !displayList.isEmpty() && (displayList.get(0).getId() > 0);
+            cardTab2Pag.setVisibility(hasMultiple ? View.VISIBLE : View.GONE);
+        }
 
         if (customCalendarAdapter != null) {
             customCalendarAdapter.setSelectedDateIso(selectedTab2DateIso);
@@ -7145,7 +7424,80 @@ public class MainActivity extends AppCompatActivity {
             dbHelper.syncPhysicalFilesIntoHistory(getHistoryStorageDir());
             dbHelper.syncOrphanFilesIntoHistory();
             List<FileHistoryModel> list = dbHelper.getFileHistoryList();
-            fileHistoryAdapter.updateList(list);
+
+            // Phân trang Tab 4 (Lịch sử tệp: 4 tệp / trang)
+            int totalItemsFile = list.size();
+            totalFilePages = (int) Math.ceil((double) totalItemsFile / ITEMS_PER_PAGE);
+            if (totalFilePages < 1) totalFilePages = 1;
+            if (currentFilePage > totalFilePages) currentFilePage = totalFilePages;
+            if (currentFilePage < 1) currentFilePage = 1;
+
+            int fromIndexFile = (currentFilePage - 1) * ITEMS_PER_PAGE;
+            int toIndexFile = Math.min(fromIndexFile + ITEMS_PER_PAGE, totalItemsFile);
+
+            List<FileHistoryModel> pageListFile = new ArrayList<>();
+            if (fromIndexFile < totalItemsFile && fromIndexFile >= 0) {
+                pageListFile = new ArrayList<>(list.subList(fromIndexFile, toIndexFile));
+            }
+
+            fileHistoryAdapter.updateList(pageListFile);
+
+            if (tvFilePageIndicator != null) {
+                tvFilePageIndicator.setText(currentFilePage + " / " + totalFilePages + " (" + totalItemsFile + " tệp)");
+            }
+            renderPageDots(layoutFilePageDots, currentFilePage, totalFilePages, page -> {
+                currentFilePage = page;
+                refreshFileHistory();
+            });
+
+            View cardFilePag = findViewById(R.id.layoutFilePaginationCard);
+            if (cardFilePag != null) {
+                cardFilePag.setVisibility(totalFilePages > 1 ? View.VISIBLE : View.GONE);
+            }
+        }
+    }
+
+    private void setupSettingsTabSegmentSwitcher() {
+        TextView chipSettingGeneral = findViewById(R.id.chipSettingGeneral);
+        TextView chipSettingAlarm = findViewById(R.id.chipSettingAlarm);
+        TextView chipSettingClean = findViewById(R.id.chipSettingClean);
+
+        View groupGeneral = findViewById(R.id.layoutSettingGroupGeneral);
+        View groupAlarm = findViewById(R.id.layoutSettingGroupAlarm);
+        View groupClean = findViewById(R.id.layoutSettingGroupClean);
+
+        if (chipSettingGeneral == null || chipSettingAlarm == null || chipSettingClean == null) return;
+
+        TextView[] allSettingChips = new TextView[]{chipSettingGeneral, chipSettingAlarm, chipSettingClean};
+        View[] allSettingGroups = new View[]{groupGeneral, groupAlarm, groupClean};
+
+        int unselectedText = ContextCompat.getColor(this, R.color.chip_unselected_text);
+        View.OnClickListener listener = v -> {
+            for (TextView c : allSettingChips) {
+                if (c != null) {
+                    c.setBackgroundResource(R.drawable.bg_chip_unselected);
+                    c.setTextColor(unselectedText);
+                }
+            }
+            v.setBackgroundResource(R.drawable.bg_chip_selected);
+            ((TextView) v).setTextColor(Color.WHITE);
+
+            for (View g : allSettingGroups) {
+                if (g != null) g.setVisibility(View.GONE);
+            }
+
+            int id = v.getId();
+            if (id == R.id.chipSettingGeneral) {
+                if (groupGeneral != null) groupGeneral.setVisibility(View.VISIBLE);
+            } else if (id == R.id.chipSettingAlarm) {
+                if (groupAlarm != null) groupAlarm.setVisibility(View.VISIBLE);
+            } else if (id == R.id.chipSettingClean) {
+                if (groupClean != null) groupClean.setVisibility(View.VISIBLE);
+            }
+        };
+
+        for (TextView c : allSettingChips) {
+            c.setOnClickListener(listener);
         }
     }
 
@@ -7317,9 +7669,19 @@ public class MainActivity extends AppCompatActivity {
             if (layoutReportTab != null) layoutReportTab.setVisibility(index == 3 ? View.VISIBLE : View.GONE);
             if (layoutSettingsTab != null) layoutSettingsTab.setVisibility(index == 4 ? View.VISIBLE : View.GONE);
 
+            if (layoutPaginationBar != null) {
+                boolean showPag = (index == 0 && (adapter == null || !adapter.isMultiSelectMode()));
+                layoutPaginationBar.setVisibility(showPag ? View.VISIBLE : View.GONE);
+            }
+
+            View cardFilePag = findViewById(R.id.layoutFilePaginationCard);
+            if (cardFilePag != null) {
+                boolean showFilePag = (index == 3 && totalFilePages > 1);
+                cardFilePag.setVisibility(showFilePag ? View.VISIBLE : View.GONE);
+            }
+
             if (fabAddEvent != null) {
-                if (index == 0 && (adapter == null || !adapter.isMultiSelectMode())) fabAddEvent.show();
-                else fabAddEvent.hide();
+                fabAddEvent.setVisibility(View.GONE);
             }
             if (fabScrollToTop != null) {
                 fabScrollToTop.hide();
@@ -7797,6 +8159,197 @@ public class MainActivity extends AppCompatActivity {
         AutoDndScheduler.syncTodayAlarms(this);
     }
 
+    private void showToolsMenuDialog() {
+        com.google.android.material.bottomsheet.BottomSheetDialog dialog = 
+                new com.google.android.material.bottomsheet.BottomSheetDialog(this);
+        View view = getLayoutInflater().inflate(R.layout.dialog_tools_menu, null);
+        dialog.setContentView(view);
+
+        EditText edtSearchMenu = view.findViewById(R.id.edtSearchMenu);
+        View btnClearSearchMenu = view.findViewById(R.id.btnClearSearchMenu);
+        View btnCloseToolsMenu = view.findViewById(R.id.btnCloseToolsMenu);
+
+        Button chipTodayMenu = view.findViewById(R.id.chipTodayMenu);
+        Button chipAllMenu = view.findViewById(R.id.chipAllMenu);
+        Button chipFreeTimeMenu = view.findViewById(R.id.chipFreeTimeMenu);
+        Button chipTimelineMenu = view.findViewById(R.id.chipTimelineMenu);
+
+        Button chipTeachingMenu = view.findViewById(R.id.chipTeachingMenu);
+        Button chipMeetingMenu = view.findViewById(R.id.chipMeetingMenu);
+        Button chipIncidentMenu = view.findViewById(R.id.chipIncidentMenu);
+        Button chipManualMenu = view.findViewById(R.id.chipManualMenu);
+
+        Button btnMenuAddEvent = view.findViewById(R.id.btnMenuAddEvent);
+        Button btnMenuContinuousTimeline = view.findViewById(R.id.btnMenuContinuousTimeline);
+        Button btnMenuMultiSelect = view.findViewById(R.id.btnMenuMultiSelect);
+        Button btnMenuResetFilter = view.findViewById(R.id.btnMenuResetFilter);
+
+        if (edtSearch != null && edtSearchMenu != null) {
+            edtSearchMenu.setText(edtSearch.getText().toString());
+        }
+
+        if (btnCloseToolsMenu != null) {
+            btnCloseToolsMenu.setOnClickListener(v -> dialog.dismiss());
+        }
+
+        if (btnClearSearchMenu != null) {
+            btnClearSearchMenu.setOnClickListener(v -> {
+                if (edtSearchMenu != null) edtSearchMenu.setText("");
+                if (edtSearch != null) edtSearch.setText("");
+                currentSchedulePage = 1;
+                refreshData();
+            });
+        }
+
+        if (edtSearchMenu != null) {
+            edtSearchMenu.addTextChangedListener(new TextWatcher() {
+                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if (edtSearch != null) edtSearch.setText(s.toString());
+                    currentSchedulePage = 1;
+                    refreshData();
+                }
+                @Override public void afterTextChanged(Editable s) {}
+            });
+        }
+
+        if (chipTodayMenu != null) {
+            chipTodayMenu.setOnClickListener(v -> {
+                currentCategoryFilter = "ALL";
+                currentCalendarMode = 0;
+                isFilteringToday = true;
+                if (edtSearch != null) edtSearch.setText("");
+                currentSchedulePage = 1;
+                refreshData();
+                dialog.dismiss();
+            });
+        }
+
+        if (chipAllMenu != null) {
+            chipAllMenu.setOnClickListener(v -> {
+                currentCategoryFilter = "ALL";
+                currentCalendarMode = 2;
+                isFilteringToday = false;
+                if (edtSearch != null) edtSearch.setText("");
+                currentSchedulePage = 1;
+                refreshData();
+                dialog.dismiss();
+            });
+        }
+
+        if (chipFreeTimeMenu != null) {
+            chipFreeTimeMenu.setOnClickListener(v -> {
+                isFilteringToday = false;
+                dialog.dismiss();
+                showFreeTimeAnalysis();
+            });
+        }
+
+        if (chipTimelineMenu != null) {
+            chipTimelineMenu.setOnClickListener(v -> {
+                currentCategoryFilter = "CONFLICT";
+                currentCalendarMode = 2;
+                isFilteringToday = false;
+                if (edtSearch != null) edtSearch.setText("");
+                currentSchedulePage = 1;
+                refreshData();
+                dialog.dismiss();
+            });
+        }
+
+        if (chipTeachingMenu != null) {
+            chipTeachingMenu.setOnClickListener(v -> {
+                currentCategoryFilter = EventModel.CAT_TEACHING;
+                currentCalendarMode = 2;
+                isFilteringToday = false;
+                if (edtSearch != null) edtSearch.setText("");
+                currentSchedulePage = 1;
+                refreshData();
+                dialog.dismiss();
+            });
+        }
+
+        if (chipMeetingMenu != null) {
+            chipMeetingMenu.setOnClickListener(v -> {
+                currentCategoryFilter = EventModel.CAT_EVENT;
+                currentCalendarMode = 2;
+                isFilteringToday = false;
+                if (edtSearch != null) edtSearch.setText("");
+                currentSchedulePage = 1;
+                refreshData();
+                dialog.dismiss();
+            });
+        }
+
+        if (chipIncidentMenu != null) {
+            chipIncidentMenu.setOnClickListener(v -> {
+                currentCategoryFilter = EventModel.CAT_INCIDENT;
+                currentCalendarMode = 2;
+                isFilteringToday = false;
+                if (edtSearch != null) edtSearch.setText("");
+                currentSchedulePage = 1;
+                refreshData();
+                dialog.dismiss();
+            });
+        }
+
+        if (chipManualMenu != null) {
+            chipManualMenu.setOnClickListener(v -> {
+                currentCategoryFilter = EventModel.CAT_MANUAL_OTHER;
+                currentCalendarMode = 2;
+                isFilteringToday = false;
+                if (edtSearch != null) edtSearch.setText("");
+                currentSchedulePage = 1;
+                refreshData();
+                dialog.dismiss();
+            });
+        }
+
+        if (btnMenuAddEvent != null) {
+            btnMenuAddEvent.setOnClickListener(v -> {
+                dialog.dismiss();
+                showAddEventDialog();
+            });
+        }
+
+        if (btnMenuContinuousTimeline != null) {
+            btnMenuContinuousTimeline.setOnClickListener(v -> {
+                dialog.dismiss();
+                String todayIso = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+                showContinuousTimeline(todayIso);
+            });
+        }
+
+        if (btnMenuMultiSelect != null) {
+            btnMenuMultiSelect.setOnClickListener(v -> {
+                dialog.dismiss();
+                if (adapter != null) {
+                    adapter.setMultiSelectMode(true);
+                    View multiBar = findViewById(R.id.layoutMultiSelectBar);
+                    if (multiBar != null) multiBar.setVisibility(View.VISIBLE);
+                }
+            });
+        }
+
+        if (btnMenuResetFilter != null) {
+            btnMenuResetFilter.setOnClickListener(v -> {
+                dialog.dismiss();
+                resetAllFiltersAndSearch();
+            });
+        }
+
+        dialog.show();
+    }
+
+    private void resetAllFiltersAndSearch() {
+        if (edtSearch != null) edtSearch.setText("");
+        currentCategoryFilter = "ALL";
+        currentCalendarMode = 2;
+        isFilteringToday = false;
+        currentSchedulePage = 1;
+        refreshData();
+    }
+
     private void refreshData() {
         if (edtSearch == null || dbHelper == null || adapter == null) return;
 
@@ -7925,7 +8478,64 @@ public class MainActivity extends AppCompatActivity {
             displayList = filtered;
         }
 
-        adapter.updateList(displayList);
+        // --- Cập nhật thanh hiển thị trạng thái lọc ---
+        if (tvActiveFilterLabel != null) {
+            StringBuilder filterLabel = new StringBuilder();
+            if (!keyword.trim().isEmpty()) {
+                filterLabel.append("Tìm từ khóa: \"").append(keyword.trim()).append("\"");
+            } else if (isFilteringToday || currentCalendarMode == 0) {
+                filterLabel.append("Lịch bận Hôm nay");
+            } else if ("CONFLICT".equals(currentCategoryFilter)) {
+                filterLabel.append("Danh sách Lịch trùng");
+            } else if (EventModel.CAT_TEACHING.equals(currentCategoryFilter)) {
+                filterLabel.append("Danh sách Lịch Dạy/Học");
+            } else if (EventModel.CAT_EVENT.equals(currentCategoryFilter)) {
+                filterLabel.append("Danh sách Sự kiện / Họp");
+            } else if (EventModel.CAT_INCIDENT.equals(currentCategoryFilter)) {
+                filterLabel.append("Danh sách Lịch phát sinh");
+            } else if (EventModel.CAT_MANUAL_OTHER.equals(currentCategoryFilter)) {
+                filterLabel.append("Danh sách Lịch khác");
+            } else {
+                filterLabel.append("Tất cả công việc");
+            }
+            tvActiveFilterLabel.setText(filterLabel.toString());
+        }
+
+        boolean hasActiveFilter = !keyword.trim().isEmpty() || !"ALL".equals(currentCategoryFilter) || isFilteringToday || currentCalendarMode == 0;
+        if (btnClearFilter != null) {
+            btnClearFilter.setVisibility(hasActiveFilter ? View.VISIBLE : View.GONE);
+        }
+
+        // --- Xử lý Phân trang (Pagination 4 mục / trang) ---
+        int totalItems = displayList.size();
+        totalSchedulePages = (int) Math.ceil((double) totalItems / ITEMS_PER_PAGE);
+        if (totalSchedulePages < 1) totalSchedulePages = 1;
+        if (currentSchedulePage > totalSchedulePages) currentSchedulePage = totalSchedulePages;
+        if (currentSchedulePage < 1) currentSchedulePage = 1;
+
+        int fromIndex = (currentSchedulePage - 1) * ITEMS_PER_PAGE;
+        int toIndex = Math.min(fromIndex + ITEMS_PER_PAGE, totalItems);
+
+        List<EventModel> pageList = new ArrayList<>();
+        if (fromIndex < totalItems && fromIndex >= 0) {
+            pageList = new ArrayList<>(displayList.subList(fromIndex, toIndex));
+        }
+
+        adapter.updateList(pageList);
+
+        if (tvPageIndicator != null) {
+            tvPageIndicator.setText(currentSchedulePage + " / " + totalSchedulePages + " (" + totalItems + " lịch)");
+        }
+        renderPageDots(layoutPageDots, currentSchedulePage, totalSchedulePages, page -> {
+            currentSchedulePage = page;
+            refreshData();
+        });
+
+        if (layoutPaginationBar != null) {
+            boolean hasMultiplePages = totalSchedulePages > 1 && totalItems > 0 && (displayList.get(0).getId() > 0);
+            layoutPaginationBar.setVisibility((hasMultiplePages && currentActiveTabIndex == 0 && (adapter == null || !adapter.isMultiSelectMode())) ? View.VISIBLE : View.GONE);
+        }
+
         isTab2Dirty = true;
         if (customCalendarAdapter != null) {
             updateCustomCalendarView();
@@ -7938,6 +8548,45 @@ public class MainActivity extends AppCompatActivity {
         }
         if (barChart != null && barChart.isShown()) {
             updateChart();
+        }
+    }
+
+    private int dpToPx(int dp) {
+        return (int) (dp * getResources().getDisplayMetrics().density + 0.5f);
+    }
+
+    private void renderPageDots(LinearLayout container, int currentPage, int totalPages, java.util.function.Consumer<Integer> onPageSelect) {
+        if (container == null) return;
+        container.removeAllViews();
+        if (totalPages <= 1) {
+            container.setVisibility(View.GONE);
+            return;
+        }
+        container.setVisibility(View.VISIBLE);
+
+        for (int i = 1; i <= totalPages; i++) {
+            View dot = new View(this);
+            boolean isActive = (i == currentPage);
+            int size = isActive ? dpToPx(9) : dpToPx(6);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);
+            params.setMargins(dpToPx(3), 0, dpToPx(3), 0);
+            dot.setLayoutParams(params);
+
+            android.graphics.drawable.GradientDrawable shape = new android.graphics.drawable.GradientDrawable();
+            shape.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+            if (isActive) {
+                shape.setColor(Color.parseColor("#2563EB")); // Active Blue
+            } else {
+                shape.setColor(Color.parseColor("#CBD5E1")); // Light Gray
+            }
+            dot.setBackground(shape);
+
+            final int targetPage = i;
+            dot.setOnClickListener(v -> {
+                if (onPageSelect != null) onPageSelect.accept(targetPage);
+            });
+
+            container.addView(dot);
         }
     }
 
@@ -7973,6 +8622,55 @@ public class MainActivity extends AppCompatActivity {
         cardKpiSchools = findViewById(R.id.cardKpiSchools);
         cardKpiIncidents = findViewById(R.id.cardKpiIncidents);
         cardKpiIncome = findViewById(R.id.cardKpiIncome);
+
+        TextView chipChartSchool = findViewById(R.id.chipChartSchool);
+        TextView chipChartMonth = findViewById(R.id.chipChartMonth);
+        TextView chipChartDow = findViewById(R.id.chipChartDow);
+        TextView chipChartShift = findViewById(R.id.chipChartShift);
+
+        View cardChartSchool = findViewById(R.id.cardChartSchool);
+        View cardChartNature = findViewById(R.id.cardChartNature);
+        View cardChartMonth = findViewById(R.id.cardChartMonth);
+        View cardChartDow = findViewById(R.id.cardChartDow);
+        View cardChartShift = findViewById(R.id.cardChartShift);
+
+        TextView[] allChartChips = new TextView[]{chipChartSchool, chipChartMonth, chipChartDow, chipChartShift};
+        View[] allChartCards = new View[]{cardChartSchool, cardChartMonth, cardChartDow, cardChartShift};
+
+        if (chipChartSchool != null) {
+            int unselectedText = ContextCompat.getColor(this, R.color.chip_unselected_text);
+            View.OnClickListener chartChipListener = v -> {
+                for (TextView c : allChartChips) {
+                    if (c != null) {
+                        c.setBackgroundResource(R.drawable.bg_chip_unselected);
+                        c.setTextColor(unselectedText);
+                    }
+                }
+                v.setBackgroundResource(R.drawable.bg_chip_selected);
+                ((TextView) v).setTextColor(Color.WHITE);
+
+                for (View card : allChartCards) {
+                    if (card != null) card.setVisibility(View.GONE);
+                }
+                if (cardChartNature != null) cardChartNature.setVisibility(View.GONE);
+
+                int id = v.getId();
+                if (id == R.id.chipChartSchool) {
+                    if (cardChartSchool != null) cardChartSchool.setVisibility(View.VISIBLE);
+                    if (cardChartNature != null) cardChartNature.setVisibility(View.VISIBLE);
+                } else if (id == R.id.chipChartMonth) {
+                    if (cardChartMonth != null) cardChartMonth.setVisibility(View.VISIBLE);
+                } else if (id == R.id.chipChartDow) {
+                    if (cardChartDow != null) cardChartDow.setVisibility(View.VISIBLE);
+                } else if (id == R.id.chipChartShift) {
+                    if (cardChartShift != null) cardChartShift.setVisibility(View.VISIBLE);
+                }
+            };
+
+            for (TextView c : allChartChips) {
+                if (c != null) c.setOnClickListener(chartChipListener);
+            }
+        }
 
         setupChartSpinners();
 
@@ -8494,7 +9192,7 @@ public class MainActivity extends AppCompatActivity {
             if (!crossSchoolDaysMap.isEmpty()) {
                 cardCrossSchoolAlert.setVisibility(View.VISIBLE);
                 if (tvCrossSchoolAlertTitle != null) {
-                    tvCrossSchoolAlertTitle.setText("⚠️ CẢNH BÁO: " + crossSchoolDaysMap.size() + " NGÀY DI CHUYỂN ĐA TRƯỜNG");
+                    tvCrossSchoolAlertTitle.setText("CẢNH BÁO: " + crossSchoolDaysMap.size() + " NGÀY DI CHUYỂN ĐA TRƯỜNG");
                 }
                 if (tvCrossSchoolAlertDesc != null) {
                     tvCrossSchoolAlertDesc.setText("Phát hiện " + crossSchoolDaysMap.size() + " ngày có lịch tại từ 2 trường khác nhau trong cùng ngày. Chú ý dự phòng thời gian di chuyển!");
@@ -8511,7 +9209,7 @@ public class MainActivity extends AppCompatActivity {
             crossEvents.addAll(list);
         }
         EventModel.sortChronologically(crossEvents);
-        showChartDrillDownDialog("⚠️ CẢNH BÁO DI CHUYỂN ĐA TRƯỜNG", 
+        showChartDrillDownDialog("CẢNH BÁO DI CHUYỂN ĐA TRƯỜNG", 
                 "Gồm " + crossSchoolDaysMap.size() + " ngày có lịch tại từ 2 trường khác nhau", crossEvents);
     }
 

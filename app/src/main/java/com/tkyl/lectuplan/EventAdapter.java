@@ -44,9 +44,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
     private static final int COLOR_WORK_BADGE_BG = Color.parseColor("#D1FAE5");
     private static final int COLOR_WORK_TEXT = Color.parseColor("#047857");
 
-    private static final int COLOR_HANDWRITTEN_STRIP = Color.parseColor("#7C3AED");
-    private static final int COLOR_HANDWRITTEN_BADGE_BG = Color.parseColor("#EDE9FE");
-    private static final int COLOR_HANDWRITTEN_TEXT = Color.parseColor("#6D28D9");
+    private static final int COLOR_HANDWRITTEN_STRIP = Color.parseColor("#2563EB");
+    private static final int COLOR_HANDWRITTEN_BADGE_BG = Color.parseColor("#DBEAFE");
+    private static final int COLOR_HANDWRITTEN_TEXT = Color.parseColor("#1E40AF");
 
     private static final int COLOR_CARD_WHITE = Color.parseColor("#FFFFFF");
     private static final int COLOR_CARD_STROKE = Color.parseColor("#CBD5E1");
@@ -380,14 +380,14 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
 
             } else {
                 // Nhóm Lịch khác hoặc tự đặt tên tùy chỉnh
-                int purpleColor = isNight ? Color.parseColor("#C084FC") : Color.parseColor("#9333EA");
-                if (viewLeftAccentStrip != null) viewLeftAccentStrip.setBackgroundColor(purpleColor);
+                int slateColor = isNight ? Color.parseColor("#94A3B8") : Color.parseColor("#475569");
+                if (viewLeftAccentStrip != null) viewLeftAccentStrip.setBackgroundColor(slateColor);
                 String displayCat = (category != null && !category.trim().isEmpty() && !EventModel.LEGACY_CAT_MANUAL_OTHER.equals(category) && !EventModel.CAT_MANUAL_OTHER.equals(category))
                         ? category.trim()
                         : "Lịch khác";
                 holder.tvSemesterBadge.setText(schoolTag + displayCat + badgeSuffix);
-                holder.tvSemesterBadge.setBackgroundColor(isNight ? Color.parseColor("#3B0764") : Color.parseColor("#F3E8FF"));
-                holder.tvSemesterBadge.setTextColor(purpleColor);
+                holder.tvSemesterBadge.setBackgroundColor(isNight ? Color.parseColor("#1E293B") : Color.parseColor("#F1F5F9"));
+                holder.tvSemesterBadge.setTextColor(slateColor);
             }
 
             // Dòng 2: Tiêu đề

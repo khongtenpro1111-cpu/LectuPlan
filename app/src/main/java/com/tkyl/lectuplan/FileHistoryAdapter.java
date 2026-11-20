@@ -106,6 +106,9 @@ public class FileHistoryAdapter extends RecyclerView.Adapter<FileHistoryAdapter.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         FileHistoryModel item = historyList.get(position);
+        if (holder.tvIcon != null) {
+            holder.tvIcon.setVisibility(View.VISIBLE);
+        }
         holder.tvFileName.setText(item.getFileName());
         holder.tvTime.setText(item.getTimestamp());
 
@@ -125,8 +128,8 @@ public class FileHistoryAdapter extends RecyclerView.Adapter<FileHistoryAdapter.
         } else if (lowerType.contains("viết tay") || lowerType.contains("ghi tay")) {
             holder.tvIcon.setText("OCR");
             holder.tvBadge.setText(typeStr + " • " + item.getRecordCount() + " mục");
-            holder.tvBadge.setBackgroundColor(isNight ? Color.parseColor("#3B0764") : Color.parseColor("#EDE9FE"));
-            holder.tvBadge.setTextColor(isNight ? Color.parseColor("#C4B5FD") : Color.parseColor("#6D28D9"));
+            holder.tvBadge.setBackgroundColor(isNight ? Color.parseColor("#1E3A8A") : Color.parseColor("#DBEAFE"));
+            holder.tvBadge.setTextColor(isNight ? Color.parseColor("#93C5FD") : Color.parseColor("#1D4ED8"));
         } else {
             if (lowerName.endsWith(".pdf")) {
                 holder.tvIcon.setText("PDF");
@@ -174,12 +177,12 @@ public class FileHistoryAdapter extends RecyclerView.Adapter<FileHistoryAdapter.
 
         // Tùy biến nút hành động phù hợp Dark Mode & Light Mode
         if (holder.btnOpenFile != null) {
-            holder.btnOpenFile.setBackgroundColor(isNight ? Color.parseColor("#1E3A8A") : Color.parseColor("#EFF6FF"));
-            holder.btnOpenFile.setTextColor(isNight ? Color.parseColor("#93C5FD") : Color.parseColor("#2563EB"));
+            holder.btnOpenFile.setBackgroundResource(R.drawable.bg_btn_pill_blue);
+            holder.btnOpenFile.setTextColor(Color.WHITE);
         }
         if (holder.btnDownloadFile != null) {
-            holder.btnDownloadFile.setBackgroundColor(isNight ? Color.parseColor("#064E3B") : Color.parseColor("#DCFCE7"));
-            holder.btnDownloadFile.setTextColor(isNight ? Color.parseColor("#6EE7B7") : Color.parseColor("#047857"));
+            holder.btnDownloadFile.setBackgroundResource(R.drawable.bg_btn_pill_gray);
+            holder.btnDownloadFile.setTextColor(isNight ? Color.parseColor("#E2E8F0") : Color.parseColor("#475569"));
         }
 
         // Xử lý sự kiện nhấn vào thẻ

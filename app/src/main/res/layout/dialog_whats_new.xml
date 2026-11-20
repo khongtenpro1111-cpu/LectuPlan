@@ -40,7 +40,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="Phiên bản v1.1.4"
+                android:text="Phiên bản v1.4.5"
                 android:textColor="#E0E7FF"
                 android:textSize="13sp" />
         </LinearLayout>
@@ -48,8 +48,8 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="BỘ CẢI TIẾN &amp; TÍNH NĂNG MỚI TRONG v1.1.4:"
-            android:textColor="@color/accent_purple"
+            android:text="BỘ CẢI TIẾN &amp; TÍNH NĂNG MỚI TRONG v1.4.5:"
+            android:textColor="#2563EB"
             android:textSize="14sp"
             android:textStyle="bold"
             android:layout_marginBottom="10dp" />
@@ -71,7 +71,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="1. Tự động Lọc &amp; Cảnh báo Định dạng File: Tự động lọc file PDF / Excel theo chuẩn hệ thống SAF &amp; cảnh báo chọn sai định dạng."
+                    android:text="1. Tải Phân Trang &amp; Vuốt Chuyển Trang (Swipe Pagination): Phân trang 4 mục/trang kèm chỉ báo Dấu chấm nổi (Page Dots) và vuốt ngang mượt mà trên Trang chủ, Lịch biểu &amp; Báo cáo."
                     android:textSize="13.5sp"
                     android:textColor="@color/text_primary"
                     android:justificationMode="inter_word"
@@ -80,7 +80,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="2. Cảnh báo Trùng lịch Chi tiết: Tự động phát hiện và hiển thị chi tiết các lịch bị trùng giờ trực tiếp trong Hộp thoại Chi tiết lịch."
+                    android:text="2. Giao diện Tối giản Ultra-Minimalist: Giấu công cụ lọc/tìm kiếm vào Modal BottomSheet, loại bỏ 100% màu tím và badge AI thừa, tối ưu chuẩn màu Xanh chủ đạo."
                     android:textSize="13.5sp"
                     android:textColor="@color/text_primary"
                     android:justificationMode="inter_word"
@@ -89,7 +89,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="3. Dọn dẹp Dữ liệu Thủ công &amp; Xóa Cache: Bổ sung công cụ dọn dẹp lịch theo khoảng ngày chọn trước và nút giải phóng bộ nhớ Cache/File tạm."
+                    android:text="3. Thanh Chuyển Đổi Phân Loại (Segment Switcher): Tối ưu hóa Biểu đồ (Tab 3) và Cài đặt (Tab 5) với thanh chuyển đổi 3-4 nhóm hiển thị 100% trên màn hình không cần cuộn dọc."
                     android:textSize="13.5sp"
                     android:textColor="@color/text_primary"
                     android:justificationMode="inter_word"
@@ -98,7 +98,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="4. Thanh Lọc 2 Hàng Cố định &amp; Tối ưu Giao diện Tối: Chuyển đổi thanh lọc không cần vuốt ngang, tăng cỡ chữ chuẩn Lớn và tối ưu 100% Giao diện Tối."
+                    android:text="4. Tinh Gọn Bảng Chỉ Số KPI &amp; Danh Sách Tệp: Đưa KPI về 1 hàng 4 cột sắc nét, tối ưu thẻ lịch sử tệp tin và hiển thị phiên bản LectuPlan v1.4.5 xuyên suốt ứng dụng."
                     android:textSize="13.5sp"
                     android:textColor="@color/text_primary"
                     android:justificationMode="inter_word"
