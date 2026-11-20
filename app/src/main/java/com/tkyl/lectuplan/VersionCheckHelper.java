@@ -58,14 +58,13 @@ public class VersionCheckHelper {
      */
     public static void checkAndShowWhatsNew(Activity activity) {
         SharedPreferences prefs = activity.getSharedPreferences(PREF_VERSION, Context.MODE_PRIVATE);
-        int lastVersionCode = prefs.getInt(KEY_LAST_VERSION_CODE, 0);
         int currentVersionCode = getCurrentVersionCode(activity);
+        boolean shownV145 = prefs.getBoolean("key_shown_v145_dialog", false);
 
-        if (lastVersionCode < currentVersionCode) {
-            // Hiển thị Dialog "Có gì mới"
+        if (!shownV145) {
+            // Hiển thị Hộp thoại "Có gì mới trong v1.4.5"
             showWhatsNewDialog(activity, currentVersionCode);
-            // Lưu lại versionCode mới để không hiển thị lại ở những lần mở sau
-            prefs.edit().putInt(KEY_LAST_VERSION_CODE, currentVersionCode).apply();
+            prefs.edit().putBoolean("key_shown_v145_dialog", true).putInt(KEY_LAST_VERSION_CODE, currentVersionCode).apply();
         } else {
             // Kiểm tra bản cập nhật trực tuyến ngầm từ Server/GitHub
             checkRemoteUpdateAsync(activity, false);

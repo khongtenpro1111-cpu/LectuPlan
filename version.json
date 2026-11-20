@@ -1,8 +1,8 @@
 {
-  "latest_version_code": 6,
-  "latest_version_name": "1.1.4",
+  "latest_version_code": 145,
+  "latest_version_name": "1.4.5",
   "apk_url": "https://github.com/khongtenpro1111-cpu/LectuPlan/raw/main/LectuPlan.apk",
   "apk_download_url": "https://github.com/khongtenpro1111-cpu/LectuPlan/raw/main/LectuPlan.apk",
-  "release_notes": "• 📂 Tự động lọc định dạng file chuẩn SAF (PDF, Excel, Ảnh/OCR) & Cảnh báo chọn sai file.\n• ⚠️ Cảnh báo & Hiển thị chi tiết trùng lịch trực tiếp trong Popup Chi tiết lịch.\n• 🧹 Thêm tính năng Dọn dẹp dữ liệu thủ công theo khoảng ngày & Nút Xóa Cache giải phóng bộ nhớ.\n• 🎯 Thanh lọc cố định 2 hàng vừa vặn 100% màn hình, không cần vuốt ngang.\n• 🌙 Tối ưu 100% Giao diện Tối (Dark Mode) sắc nét, tăng cỡ chữ chuẩn Lớn dễ đọc.",
+  "release_notes": "• Tối ưu hóa Giao diện Ultra-Minimalist: Tinh gọn toàn bộ 5 màn hình chính, chuẩn hóa màu sắc hiện đại.\n• Phân trang & Vuốt chuyển trang mượt mà: Hỗ trợ phân trang 4 mục/trang kèm chỉ báo Dấu chấm nổi và cử chỉ vuốt ngang.\n• Thanh chuyển đổi Phân loại (Segment Switcher): Tối ưu hóa Biểu đồ (Tab 3) và Cài đặt (Tab 5) hiển thị 100% trên màn hình.\n• Nâng cấp Hệ thống v1.4.5: Tinh gọn chỉ số KPI, tối ưu bộ nhớ và cải thiện hiệu năng toàn ứng dụng.",
   "force_update": false
 }
