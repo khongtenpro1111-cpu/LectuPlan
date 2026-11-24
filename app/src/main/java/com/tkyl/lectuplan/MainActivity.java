@@ -1160,7 +1160,11 @@ public class MainActivity extends AppCompatActivity {
         fabScrollToTop = findViewById(R.id.fabScrollToTop);
 
         if (fabAddEvent != null) {
-            fabAddEvent.setVisibility(View.GONE);
+            fabAddEvent.setVisibility((currentActiveTabIndex <= 1) ? View.VISIBLE : View.GONE);
+            fabAddEvent.setOnClickListener(v -> {
+                SoundHelper.playFeedback(MainActivity.this, v);
+                showAddEventDialog();
+            });
         }
 
         // Xử lý sự kiện nhấn nút cuộn lên đầu trang (Scroll to Top)
@@ -1290,11 +1294,9 @@ public class MainActivity extends AppCompatActivity {
                 if (layoutMultiSelectBar != null) {
                     layoutMultiSelectBar.setVisibility(isMulti ? View.VISIBLE : View.GONE);
                 }
-                if (layoutPaginationBar != null && currentActiveTabIndex == 0) {
-                    layoutPaginationBar.setVisibility(isMulti ? View.GONE : View.VISIBLE);
-                }
+                updatePaginationBarVisibilities();
                 if (fabAddEvent != null) {
-                    fabAddEvent.setVisibility(View.GONE);
+                    fabAddEvent.setVisibility((currentActiveTabIndex <= 1 && !isMulti) ? View.VISIBLE : View.GONE);
                 }
             }
         });
@@ -1322,8 +1324,8 @@ public class MainActivity extends AppCompatActivity {
                 if (adapter != null) adapter.setMultiSelectMode(false);
                 if (tab2Adapter != null) tab2Adapter.setMultiSelectMode(false);
                 if (layoutMultiSelectBar != null) layoutMultiSelectBar.setVisibility(View.GONE);
-                if (layoutPaginationBar != null && currentActiveTabIndex == 0) layoutPaginationBar.setVisibility(View.VISIBLE);
-                if (fabAddEvent != null) fabAddEvent.setVisibility(View.GONE);
+                if (layoutPaginationBar != null) updatePaginationBarVisibilities();
+                if (fabAddEvent != null) fabAddEvent.setVisibility(currentActiveTabIndex <= 1 ? View.VISIBLE : View.GONE);
             });
         }
 
@@ -1349,8 +1351,8 @@ public class MainActivity extends AppCompatActivity {
                             if (adapter != null) adapter.setMultiSelectMode(false);
                             if (tab2Adapter != null) tab2Adapter.setMultiSelectMode(false);
                             if (layoutMultiSelectBar != null) layoutMultiSelectBar.setVisibility(View.GONE);
-                            if (layoutPaginationBar != null && currentActiveTabIndex == 0) layoutPaginationBar.setVisibility(View.VISIBLE);
-                            if (fabAddEvent != null) fabAddEvent.setVisibility(View.GONE);
+                            updatePaginationBarVisibilities();
+                            if (fabAddEvent != null) fabAddEvent.setVisibility(currentActiveTabIndex <= 1 ? View.VISIBLE : View.GONE);
                             refreshData();
                             refreshTab2CalendarEvents();
                             updateChartTab();
@@ -1385,6 +1387,7 @@ public class MainActivity extends AppCompatActivity {
                     if (layoutFileMultiSelectBar != null) {
                         layoutFileMultiSelectBar.setVisibility(fileHistoryAdapter != null && fileHistoryAdapter.isMultiSelectMode() ? View.VISIBLE : View.GONE);
                     }
+                    updatePaginationBarVisibilities();
                 }
             });
             rvFileHistory.setAdapter(fileHistoryAdapter);
@@ -1403,6 +1406,7 @@ public class MainActivity extends AppCompatActivity {
                 if (fileHistoryAdapter != null) {
                     fileHistoryAdapter.setMultiSelectMode(false);
                     if (layoutFileMultiSelectBar != null) layoutFileMultiSelectBar.setVisibility(View.GONE);
+                    updatePaginationBarVisibilities();
                 }
             });
         }
@@ -1606,11 +1610,7 @@ public class MainActivity extends AppCompatActivity {
             refreshTab2CalendarEvents();
         });
 
-        View cardTab2Pag = findViewById(R.id.layoutTab2PaginationCard);
-        if (cardTab2Pag != null) {
-            boolean hasMultiple = totalTab2Pages > 1 && !displayList.isEmpty() && (displayList.get(0).getId() > 0);
-            cardTab2Pag.setVisibility(hasMultiple ? View.VISIBLE : View.GONE);
-        }
+        updatePaginationBarVisibilities();
 
         if (customCalendarAdapter != null) {
             customCalendarAdapter.setSelectedDateIso(selectedTab2DateIso);
@@ -7450,10 +7450,7 @@ public class MainActivity extends AppCompatActivity {
                 refreshFileHistory();
             });
 
-            View cardFilePag = findViewById(R.id.layoutFilePaginationCard);
-            if (cardFilePag != null) {
-                cardFilePag.setVisibility(totalFilePages > 1 ? View.VISIBLE : View.GONE);
-            }
+            updatePaginationBarVisibilities();
         }
     }
 
@@ -7461,15 +7458,19 @@ public class MainActivity extends AppCompatActivity {
         TextView chipSettingGeneral = findViewById(R.id.chipSettingGeneral);
         TextView chipSettingAlarm = findViewById(R.id.chipSettingAlarm);
         TextView chipSettingClean = findViewById(R.id.chipSettingClean);
+        TextView chipSettingAbout = findViewById(R.id.chipSettingAbout);
 
         View groupGeneral = findViewById(R.id.layoutSettingGroupGeneral);
         View groupAlarm = findViewById(R.id.layoutSettingGroupAlarm);
         View groupClean = findViewById(R.id.layoutSettingGroupClean);
+        View groupAbout = findViewById(R.id.layoutSettingGroupAbout);
 
         if (chipSettingGeneral == null || chipSettingAlarm == null || chipSettingClean == null) return;
 
-        TextView[] allSettingChips = new TextView[]{chipSettingGeneral, chipSettingAlarm, chipSettingClean};
-        View[] allSettingGroups = new View[]{groupGeneral, groupAlarm, groupClean};
+        TextView[] allSettingChips = (chipSettingAbout != null)
+                ? new TextView[]{chipSettingGeneral, chipSettingAlarm, chipSettingClean, chipSettingAbout}
+                : new TextView[]{chipSettingGeneral, chipSettingAlarm, chipSettingClean};
+        View[] allSettingGroups = new View[]{groupGeneral, groupAlarm, groupClean, groupAbout};
 
         int unselectedText = ContextCompat.getColor(this, R.color.chip_unselected_text);
         View.OnClickListener listener = v -> {
@@ -7493,6 +7494,8 @@ public class MainActivity extends AppCompatActivity {
                 if (groupAlarm != null) groupAlarm.setVisibility(View.VISIBLE);
             } else if (id == R.id.chipSettingClean) {
                 if (groupClean != null) groupClean.setVisibility(View.VISIBLE);
+            } else if (id == R.id.chipSettingAbout) {
+                if (groupAbout != null) groupAbout.setVisibility(View.VISIBLE);
             }
         };
 
@@ -7669,19 +7672,12 @@ public class MainActivity extends AppCompatActivity {
             if (layoutReportTab != null) layoutReportTab.setVisibility(index == 3 ? View.VISIBLE : View.GONE);
             if (layoutSettingsTab != null) layoutSettingsTab.setVisibility(index == 4 ? View.VISIBLE : View.GONE);
 
-            if (layoutPaginationBar != null) {
-                boolean showPag = (index == 0 && (adapter == null || !adapter.isMultiSelectMode()));
-                layoutPaginationBar.setVisibility(showPag ? View.VISIBLE : View.GONE);
-            }
-
-            View cardFilePag = findViewById(R.id.layoutFilePaginationCard);
-            if (cardFilePag != null) {
-                boolean showFilePag = (index == 3 && totalFilePages > 1);
-                cardFilePag.setVisibility(showFilePag ? View.VISIBLE : View.GONE);
-            }
+            updatePaginationBarVisibilities();
 
             if (fabAddEvent != null) {
-                fabAddEvent.setVisibility(View.GONE);
+                boolean isMulti = (adapter != null && adapter.isMultiSelectMode()) || (tab2Adapter != null && tab2Adapter.isMultiSelectMode());
+                boolean showFab = ((index == 0 || index == 1) && !isMulti);
+                fabAddEvent.setVisibility(showFab ? View.VISIBLE : View.GONE);
             }
             if (fabScrollToTop != null) {
                 fabScrollToTop.hide();
@@ -8531,10 +8527,7 @@ public class MainActivity extends AppCompatActivity {
             refreshData();
         });
 
-        if (layoutPaginationBar != null) {
-            boolean hasMultiplePages = totalSchedulePages > 1 && totalItems > 0 && (displayList.get(0).getId() > 0);
-            layoutPaginationBar.setVisibility((hasMultiplePages && currentActiveTabIndex == 0 && (adapter == null || !adapter.isMultiSelectMode())) ? View.VISIBLE : View.GONE);
-        }
+        updatePaginationBarVisibilities();
 
         isTab2Dirty = true;
         if (customCalendarAdapter != null) {
@@ -8548,6 +8541,34 @@ public class MainActivity extends AppCompatActivity {
         }
         if (barChart != null && barChart.isShown()) {
             updateChart();
+        }
+    }
+
+    private void updatePaginationBarVisibilities() {
+        // Tab 0 (Lịch trình) Floating Pagination Bar
+        if (layoutPaginationBar != null) {
+            boolean showSchedulePag = (currentActiveTabIndex == 0 
+                    && totalSchedulePages > 1 
+                    && (adapter == null || !adapter.isMultiSelectMode()));
+            layoutPaginationBar.setVisibility(showSchedulePag ? View.VISIBLE : View.GONE);
+        }
+
+        // Tab 1 (Lịch biểu) Pagination Card
+        View cardTab2Pag = findViewById(R.id.layoutTab2PaginationCard);
+        if (cardTab2Pag != null) {
+            boolean showTab2Pag = (currentActiveTabIndex == 1 
+                    && totalTab2Pages > 1 
+                    && (tab2Adapter == null || !tab2Adapter.isMultiSelectMode()));
+            cardTab2Pag.setVisibility(showTab2Pag ? View.VISIBLE : View.GONE);
+        }
+
+        // Tab 3 (Lịch sử tệp) Floating Pagination Card
+        View cardFilePag = findViewById(R.id.layoutFilePaginationCard);
+        if (cardFilePag != null) {
+            boolean showFilePag = (currentActiveTabIndex == 3 
+                    && totalFilePages > 1 
+                    && (fileHistoryAdapter == null || !fileHistoryAdapter.isMultiSelectMode()));
+            cardFilePag.setVisibility(showFilePag ? View.VISIBLE : View.GONE);
         }
     }
 

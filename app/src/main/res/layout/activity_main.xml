@@ -1391,7 +1391,7 @@
                         android:gravity="center"
                         android:text="Giao diện"
                         android:textColor="#FFFFFF"
-                        android:textSize="12.5sp"
+                        android:textSize="11.5sp"
                         android:textStyle="bold"
                         android:clickable="true"
                         android:focusable="true" />
@@ -1405,7 +1405,7 @@
                         android:gravity="center"
                         android:text="Nhắc lịch"
                         android:textColor="@color/chip_unselected_text"
-                        android:textSize="12.5sp"
+                        android:textSize="11.5sp"
                         android:textStyle="bold"
                         android:clickable="true"
                         android:focusable="true" />
@@ -1419,7 +1419,21 @@
                         android:gravity="center"
                         android:text="Dọn dẹp"
                         android:textColor="@color/chip_unselected_text"
-                        android:textSize="12.5sp"
+                        android:textSize="11.5sp"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/chipSettingAbout"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_chip_unselected"
+                        android:gravity="center"
+                        android:text="Giới thiệu"
+                        android:textColor="@color/chip_unselected_text"
+                        android:textSize="11.5sp"
                         android:textStyle="bold"
                         android:clickable="true"
                         android:focusable="true" />
@@ -1474,6 +1488,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="6dp"
+                                android:visibility="gone"
                                 android:text="Tự động Check-in GPS minh chứng"
                                 android:textColor="@color/text_primary"
                                 android:textSize="13sp"
@@ -2033,8 +2048,69 @@
                                 app:cornerRadius="12dp" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
 
-                    <!-- Card Giới Thiệu & Thông Tin Ứng Dụng -->
+                <!-- KHỐI 4: GIỚI THIỆU & THÔNG TIN ỨNG DỤNG (Dành riêng cho Trang Giới Thiệu) -->
+                <LinearLayout
+                    android:id="@+id/layoutSettingGroupAbout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <!-- Card 1: Tổng quan LectuPlan -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="1dp"
+                        app:strokeWidth="1dp"
+                        app:cardBackgroundColor="@color/surface_card"
+                        app:strokeColor="@color/border_default">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="8dp">
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="LectuPlan v1.4.6"
+                                    android:textSize="18sp"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/accent_blue" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Trợ lý số chuyên nghiệp dành riêng cho Giảng viên."
+                                android:textSize="13.5sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary"
+                                android:layout_marginBottom="6dp" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="LectuPlan hỗ trợ Giảng viên quản lý Thời khóa biểu, lịch giảng dạy thỉnh giảng, xử lý file thư mời giảng (PDF, Excel), báo thức nhắc lịch dạy thông minh và thống kê dự toán thu nhập tự động."
+                                android:textSize="13sp"
+                                android:textColor="@color/text_secondary"
+                                android:lineSpacingExtra="3dp" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Card 2: Thao tác & Xem hướng dẫn chi tiết -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/cardAppIntro"
                         android:layout_width="match_parent"
@@ -2050,49 +2126,89 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:padding="14dp">
+                            android:padding="16dp">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Thông tin LectuPlan"
-                                android:textSize="13.5sp"
+                                android:text="Hướng dẫn &amp; Cập nhật"
+                                android:textSize="15sp"
                                 android:textStyle="bold"
-                                android:textColor="#2563EB" />
+                                android:textColor="@color/text_primary" />
 
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="Ứng dụng quản lý lịch trình &amp; công việc dành riêng cho Giảng viên."
-                                android:textSize="12sp"
+                                android:text="Xem chi tiết toàn bộ tính năng hoặc kiểm tra phiên bản mới nhất."
+                                android:textSize="12.5sp"
                                 android:textColor="@color/text_secondary" />
 
                             <Button
                                 android:id="@+id/btnOpenDetailedAppIntro"
                                 android:layout_width="match_parent"
-                                android:layout_height="42dp"
-                                android:layout_marginTop="10dp"
-                                android:text="Xem Hướng Dẫn &amp; Giới Thiệu Chi Tiết"
+                                android:layout_height="wrap_content"
+                                android:minHeight="44dp"
+                                android:layout_marginTop="12dp"
+                                android:paddingHorizontal="6dp"
+                                android:paddingVertical="8dp"
+                                android:text="📖 Xem Hướng Dẫn &amp; Giới Thiệu Chi Tiết"
                                 android:textColor="#FFFFFF"
                                 android:backgroundTint="@color/accent_blue"
-                                android:textSize="13sp"
+                                android:textSize="12.5sp"
                                 android:textStyle="bold"
+                                android:maxLines="2"
                                 app:cornerRadius="12dp" />
 
                             <Button
                                 android:id="@+id/btnCheckUpdate"
                                 android:layout_width="match_parent"
-                                android:layout_height="42dp"
+                                android:layout_height="44dp"
                                 android:layout_marginTop="8dp"
-                                android:text="Kiểm tra bản cập nhật mới"
+                                android:text="🔄 Kiểm tra bản cập nhật mới"
                                 android:textColor="@color/accent_blue"
                                 android:backgroundTint="@color/surface_card_secondary"
-                                android:textSize="13sp"
+                                android:textSize="13.5sp"
                                 android:textStyle="bold"
                                 style="?attr/materialButtonOutlinedStyle"
                                 app:strokeColor="@color/border_default"
                                 app:cornerRadius="12dp" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Card 3: Thông tin Kỹ thuật & Tác giả -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="1dp"
+                        app:strokeWidth="1dp"
+                        app:cardBackgroundColor="@color/surface_card"
+                        app:strokeColor="@color/border_default">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Thông tin Kỹ thuật &amp; Tác giả"
+                                android:textSize="15sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary"
+                                android:layout_marginBottom="10dp" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="• Tác giả / Phát triển: TKyl\n• Trường: Đại học Nguyễn Tất Thành (NTTU)\n• Môn học: Lập trình Di động (LTDD)\n• Nền tảng: Android (Java / Kotlin, Material Design 3)\n• Yêu cầu hệ thống: Android 8.0 trở lên (API 26+)\n• Phiên bản: v1.4.6 (Stable)"
+                                android:textSize="13sp"
+                                android:textColor="@color/text_secondary"
+                                android:lineSpacingExtra="6dp" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
@@ -2102,7 +2218,7 @@
                     android:id="@+id/tvFooterVersion"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="LectuPlan v1.4.5 • Ứng dụng Quản lý Lịch giảng dạy"
+                    android:text="LectuPlan v1.4.6 • Ứng dụng Quản lý Lịch giảng dạy"
                     android:textSize="12sp"
                     android:gravity="center"
                     android:textColor="@color/text_tertiary"
@@ -2130,7 +2246,7 @@
         app:elevation="4dp"
         app:fabSize="normal" />
 
-    <!-- Floating Action Button (Đã ẩn vì dùng nút Menu trên thanh lọc) -->
+    <!-- Floating Action Button (Thêm lịch mới nhanh) -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddEvent"
         android:layout_width="wrap_content"
@@ -2138,12 +2254,13 @@
         android:layout_above="@id/cardBottomNav"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="18dp"
-        android:layout_marginBottom="72dp"
-        android:contentDescription="Bộ lọc &amp; Menu"
-        android:src="@drawable/ic_filter"
-        android:visibility="gone"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="Thêm lịch mới"
+        android:src="@drawable/ic_add"
+        android:visibility="visible"
         app:backgroundTint="#2563EB"
         app:tint="#FFFFFF"
+        app:elevation="6dp"
         app:fabSize="normal" />
 
     <!-- Thanh chỉ báo phân trang dạng Dấu Chấm Nổi Siêu Gọn (Only Floating Page Dots Bar) -->

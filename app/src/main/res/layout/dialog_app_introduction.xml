@@ -126,7 +126,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="• Nhập file Thư mời giảng, PDF, Word, Excel hoặc Hình ảnh.\n• Tự động bóc tách thông tin môn học, phòng học, thời gian, tiết học.\n• Hỗ trợ xử lý chữ viết tay hoặc văn bản đánh máy chính xác cao.\n• Xem lịch sử tệp đã nhập và quản lý nội dung bóc tách."
+                    android:text="• Nhập file Thư mời giảng (PDF, Excel).\n• Tự động trích xuất thông tin môn học, phòng học, thời gian, tiết học.\n• Hỗ trợ xử lý thông tin lịch giảng chính xác cao.\n• Xem lịch sử tệp đã nhập và quản lý nội dung trích xuất."
                     android:textSize="14sp"
                     android:textColor="@color/text_secondary"
                     android:justificationMode="inter_word"
@@ -166,7 +166,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="• Biểu đồ tổng kết số tiết dạy, số buổi theo tuần / tháng / học kỳ.\n• Thống kê &amp; Dự toán thu nhập thỉnh giảng tự động theo từng đơn vị trường.\n• Cho phép tùy chỉnh đơn giá thù lao/tiết chính xác theo hợp đồng riêng.\n• Xem chi tiết drill-down từng mục giảng dạy."
+                    android:text="• Biểu đồ tổng kết số tiết dạy, số buổi theo tuần / tháng / năm.\n• Thống kê &amp; Dự toán thu nhập thỉnh giảng tự động theo từng đơn vị trường.\n• Cho phép tùy chỉnh đơn giá thù lao/tiết chính xác theo hợp đồng riêng.\n• Xem chi tiết drill-down từng mục giảng dạy."
                     android:textSize="14sp"
                     android:textColor="@color/text_secondary"
                     android:justificationMode="inter_word"
@@ -193,11 +193,11 @@
                     android:lineSpacingExtra="5dp"
                     android:layout_marginBottom="16dp" />
 
-                <!-- Mục 7: Nâng cấp Phiên bản v1.4.5 -->
+                <!-- Mục 7: Nâng cấp Phiên bản v1.4.6 -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="7. Nâng cấp Phiên bản v1.4.5 Mới nhất"
+                    android:text="7. Nâng cấp Phiên bản v1.4.6 Mới nhất"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="#2563EB"
@@ -206,7 +206,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="• Tự động lọc định dạng file chuẩn SAF (PDF, Excel, Ảnh/OCR) &amp; Cảnh báo chọn sai file.\n• Hiển thị trực quan cảnh báo trùng lịch chi tiết trong Popup Chi tiết lịch.\n• Thêm công cụ Dọn dẹp dữ liệu thủ công theo khoảng ngày chọn trước &amp; Xóa Cache giải phóng bộ nhớ.\n• Thanh lọc cố định 2 hàng vừa vặn 100% màn hình, không cần vuốt ngang.\n• Tối ưu 100% Giao diện Tối (Dark Mode) sắc nét, tăng cỡ chữ chuẩn Lớn dễ đọc."
+                    android:text="• Tự động lọc định dạng file chuẩn SAF (PDF, Excel) &amp; Cảnh báo chọn sai file.\n• Hiển thị trực quan cảnh báo trùng lịch chi tiết trong Popup Chi tiết lịch.\n• Thêm công cụ Dọn dẹp dữ liệu thủ công theo khoảng ngày chọn trước &amp; Xóa Cache giải phóng bộ nhớ.\n• Thanh lọc cố định 2 hàng vừa vặn 100% màn hình, không cần vuốt ngang.\n• Tối ưu 100% Giao diện Tối (Dark Mode) sắc nét, tăng cỡ chữ chuẩn Lớn dễ đọc."
                     android:textSize="14sp"
                     android:textColor="@color/text_secondary"
                     android:justificationMode="inter_word"
@@ -227,7 +227,7 @@
                     android:id="@+id/tvAppIntroTechnicalInfo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="• Phiên bản: v1.4.5 (Stable)\n• Tác giả / Phát triển: TKyl\n• Yêu cầu thiết bị: Android 8.0 trở lên (API 26+)\n• Nền tảng: Android (Java / Kotlin, Material Design 3)\n• Môn học: Lập trình Di động (LTDD)\n• Trường: Đại học Nguyễn Tất Thành (NTTU)"
+                    android:text="• Phiên bản: v1.4.6 (Stable)\n• Tác giả / Phát triển: TKyl\n• Yêu cầu thiết bị: Android 8.0 trở lên (API 26+)\n• Nền tảng: Android (Java / Kotlin, Material Design 3)\n• Môn học: Lập trình Di động (LTDD)\n• Trường: Đại học Nguyễn Tất Thành (NTTU)"
                     android:textSize="14sp"
                     android:textColor="@color/text_secondary"
                     android:justificationMode="inter_word"

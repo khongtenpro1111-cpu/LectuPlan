@@ -59,12 +59,12 @@ public class VersionCheckHelper {
     public static void checkAndShowWhatsNew(Activity activity) {
         SharedPreferences prefs = activity.getSharedPreferences(PREF_VERSION, Context.MODE_PRIVATE);
         int currentVersionCode = getCurrentVersionCode(activity);
-        boolean shownV145 = prefs.getBoolean("key_shown_v145_dialog", false);
+        boolean shownV146 = prefs.getBoolean("key_shown_v146_dialog", false);
 
-        if (!shownV145) {
-            // Hiển thị Hộp thoại "Có gì mới trong v1.4.5"
+        if (!shownV146) {
+            // Hiển thị Hộp thoại "Có gì mới trong v1.4.6"
             showWhatsNewDialog(activity, currentVersionCode);
-            prefs.edit().putBoolean("key_shown_v145_dialog", true).putInt(KEY_LAST_VERSION_CODE, currentVersionCode).apply();
+            prefs.edit().putBoolean("key_shown_v146_dialog", true).putInt(KEY_LAST_VERSION_CODE, currentVersionCode).apply();
         } else {
             // Kiểm tra bản cập nhật trực tuyến ngầm từ Server/GitHub
             checkRemoteUpdateAsync(activity, false);
@@ -199,7 +199,7 @@ public class VersionCheckHelper {
         String currentVer = getCurrentVersionName(activity);
         new AlertDialog.Builder(activity)
                 .setTitle("ỨNG DỤNG ĐÃ Ở PHIÊN BẢN MỚI NHẤT")
-                .setMessage("Bạn đang sử dụng phiên bản LectuPlan v" + currentVer + " mới nhất.\n\nToàn bộ bộ 5 tính năng cao cấp (Gợi ý Khung giờ Trống, Auto DND, Check-in GPS, Dự toán Thu nhập, Thiệp Office Hours, Ghi âm giọng nói) đã sẵn sàng phục vụ bạn!")
+                .setMessage("Bạn đang sử dụng phiên bản LectuPlan v" + currentVer + " mới nhất.\n\nToàn bộ các tính năng cao cấp (Gợi ý Khung giờ Trống, Auto DND, Dự toán Thu nhập, Thiệp Office Hours) đã sẵn sàng phục vụ bạn!")
                 .setPositiveButton("Xem các tính năng mới", (dialog, which) -> {
                     showWhatsNewDialog(activity, getCurrentVersionCode(activity));
                 })
