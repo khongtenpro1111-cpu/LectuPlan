@@ -98,7 +98,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="4. Tối Ưu Hệ Thống v1.4.6: Tinh gọn giao diện, sửa các lỗi nhỏ và hiển thị nhất quán phiên bản LectuPlan v1.4.6 xuyên suốt ứng dụng."
+                    android:text="4. Tối Ưu Hệ Thống v1.4.6: Tinh gọn giao diện, ký chữ ký mã hóa APK đầy đủ giúp cập nhật trực tiếp thành công."
                     android:textSize="13.5sp"
                     android:textColor="@color/text_primary"
                     android:justificationMode="inter_word"

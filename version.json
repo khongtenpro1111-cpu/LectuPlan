@@ -3,6 +3,6 @@
   "latest_version_name": "1.4.6",
   "apk_url": "https://github.com/khongtenpro1111-cpu/LectuPlan/raw/main/LectuPlan.apk",
   "apk_download_url": "https://github.com/khongtenpro1111-cpu/LectuPlan/raw/main/LectuPlan.apk",
-  "release_notes": "• Sửa lỗi Phân trang (Page Dots): Khắc phục hoàn toàn sự cố hiển thị trùng hai thanh phân trang.\n• Trang Giới thiệu ứng dụng chuyên biệt: Chuyển toàn bộ thông tin & hướng dẫn vào 1 phân mục Cài đặt riêng.\n• Thêm lại Nút Nổi Dấu Cộng (+): Cho phép khởi tạo nhanh công việc/lịch mới tại Trang chủ và Lịch biểu.\n• Nâng cấp Hệ thống v1.4.6: Tinh gọn giao diện, sửa lỗi và tối ưu hiệu năng tổng thể.",
+  "release_notes": "• Sửa lỗi Phân trang (Page Dots): Khắc phục hoàn toàn sự cố hiển thị trùng hai thanh phân trang.\n• Trang Giới thiệu ứng dụng chuyên biệt: Chuyển toàn bộ thông tin & hướng dẫn vào 1 phân mục Cài đặt riêng.\n• Thêm lại Nút Nổi Dấu Cộng (+): Cho phép khởi tạo nhanh công việc/lịch mới tại Trang chủ và Lịch biểu.\n• Nâng cấp Hệ thống v1.4.6: Tinh gọn giao diện, ký chữ ký APK đầy đủ giúp cập nhật trực tiếp thành công.",
   "force_update": false
 }
