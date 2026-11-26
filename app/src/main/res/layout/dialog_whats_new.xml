@@ -40,7 +40,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="Phiên bản v1.4.6"
+                android:text="Phiên bản v1.0.7"
                 android:textColor="#E0E7FF"
                 android:textSize="13sp" />
         </LinearLayout>
@@ -48,7 +48,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="BỘ CẢI TIẾN &amp; TÍNH NĂNG MỚI TRONG v1.4.6:"
+            android:text="BỘ CẢI TIẾN &amp; TÍNH NĂNG MỚI TRONG v1.0.7:"
             android:textColor="#2563EB"
             android:textSize="14sp"
             android:textStyle="bold"
@@ -71,7 +71,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="1. Khắc Phục Hoàn Toàn Lỗi Phân Trang (Page Dots): Xử lý triệt để lỗi đè hai thanh phân trang, đảm bảo chỉ báo trang nổi luôn sắc nét và chính xác theo từng Tab."
+                    android:text="1. Tải Tệp Mẫu Excel Chuẩn (.xlsx): Bổ sung công cụ khởi tạo file Excel mẫu phủ đầy đủ 9 trường dữ liệu của ứng dụng."
                     android:textSize="13.5sp"
                     android:textColor="@color/text_primary"
                     android:justificationMode="inter_word"
@@ -80,7 +80,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="2. Trang Giới Thiệu Ứng Dụng Chuyên Biệt: Chuyển toàn bộ thông tin &amp; hướng dẫn vào 1 phân mục Cài đặt riêng trên thanh chuyển đổi Segment Switcher."
+                    android:text="2. Danh Sách Chọn Thả Xuống (Dropdowns): Tích hợp trực tiếp Data Validation trong file Excel cho Phân loại lịch và Tính thù lao."
                     android:textSize="13.5sp"
                     android:textColor="@color/text_primary"
                     android:justificationMode="inter_word"
@@ -89,7 +89,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="3. Thêm Nút Nổi Dấu Cộng (+): Khởi tạo nhanh công việc/lịch biểu mới mượt mà ngay tại Trang chủ và Lịch biểu."
+                    android:text="3. Trang Tra Cứu Quy Chuẩn (Sheet 2): Bổ sung Sheet 2 'HuongDan_QuyChuan' giải thích chi tiết ý nghĩa và định dạng từng cột."
                     android:textSize="13.5sp"
                     android:textColor="@color/text_primary"
                     android:justificationMode="inter_word"
@@ -98,7 +98,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="4. Tối Ưu Hệ Thống v1.4.6: Tinh gọn giao diện, ký chữ ký mã hóa APK đầy đủ giúp cập nhật trực tiếp thành công."
+                    android:text="4. Chuẩn Hóa Nhập Dữ Liệu v1.0.7: Tự động tách Địa điểm, Giờ bắt đầu, Giờ kết thúc và Phân loại lịch không bị mất thông tin."
                     android:textSize="13.5sp"
                     android:textColor="@color/text_primary"
                     android:justificationMode="inter_word"

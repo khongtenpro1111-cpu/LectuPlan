@@ -273,12 +273,33 @@ public class EventModel {
         String clean = rawTitle
                 .replaceAll("(?i)\\s*\\(phòng\\s*:[^)]*\\)", "")
                 .replaceAll("(?i)\\s*\\(thời gian\\s*:[^)]*\\)", "")
-                .replaceAll("(?i)\\s*\\[\\d{1,2}:\\d{2}.*?\\]", "")
                 .replaceAll("(?i)\\s*\\|\\s*tiết\\b.*", "")
-                .replaceAll("(?i)\\s*[-–—]\\s*(?:phòng|room|địa\\s*điểm)\\b.*", "")
-                .replaceAll("(?i)\\s*-\\s*(?:phòng|room|địa\\s*điểm).*", "")
-                .replaceAll("(?i)[\\s•,\\-–—(\\[|]+$", "")
                 .trim();
+
+        // 1. Kiểm tra xem tiêu đề có đính kèm thời gian trong ngoặc vuông [07:30 - 11:35] hay không
+        boolean hasTimeBracket = clean.matches(".*\\s*\\[\\d{1,2}:\\d{2}.*?\\]");
+        clean = clean.replaceAll("(?i)\\s*\\[\\d{1,2}:\\d{2}.*?\\]", "").trim();
+
+        // 2. Tách dấu gạch ngang phân cách Địa điểm / Phòng học nếu có phần [thời gian] đính kèm
+        if (hasTimeBracket) {
+            java.util.regex.Matcher mDash = java.util.regex.Pattern.compile("\\s+[-–—]\\s+(?!\\d{4})").matcher(clean);
+            int lastDashIndex = -1;
+            while (mDash.find()) {
+                lastDashIndex = mDash.start();
+            }
+            if (lastDashIndex > 0) {
+                String candidateTitle = clean.substring(0, lastDashIndex).trim();
+                if (!candidateTitle.isEmpty()) {
+                    clean = candidateTitle;
+                }
+            }
+        } else {
+            clean = clean
+                    .replaceAll("(?i)\\s*[-–—]\\s*(?:phòng|room|địa\\s*điểm)\\b.*", "")
+                    .replaceAll("(?i)\\s*-\\s*(?:phòng|room|địa\\s*điểm).*", "");
+        }
+
+        clean = clean.replaceAll("(?i)[\\s•,\\-–—(\\[|]+$", "").trim();
         return clean.isEmpty() ? rawTitle : clean;
     }
 
@@ -349,13 +370,13 @@ public class EventModel {
             if (bracketIdx < 0) bracketIdx = rawTitle.indexOf("[");
             String titlePartForRoom = bracketIdx > 0 ? rawTitle.substring(0, bracketIdx) : rawTitle;
 
-            java.util.regex.Matcher mDash = java.util.regex.Pattern.compile("\\s+-\\s+(?!\\d{4})").matcher(titlePartForRoom);
-            int lastValidDash = -1;
+            java.util.regex.Matcher mDash = java.util.regex.Pattern.compile("\\s+[-–—]\\s+(?!\\d{4})").matcher(titlePartForRoom);
+            int lastValidDashEnd = -1;
             while (mDash.find()) {
-                lastValidDash = mDash.start();
+                lastValidDashEnd = mDash.end();
             }
-            if (lastValidDash != -1) {
-                String suffix = titlePartForRoom.substring(lastValidDash + 3).trim();
+            if (lastValidDashEnd != -1) {
+                String suffix = titlePartForRoom.substring(lastValidDashEnd).trim();
                 int pipeIdx = suffix.indexOf(" |");
                 if (pipeIdx > 0) {
                     suffix = suffix.substring(0, pipeIdx).trim();

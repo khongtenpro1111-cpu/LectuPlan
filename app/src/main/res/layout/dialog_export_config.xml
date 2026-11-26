@@ -223,6 +223,7 @@
 
             <!-- Phần 4: Danh sách bản ghi -->
             <TextView
+                android:id="@+id/tvExportRecordHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="4. Kiểm duyệt danh sách bản ghi"

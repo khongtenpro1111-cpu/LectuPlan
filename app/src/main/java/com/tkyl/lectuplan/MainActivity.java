@@ -112,6 +112,9 @@ import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.DataValidation;
+import org.apache.poi.ss.usermodel.DataValidationConstraint;
+import org.apache.poi.ss.usermodel.DataValidationHelper;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
@@ -122,6 +125,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.ByteArrayOutputStream;
@@ -1135,6 +1139,7 @@ public class MainActivity extends AppCompatActivity {
         Button btnImportExcelTab = findViewById(R.id.btnImportExcelTab);
         Button btnImportPdfTab = findViewById(R.id.btnImportPdfTab);
         Button btnImportOcrTab = findViewById(R.id.btnImportOcrTab);
+        Button btnDownloadSampleExcelTab = findViewById(R.id.btnDownloadSampleExcelTab);
 
         Button btnExportExcelTab = findViewById(R.id.btnExportExcelTab);
         Button btnExportPdfTab = findViewById(R.id.btnExportPdfTab);
@@ -1216,6 +1221,7 @@ public class MainActivity extends AppCompatActivity {
         if (btnImportExcelTab != null) btnImportExcelTab.setOnClickListener(v -> openExcelFilePicker());
         if (btnImportPdfTab != null) btnImportPdfTab.setOnClickListener(v -> openPdfFilePicker());
         if (btnImportOcrTab != null) btnImportOcrTab.setOnClickListener(v -> openImageOcrPicker());
+        if (btnDownloadSampleExcelTab != null) btnDownloadSampleExcelTab.setOnClickListener(v -> downloadSampleExcelTemplate());
 
         if (btnExportExcelTab != null) btnExportExcelTab.setOnClickListener(v -> showExportConfigDialog(true));
         if (btnExportPdfTab != null) btnExportPdfTab.setOnClickListener(v -> showExportConfigDialog(false));
@@ -3449,6 +3455,7 @@ public class MainActivity extends AppCompatActivity {
                 TextView tvRejectFileName = dialogView.findViewById(R.id.tvRejectFileName);
                 TextView tvRejectReason = dialogView.findViewById(R.id.tvRejectReason);
                 Button btnRejectUnderstand = dialogView.findViewById(R.id.btnRejectUnderstand);
+                Button btnRejectDownloadTemplate = dialogView.findViewById(R.id.btnRejectDownloadTemplate);
 
                 if (tvRejectFileName != null) {
                     tvRejectFileName.setText("Tệp: " + (fileName != null ? fileName : "Tệp đã chọn"));
@@ -3466,6 +3473,12 @@ public class MainActivity extends AppCompatActivity {
 
                 if (btnRejectUnderstand != null) {
                     btnRejectUnderstand.setOnClickListener(v -> dialog.dismiss());
+                }
+                if (btnRejectDownloadTemplate != null) {
+                    btnRejectDownloadTemplate.setOnClickListener(v -> {
+                        dialog.dismiss();
+                        downloadSampleExcelTemplate();
+                    });
                 }
 
                 dialog.show();
@@ -3901,30 +3914,47 @@ public class MainActivity extends AppCompatActivity {
                    .replaceAll("(?i)\\s*•\\s*.*\\.pdf", "")
                    .trim();
 
-        String campus = e.getCampus() != null ? e.getCampus().trim() : "";
-        campus = campus.replaceAll("(?i)\\s*\\(nhắc việc tự động\\)", "")
-                       .replaceAll("(?i)\\s*•\\s*.*\\.pdf", "")
-                       .trim();
+        if (room.isEmpty()) return "-";
 
-        String result = "";
-        if (!room.isEmpty()) {
-            result += "Phòng " + room;
+        String lowerR = room.toLowerCase(Locale.getDefault());
+        if (lowerR.startsWith("phòng") || lowerR.startsWith("hội trường") || lowerR.startsWith("thư viện") || lowerR.startsWith("sân")) {
+            return room;
         }
-        if (!campus.isEmpty()) {
-            if (!result.isEmpty()) result += " • ";
-            result += campus;
-        }
-        return result;
+        return "Phòng " + room;
     }
 
     public static String getCleanOrganizerForExport(EventModel e) {
         if (e == null || e.getOrganizer() == null) return "";
         String org = e.getOrganizer().trim();
         org = org.replaceAll("(?i)\\s*\\(nhắc việc tự động\\)", "")
+                 .replaceAll("(?i)\\s*\\(📊\\s*.*\\)", "")
+                 .replaceAll("(?i)\\s*•\\s*\\([^)]*thù lao[^)]*\\)", "")
                  .replaceAll("(?i)\\s*•\\s*.*\\.pdf", "")
                  .replaceAll("(?i)\\s*\\|\\s*.*\\.pdf", "")
                  .trim();
         return org;
+    }
+
+    public static String getCleanNoteForExport(EventModel e) {
+        if (e == null) return "";
+        StringBuilder sb = new StringBuilder();
+
+        if (e.getOrganizer() != null) {
+            String org = e.getOrganizer();
+            String lowerOrg = org.toLowerCase(Locale.getDefault());
+            if (lowerOrg.contains("không tính thù lao") || lowerOrg.contains("không thù lao")) {
+                sb.append("Không tính thù lao");
+            } else if (lowerOrg.contains("có tính thù lao")) {
+                sb.append("Có tính thù lao");
+            }
+        }
+
+        if (sb.length() > 0) {
+            sb.append(" • ");
+        }
+        sb.append("Tuần ").append(e.getWeek()).append(" (Năm ").append(e.getYear()).append(")");
+
+        return sb.toString();
     }
 
     private static class PdfColumnConfig {
@@ -3984,11 +4014,11 @@ public class MainActivity extends AppCompatActivity {
             PdfColumnConfig col = new PdfColumnConfig();
             col.key = "UNIT_NOTE";
             if (exportColUnit && exportColNote) {
-                col.headerText = "Đơn vị & Tuần học";
+                col.headerText = "Đơn vị & Ghi chú";
             } else if (exportColUnit) {
                 col.headerText = "Đơn vị / Nguồn";
             } else {
-                col.headerText = "Ghi chú (Tuần & Năm)";
+                col.headerText = "Ghi chú";
             }
             col.baseWeight = 130f;
             cols.add(col);
@@ -4117,13 +4147,13 @@ public class MainActivity extends AppCompatActivity {
                         cellText = e.getScheduleCategory();
                     } else if ("UNIT_NOTE".equals(col.key)) {
                         String cleanOrg = getCleanOrganizerForExport(e);
-                        String noteStr = "(Tuần " + e.getWeek() + " • Năm " + e.getYear() + ")";
+                        String cleanNote = getCleanNoteForExport(e);
                         if (exportColUnit && exportColNote) {
-                            cellText = cleanOrg + (cleanOrg.isEmpty() ? "" : "\n") + noteStr;
+                            cellText = cleanOrg + (cleanOrg.isEmpty() ? "" : "\n") + cleanNote;
                         } else if (exportColUnit) {
                             cellText = cleanOrg;
                         } else {
-                            cellText = noteStr;
+                            cellText = cleanNote;
                         }
                     }
 
@@ -4959,34 +4989,64 @@ public class MainActivity extends AppCompatActivity {
 
         dialog.show();
     }
-    
-    private void saveEvent(int nextStt, EditText edtStt, String title, String room, String startTime, String endTime, String date, String org, Spinner spnCategory, EditText edtCustomCategory, CheckBox cbCalculateIncome) {
-        int stt = nextStt;
-        try { stt = Integer.parseInt(edtStt.getText().toString().trim()); } catch (Exception ignored) {}
-        
-        String roomInput = room != null ? room.trim() : "";
-        String cleanTitle = title != null ? title.trim() : "";
 
+    public static String formatSavedTitle(String rawTitle, String room, String startTime, String endTime) {
+        String baseTitle = rawTitle != null ? rawTitle.trim() : "";
+        String roomInput = room != null ? room.trim() : "";
+
+        // Nếu người dùng không nhập địa điểm nhưng tiêu đề chứa dấu gạch ngang (VD: "Môn học – Thư viện lầu 3")
         if (roomInput.isEmpty()) {
-            roomInput = CampusBufferHelper.extractGenericRoom(cleanTitle);
+            java.util.regex.Matcher mDash = java.util.regex.Pattern.compile("\\s+[-–—]\\s+(?!\\d{4})").matcher(baseTitle);
+            int lastDashIndex = -1;
+            int lastDashEnd = -1;
+            while (mDash.find()) {
+                lastDashIndex = mDash.start();
+                lastDashEnd = mDash.end();
+            }
+            if (lastDashIndex > 0 && lastDashEnd != -1) {
+                String suffix = baseTitle.substring(lastDashEnd).trim();
+                if (!suffix.isEmpty() && !suffix.toLowerCase(Locale.getDefault()).contains("tiết")) {
+                    roomInput = suffix;
+                    baseTitle = baseTitle.substring(0, lastDashIndex).trim();
+                }
+            }
         }
 
-        cleanTitle = EventModel.cleanDisplayTitle(cleanTitle);
+        if (roomInput.isEmpty()) {
+            roomInput = CampusBufferHelper.extractGenericRoom(baseTitle);
+        }
+
+        String cleanTitle = EventModel.cleanDisplayTitle(baseTitle);
+        if (cleanTitle.isEmpty()) cleanTitle = baseTitle;
+
         StringBuilder savedTitle = new StringBuilder(cleanTitle);
 
-        if (!roomInput.isEmpty()) {
+        if (!roomInput.isEmpty() && !savedTitle.toString().toLowerCase(Locale.getDefault()).contains(roomInput.toLowerCase(Locale.getDefault()))) {
             savedTitle.append(" - ").append(roomInput);
         }
 
         if (startTime != null && !startTime.trim().isEmpty()) {
             String startStr = startTime.trim();
             String endStr = (endTime != null && !endTime.trim().isEmpty()) ? endTime.trim() : "";
-            if (!endStr.isEmpty()) {
-                savedTitle.append(" [").append(startStr).append(" - ").append(endStr).append("]");
-            } else {
-                savedTitle.append(" [").append(startStr).append("]");
+            if (!savedTitle.toString().contains("[" + startStr)) {
+                if (!endStr.isEmpty()) {
+                    savedTitle.append(" [").append(startStr).append(" - ").append(endStr).append("]");
+                } else {
+                    savedTitle.append(" [").append(startStr).append("]");
+                }
             }
         }
+        return savedTitle.toString();
+    }
+
+    private void saveEvent(int nextStt, EditText edtStt, String title, String room, String startTime, String endTime, String date, String org, Spinner spnCategory, EditText edtCustomCategory, CheckBox cbCalculateIncome) {
+        int stt = nextStt;
+        try { stt = Integer.parseInt(edtStt.getText().toString().trim()); } catch (Exception ignored) {}
+
+        String roomInput = room != null ? room.trim() : "";
+        String inputTitle = title != null ? title.trim() : "";
+
+        String savedTitle = formatSavedTitle(inputTitle, roomInput, startTime, endTime);
 
         int selectedPos = spnCategory != null ? spnCategory.getSelectedItemPosition() : 0;
         String category;
@@ -5129,12 +5189,15 @@ public class MainActivity extends AppCompatActivity {
         EventModel.EventFieldBreakdown bd = event.getBreakdown();
 
         if (tvDetailTitle != null) {
-            String rawTitle = event.getTitle() != null ? event.getTitle().trim() : "";
-            tvDetailTitle.setText(rawTitle.isEmpty() ? EventModel.cleanDisplayTitle(event.getTitle()) : rawTitle);
+            String cleanTitle = getCleanTitleForExport(event);
+            if (cleanTitle == null || cleanTitle.trim().isEmpty()) {
+                cleanTitle = EventModel.cleanDisplayTitle(event.getTitle());
+            }
+            tvDetailTitle.setText((cleanTitle != null && !cleanTitle.trim().isEmpty()) ? cleanTitle : event.getTitle());
         }
 
         String room = event.getRoom();
-        if (room == null || room.trim().isEmpty()) {
+        if (room == null || room.trim().isEmpty() || (bd.room != null && bd.room.trim().length() > room.trim().length())) {
             room = bd.room;
         }
         if (tvDetailRoom != null) {
@@ -5585,29 +5648,13 @@ public class MainActivity extends AppCompatActivity {
     private void updateEvent(EventModel event, EditText edtStt, String title, String room, String startTime, String endTime, String date, String org, Spinner spnCategory, EditText edtCustomCategory, CheckBox cbCalculateIncome) {
         int stt = event != null ? event.getStt() : 1;
         try { stt = Integer.parseInt(edtStt.getText().toString().trim()); } catch (Exception ignored) {}
-        
+
         String roomInput = room != null ? room.trim() : "";
-        String cleanTitle = title != null ? title.trim() : "";
+        String inputTitle = title != null ? title.trim() : "";
 
-        if (roomInput.isEmpty()) {
-            roomInput = CampusBufferHelper.extractGenericRoom(cleanTitle);
-        }
-
-        cleanTitle = EventModel.cleanDisplayTitle(cleanTitle);
-        StringBuilder savedTitle = new StringBuilder(cleanTitle);
-
-        if (!roomInput.isEmpty()) {
-            savedTitle.append(" - ").append(roomInput);
-        }
-
-        if (startTime != null && !startTime.trim().isEmpty()) {
-            String startStr = startTime.trim();
-            String endStr = (endTime != null && !endTime.trim().isEmpty()) ? endTime.trim() : "";
-            if (!endStr.isEmpty()) {
-                savedTitle.append(" [").append(startStr).append(" - ").append(endStr).append("]");
-            } else {
-                savedTitle.append(" [").append(startStr).append("]");
-            }
+        String savedTitle = formatSavedTitle(inputTitle, roomInput, startTime, endTime);
+        if (event != null && !roomInput.isEmpty()) {
+            event.setRoom(roomInput);
         }
 
         int selectedPos = spnCategory != null ? spnCategory.getSelectedItemPosition() : 0;
@@ -5726,10 +5773,10 @@ public class MainActivity extends AppCompatActivity {
             showCustomConfirmDialog(
                     "⚠️",
                     "ĐỊNH DẠNG FILE KHÔNG HỢP LỆ",
-                    "Tệp tin bạn vừa chọn ('" + fileName + "') không phải là file Excel (.xlsx hoặc .xls).\n\nVui lòng nhấn nút 'Nhập Excel' và chọn đúng file bảng tính Excel!",
-                    "ĐÃ HỂU",
+                    "Tệp tin bạn vừa chọn ('" + fileName + "') không phải là file Excel (.xlsx hoặc .xls).\n\nVui lòng nhấn nút 'Nhập Excel' và chọn đúng file bảng tính Excel, hoặc tải File Mẫu Excel chuẩn của LectuPlan để điền dữ liệu!",
+                    "📄 TẢI FILE MẪU EXCEL",
                     Color.parseColor("#2563EB"),
-                    null
+                    () -> downloadSampleExcelTemplate()
             );
             return;
         }
@@ -5748,6 +5795,10 @@ public class MainActivity extends AppCompatActivity {
             for (int s = 0; s < maxSheets; s++) {
                 Sheet sheet = workbook.getSheetAt(s);
                 if (sheet == null) continue;
+                String sName = sheet.getSheetName().toLowerCase(Locale.getDefault());
+                if (sName.contains("huongdan") || sName.contains("quychuan") || sName.contains("guide")) {
+                    continue;
+                }
                 int rCount = 0;
                 for (Row row : sheet) {
                     if (row == null) continue;
@@ -5779,16 +5830,26 @@ public class MainActivity extends AppCompatActivity {
                     Sheet sheet = workbook.getSheetAt(s);
                     if (sheet == null) continue;
 
+                    String sheetName = sheet.getSheetName().toLowerCase(Locale.getDefault());
+                    if (sheetName.contains("huongdan") || sheetName.contains("quychuan") || sheetName.contains("guide") || sheetName.contains("instruction")) {
+                        continue;
+                    }
+
                     int colStt = -1;
                     int colTitle = -1;
                     int colDate = -1;
+                    int colStartTime = -1;
+                    int colEndTime = -1;
+                    int colRoom = -1;
                     int colOrg = -1;
+                    int colCategory = -1;
+                    int colIncome = -1;
                     int headerRowNum = -1;
 
                     // Quét tìm dòng Header thực sự (dòng có từ 2 cột tiêu đề trở lên)
                     for (Row row : sheet) {
                         if (row == null) continue;
-                        int tempStt = -1, tempTitle = -1, tempDate = -1, tempOrg = -1;
+                        int tempStt = -1, tempTitle = -1, tempDate = -1, tempStartTime = -1, tempEndTime = -1, tempRoom = -1, tempOrg = -1, tempCategory = -1, tempIncome = -1;
                         int nonEmptyCells = 0;
 
                         for (Cell cell : row) {
@@ -5796,8 +5857,8 @@ public class MainActivity extends AppCompatActivity {
                             if (val.isEmpty()) continue;
                             nonEmptyCells++;
 
-                            // Tránh nhận nhầm dòng phụ đề "Xuất từ ứng dụng LectuPlan • Ngày lập báo cáo: ..."
-                            if (val.contains("ngày lập báo cáo") || val.contains("xuất từ ứng dụng") || val.startsWith("báo cáo")) {
+                            // Tránh nhận nhầm dòng phụ đề "Xuất từ ứng dụng LectuPlan • Ngày lập báo cáo: ..." hoặc dòng ví dụ
+                            if (val.contains("ngày lập báo cáo") || val.contains("xuất từ ứng dụng") || val.startsWith("báo cáo") || val.contains("hh:mm") || val.contains("vd:")) {
                                 continue;
                             }
 
@@ -5808,11 +5869,21 @@ public class MainActivity extends AppCompatActivity {
                                     || val.contains("chuyên đề") || val.contains("hoạt động") || val.contains("công việc")
                                     || val.equals("sự kiện") || val.contains("tiêu đề")) {
                                 tempTitle = cell.getColumnIndex();
+                            } else if (val.contains("bắt đầu") || val.startsWith("từ (") || val.contains("start")) {
+                                tempStartTime = cell.getColumnIndex();
+                            } else if (val.contains("kết thúc") || val.startsWith("đến (") || val.contains("end")) {
+                                tempEndTime = cell.getColumnIndex();
+                            } else if (val.contains("phòng") || val.contains("địa điểm") || val.contains("phòng học")) {
+                                tempRoom = cell.getColumnIndex();
+                            } else if (val.contains("phân loại") || val.contains("loại lịch") || val.contains("danh mục")) {
+                                tempCategory = cell.getColumnIndex();
+                            } else if (val.contains("thù lao") || val.contains("thu nhập")) {
+                                tempIncome = cell.getColumnIndex();
                             } else if (val.contains("ngày") || val.contains("thời gian") || val.contains("thứ") || val.equals("date")) {
                                 tempDate = cell.getColumnIndex();
                             } else if (val.contains("đơn vị") || val.contains("người tổ chức") || val.contains("tổ chức")
                                     || val.contains("chủ trì") || val.contains("khoa") || val.contains("bộ môn")
-                                    || val.contains("phòng") || val.contains("giảng viên") || val.contains("địa điểm")) {
+                                    || val.contains("giảng viên")) {
                                 tempOrg = cell.getColumnIndex();
                             }
                         }
@@ -5821,7 +5892,12 @@ public class MainActivity extends AppCompatActivity {
                             colStt = tempStt;
                             colTitle = tempTitle;
                             colDate = tempDate;
+                            colStartTime = tempStartTime;
+                            colEndTime = tempEndTime;
+                            colRoom = tempRoom;
                             colOrg = tempOrg;
+                            colCategory = tempCategory;
+                            colIncome = tempIncome;
                             headerRowNum = row.getRowNum();
                             break;
                         }
@@ -5838,7 +5914,7 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         String firstCellText = row.getCell(0) != null ? getCellValueAsString(row.getCell(0)).toLowerCase(Locale.getDefault()).trim() : "";
-                        if (firstCellText.startsWith("báo cáo") || firstCellText.contains("xuất từ ứng dụng") || firstCellText.startsWith("tổng cộng")) {
+                        if (firstCellText.startsWith("báo cáo") || firstCellText.contains("xuất từ ứng dụng") || firstCellText.startsWith("tổng cộng") || firstCellText.contains("hh:mm") || firstCellText.startsWith("vd:")) {
                             continue;
                         }
 
@@ -5849,9 +5925,29 @@ public class MainActivity extends AppCompatActivity {
                             } catch (Exception ignored) {}
                         }
 
-                        String rawTitle = colTitle != -1 && row.getCell(colTitle) != null ? getCellValueAsString(row.getCell(colTitle)) : "";
-                        String rawDate = colDate != -1 && row.getCell(colDate) != null ? getCellValueAsString(row.getCell(colDate)) : "";
-                        String rawOrg = colOrg != -1 && row.getCell(colOrg) != null ? getCellValueAsString(row.getCell(colOrg)) : "";
+                        String rawTitle = colTitle != -1 && row.getCell(colTitle) != null ? getCellValueAsString(row.getCell(colTitle)).trim() : "";
+                        String rawDate = colDate != -1 && row.getCell(colDate) != null ? getCellValueAsString(row.getCell(colDate)).trim() : "";
+                        String rawStartTime = colStartTime != -1 && row.getCell(colStartTime) != null ? getCellValueAsString(row.getCell(colStartTime)).trim() : "";
+                        String rawEndTime = colEndTime != -1 && row.getCell(colEndTime) != null ? getCellValueAsString(row.getCell(colEndTime)).trim() : "";
+                        String rawRoom = colRoom != -1 && row.getCell(colRoom) != null ? getCellValueAsString(row.getCell(colRoom)).trim() : "";
+                        String rawOrg = colOrg != -1 && row.getCell(colOrg) != null ? getCellValueAsString(row.getCell(colOrg)).trim() : "";
+                        String rawCategory = colCategory != -1 && row.getCell(colCategory) != null ? getCellValueAsString(row.getCell(colCategory)).trim() : "";
+                        String rawIncome = colIncome != -1 && row.getCell(colIncome) != null ? getCellValueAsString(row.getCell(colIncome)).trim() : "";
+
+                        // Bỏ qua dòng ví dụ/gợi ý nếu người dùng nhập dính dòng 3
+                        String lowerTitle = rawTitle.toLowerCase(Locale.getDefault()).trim();
+                        if (lowerTitle.isEmpty()
+                                || lowerTitle.startsWith("vd:")
+                                || lowerTitle.startsWith("ví dụ:")
+                                || lowerTitle.equals("stt")
+                                || lowerTitle.contains("tên sự kiện")
+                                || lowerTitle.contains("tên công việc")
+                                || lowerTitle.startsWith("báo cáo")
+                                || lowerTitle.startsWith("tổng cộng")
+                                || UniversalScheduleParser.isNoiseLine(rawTitle)
+                                || UniversalScheduleParser.isInstitutionalBoilerplate(rawTitle)) {
+                            continue;
+                        }
 
                         // Tự động quét các ô trong dòng nếu file Excel không có tiêu đề cột chuẩn hoặc ô bị gộp (merged cells)
                         String cleanDate = extractDateString(rawDate);
@@ -5894,24 +5990,79 @@ public class MainActivity extends AppCompatActivity {
                             cleanDate = lastSeenDate;
                         }
 
-                        String lowerTitle = rawTitle.toLowerCase(Locale.getDefault()).trim();
-                        if (lowerTitle.isEmpty()
-                                || lowerTitle.equals("stt")
-                                || lowerTitle.contains("tên sự kiện")
-                                || lowerTitle.contains("tên công việc")
-                                || lowerTitle.startsWith("báo cáo")
-                                || lowerTitle.startsWith("tổng cộng")
-                                || UniversalScheduleParser.isNoiseLine(rawTitle)
-                                || UniversalScheduleParser.isInstitutionalBoilerplate(rawTitle)) {
-                            continue;
-                        }
-
                         if (!rawTitle.isEmpty() && !cleanDate.isEmpty()) {
                             if (stt <= 0) stt = autoStt;
                             autoStt++;
-                            String orgWithSource = (rawOrg.isEmpty() ? "Nhà trường" : rawOrg) + " (📊 Excel • " + fileName + ")";
-                            stagingList.add(new EventModel(0, stt, rawTitle, cleanDate, orgWithSource, "HK1", Calendar.getInstance().get(Calendar.YEAR), 1));
-                            extractedSummaries.add("[" + cleanDate + "] " + rawTitle + " — " + (rawOrg.isEmpty() ? "Nhà trường" : rawOrg));
+
+                            // Chuẩn hóa thời gian
+                            int startM = TimeNormalizer.timeStringToMinute(rawStartTime);
+                            String cleanStartTime = (startM >= 0) ? TimeNormalizer.minuteToTimeString(startM) : "";
+
+                            int endM = TimeNormalizer.timeStringToMinute(rawEndTime);
+                            String cleanEndTime = (endM >= 0) ? TimeNormalizer.minuteToTimeString(endM) : "";
+
+                            // Nếu để trống giờ, tự động suy ra khung giờ chuẩn để không bị lỗi "??? / Thiếu thời gian"
+                            if (cleanStartTime.isEmpty() || cleanEndTime.isEmpty()) {
+                                SchoolProfile.SchoolType sc = SchoolProfile.detectSchool(rawTitle + " " + rawOrg);
+                                TimeNormalizer.NormalizedRange range = TimeNormalizer.parseFromText(rawTitle + " " + rawOrg, sc);
+                                if (range != null && range.startMin > 0 && range.endMin > 0) {
+                                    if (cleanStartTime.isEmpty()) cleanStartTime = range.startTimeStr;
+                                    if (cleanEndTime.isEmpty()) cleanEndTime = range.endTimeStr;
+                                } else {
+                                    String lTitle = rawTitle.toLowerCase(Locale.getDefault());
+                                    if (lTitle.contains("chiều")) {
+                                        if (cleanStartTime.isEmpty()) cleanStartTime = "13:00";
+                                        if (cleanEndTime.isEmpty()) cleanEndTime = "16:35";
+                                    } else if (lTitle.contains("tối") || lTitle.contains("đêm")) {
+                                        if (cleanStartTime.isEmpty()) cleanStartTime = "18:00";
+                                        if (cleanEndTime.isEmpty()) cleanEndTime = "21:00";
+                                    } else {
+                                        if (cleanStartTime.isEmpty()) cleanStartTime = "07:30";
+                                        if (cleanEndTime.isEmpty()) cleanEndTime = "11:35";
+                                    }
+                                }
+                            }
+
+                            // Chuẩn hóa Đơn vị & Thù lao
+                            String orgWithSource = rawOrg;
+                            if (orgWithSource.isEmpty()) {
+                                orgWithSource = "Nhà trường";
+                            }
+
+                            if (rawIncome.equalsIgnoreCase("không") || rawIncome.toLowerCase().contains("không tính") || rawIncome.equalsIgnoreCase("false")) {
+                                if (!orgWithSource.toLowerCase(Locale.getDefault()).contains("không tính thù lao")) {
+                                    orgWithSource += " • (Không tính thù lao)";
+                                }
+                            }
+
+                            orgWithSource += " (📊 Excel • " + fileName + ")";
+
+                            // Phân loại lịch
+                            String finalCategory = EventModel.CAT_TEACHING;
+                            if (!rawCategory.isEmpty()) {
+                                String lowerCat = rawCategory.toLowerCase(Locale.getDefault());
+                                if (lowerCat.contains("sự kiện") || lowerCat.contains("hội nghị") || lowerCat.contains("lịch trường")) {
+                                    finalCategory = EventModel.CAT_EVENT;
+                                } else if (lowerCat.contains("phát sinh") || lowerCat.contains("coi thi") || lowerCat.contains("chấm thi") || lowerCat.contains("dạy bù")) {
+                                    finalCategory = EventModel.CAT_INCIDENT;
+                                } else if (lowerCat.contains("khác") || lowerCat.contains("thủ công") || lowerCat.contains("cá nhân")) {
+                                    finalCategory = EventModel.CAT_MANUAL_OTHER;
+                                } else {
+                                    finalCategory = rawCategory;
+                                }
+                            } else {
+                                finalCategory = classifyEventNature(rawTitle, rawOrg);
+                            }
+
+                            EventModel eventModel = new EventModel(
+                                    0, stt, rawTitle, cleanDate, orgWithSource, "HK1",
+                                    Calendar.getInstance().get(Calendar.YEAR), 1,
+                                    cleanStartTime, cleanEndTime, "OTHER", "", rawRoom, "PERSONAL_TASK"
+                            );
+                            eventModel.setCategory(finalCategory);
+
+                            stagingList.add(eventModel);
+                            extractedSummaries.add("[" + cleanDate + (cleanStartTime.isEmpty() ? "" : " " + cleanStartTime) + "] " + rawTitle + " — " + (rawRoom.isEmpty() ? "" : rawRoom + " • ") + rawOrg);
                             count++;
                         }
                     }
@@ -5929,27 +6080,32 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void filterStagingByDateRange(List<EventModel> allEvents, List<EventModel> stagingList, String fromDateStr, String toDateStr, StagingEventAdapter adapter) {
+    private void filterStagingByDateRange(List<EventModel> allEvents, List<EventModel> stagingList, String fromDateStr, String toDateStr, StagingEventAdapter adapter, Runnable updateCountRunnable) {
         stagingList.clear();
         String fromIso = formatVnToIsoDate(fromDateStr);
         String toIso = formatVnToIsoDate(toDateStr);
 
-        for (EventModel ev : allEvents) {
-            if (ev.getId() >= 0 && ev.getDate() != null && !ev.getDate().trim().isEmpty()) {
-                String dateIso = formatVnToIsoDate(ev.getDate().trim());
+        if (allEvents != null) {
+            for (EventModel ev : allEvents) {
+                if (ev != null && ev.getDate() != null && !ev.getDate().trim().isEmpty()) {
+                    String dateIso = formatVnToIsoDate(ev.getDate().trim());
 
-                if (!fromIso.isEmpty() && dateIso.compareTo(fromIso) < 0) {
-                    continue;
+                    if (!fromIso.isEmpty() && dateIso.compareTo(fromIso) < 0) {
+                        continue;
+                    }
+                    if (!toIso.isEmpty() && dateIso.compareTo(toIso) > 0) {
+                        continue;
+                    }
+                    ev.setSelectedForImport(true);
+                    stagingList.add(ev);
                 }
-                if (!toIso.isEmpty() && dateIso.compareTo(toIso) > 0) {
-                    continue;
-                }
-                ev.setSelectedForImport(true);
-                stagingList.add(ev);
             }
         }
         if (adapter != null) {
             adapter.notifyDataSetChanged();
+        }
+        if (updateCountRunnable != null) {
+            updateCountRunnable.run();
         }
     }
 
@@ -5985,16 +6141,15 @@ public class MainActivity extends AppCompatActivity {
         EditText etFromDate = dialog.findViewById(R.id.etExportFromDate);
         EditText etToDate = dialog.findViewById(R.id.etExportToDate);
         TextView btnClearDateRange = dialog.findViewById(R.id.btnExportClearDateRange);
+        TextView tvExportRecordHeader = dialog.findViewById(R.id.tvExportRecordHeader);
         androidx.recyclerview.widget.RecyclerView rvEvents = dialog.findViewById(R.id.rvExportEvents);
 
         android.content.SharedPreferences prefs = getSharedPreferences("ExportPrefs", MODE_PRIVATE);
         etAuthor.setText(prefs.getString("export_author", ""));
         etDept.setText(prefs.getString("export_dept", ""));
 
-        String savedFromDateIso = prefs.getString("export_from_date", "");
-        String savedToDateIso = prefs.getString("export_to_date", "");
-        if (etFromDate != null) etFromDate.setText(formatIsoToVnDate(savedFromDateIso));
-        if (etToDate != null) etToDate.setText(formatIsoToVnDate(savedToDateIso));
+        if (etFromDate != null) etFromDate.setText("");
+        if (etToDate != null) etToDate.setText("");
 
         CheckBox cbColStt = dialog.findViewById(R.id.cbColStt);
         CheckBox cbColTitle = dialog.findViewById(R.id.cbColTitle);
@@ -6013,15 +6168,56 @@ public class MainActivity extends AppCompatActivity {
         if (cbColNote != null) cbColNote.setChecked(prefs.getBoolean("export_col_note", true));
 
         List<EventModel> allEvents = dbHelper.searchEvents("", "Tất cả HK", "Tất cả Năm");
+        if (allEvents == null) allEvents = new ArrayList<>();
+
+        Set<Integer> existingIds = new java.util.HashSet<>();
+        for (EventModel e : allEvents) {
+            if (e != null) existingIds.add(e.getId());
+        }
+        if (adapter != null && adapter.getEventList() != null) {
+            for (EventModel e : adapter.getEventList()) {
+                if (e != null && !existingIds.contains(e.getId())) {
+                    existingIds.add(e.getId());
+                    allEvents.add(e);
+                }
+            }
+        }
+        if (tab2Adapter != null && tab2Adapter.getEventList() != null) {
+            for (EventModel e : tab2Adapter.getEventList()) {
+                if (e != null && !existingIds.contains(e.getId())) {
+                    existingIds.add(e.getId());
+                    allEvents.add(e);
+                }
+            }
+        }
+
         List<EventModel> stagingList = new ArrayList<>();
+        final List<EventModel> finalAllEvents = allEvents;
+
+        Runnable updateCountRunnable = () -> {
+            int selectedCount = 0;
+            for (EventModel ev : stagingList) {
+                if (ev != null && ev.isSelectedForImport()) selectedCount++;
+            }
+            if (tvExportRecordHeader != null) {
+                tvExportRecordHeader.setText("4. Kiểm duyệt danh sách bản ghi (" + selectedCount + "/" + stagingList.size() + " mục)");
+            }
+            if (btnDoExport != null) {
+                btnDoExport.setText("Xuất File (" + selectedCount + " mục)");
+            }
+        };
 
         StagingEventAdapter stagingAdapter = new StagingEventAdapter(stagingList, (position, event) -> {
             showEditStagingEventDialog(event, position, null, dialog);
-        }, null);
+            updateCountRunnable.run();
+        }, () -> {
+            updateCountRunnable.run();
+        });
+
         rvEvents.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
         rvEvents.setAdapter(stagingAdapter);
 
-        filterStagingByDateRange(allEvents, stagingList, formatIsoToVnDate(savedFromDateIso), formatIsoToVnDate(savedToDateIso), stagingAdapter);
+        filterStagingByDateRange(finalAllEvents, stagingList, "", "", stagingAdapter, updateCountRunnable);
 
         if (etFromDate != null) {
             etFromDate.setOnClickListener(v -> {
@@ -6036,7 +6232,7 @@ public class MainActivity extends AppCompatActivity {
                 new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
                     String selectedVn = String.format(Locale.getDefault(), "%02d/%02d/%04d", dayOfMonth, month + 1, year);
                     etFromDate.setText(selectedVn);
-                    filterStagingByDateRange(allEvents, stagingList, selectedVn, etToDate != null ? etToDate.getText().toString().trim() : "", stagingAdapter);
+                    filterStagingByDateRange(finalAllEvents, stagingList, selectedVn, etToDate != null ? etToDate.getText().toString().trim() : "", stagingAdapter, updateCountRunnable);
                 }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show();
             });
         }
@@ -6054,7 +6250,7 @@ public class MainActivity extends AppCompatActivity {
                 new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
                     String selectedVn = String.format(Locale.getDefault(), "%02d/%02d/%04d", dayOfMonth, month + 1, year);
                     etToDate.setText(selectedVn);
-                    filterStagingByDateRange(allEvents, stagingList, etFromDate != null ? etFromDate.getText().toString().trim() : "", selectedVn, stagingAdapter);
+                    filterStagingByDateRange(finalAllEvents, stagingList, etFromDate != null ? etFromDate.getText().toString().trim() : "", selectedVn, stagingAdapter, updateCountRunnable);
                 }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show();
             });
         }
@@ -6064,7 +6260,7 @@ public class MainActivity extends AppCompatActivity {
                 if (etFromDate != null) etFromDate.setText("");
                 if (etToDate != null) etToDate.setText("");
                 prefs.edit().remove("export_from_date").remove("export_to_date").apply();
-                filterStagingByDateRange(allEvents, stagingList, "", "", stagingAdapter);
+                filterStagingByDateRange(finalAllEvents, stagingList, "", "", stagingAdapter, updateCountRunnable);
             });
         }
 
@@ -6281,8 +6477,8 @@ public class MainActivity extends AppCompatActivity {
                 colKeys.add("UNIT");
             }
             if (exportColNote) {
-                headers.add("Ghi chú (Tuần & Năm)");
-                colWidths.add(20 * 256);
+                headers.add("Ghi chú");
+                colWidths.add(28 * 256);
                 colKeys.add("NOTE");
             }
 
@@ -6333,12 +6529,13 @@ public class MainActivity extends AppCompatActivity {
 
                 String roomInfo = "";
                 if (e.getRoom() != null && !e.getRoom().trim().isEmpty()) {
-                    roomInfo += "Phòng " + e.getRoom().trim();
-                }
-                if (e.getCampus() != null && !e.getCampus().trim().isEmpty()) {
-                    if (!roomInfo.isEmpty()) roomInfo += " (";
-                    roomInfo += e.getCampus().trim();
-                    if (roomInfo.contains("(")) roomInfo += ")";
+                    String r = e.getRoom().trim();
+                    String lowerR = r.toLowerCase(Locale.getDefault());
+                    if (lowerR.startsWith("phòng") || lowerR.startsWith("hội trường") || lowerR.startsWith("thư viện") || lowerR.startsWith("sân")) {
+                        roomInfo = r;
+                    } else {
+                        roomInfo = "Phòng " + r;
+                    }
                 }
                 if (roomInfo.isEmpty()) roomInfo = "-";
 
@@ -6377,7 +6574,7 @@ public class MainActivity extends AppCompatActivity {
                             cell.setCellStyle(lStyle);
                             break;
                         case "NOTE":
-                            cell.setCellValue("Tuần " + e.getWeek() + " (Năm " + e.getYear() + ")");
+                            cell.setCellValue(getCleanNoteForExport(e));
                             cell.setCellStyle(cStyle);
                             break;
                     }
@@ -6440,7 +6637,7 @@ public class MainActivity extends AppCompatActivity {
                     case "ROOM": String cr = getCleanRoomForExport(e); cell.setCellValue(cr.isEmpty() ? "-" : cr); break;
                     case "CATEGORY": cell.setCellValue(e.getScheduleCategory()); break;
                     case "UNIT": String co = getCleanOrganizerForExport(e); cell.setCellValue(co.isEmpty() ? "-" : co); break;
-                    case "NOTE": cell.setCellValue("Tuần " + e.getWeek() + " (Năm " + e.getYear() + ")"); break;
+                    case "NOTE": cell.setCellValue(getCleanNoteForExport(e)); break;
                 }
             }
         }
@@ -6528,6 +6725,315 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Đã xuất " + list.size() + " lịch biểu thành công vào thư mục Download!\n" + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
         } catch (Exception e) {
             Toast.makeText(this, "Lỗi xuất file: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /**
+     * Tạo workbook Excel mẫu chuẩn (.xlsx) chứa đầy đủ 9 trường tương ứng 100% với màn hình nhập liệu của ứng dụng.
+     * Để các dòng dữ liệu TRỐNG hoàn toàn (không có dòng gợi ý hay dữ liệu giả làm vướng người dùng).
+     */
+    /**
+     * Tạo workbook Excel mẫu chuẩn (.xlsx) phủ đầy đủ 9 trường.
+     * Tích hợp Danh sách thả xuống (Dropdown List Data Validation) cho 'Phân loại lịch' và 'Tính thù lao'.
+     * Bổ sung Trang Sheet 2 'HuongDan_QuyChuan' chi tiết từng trường để người dùng dễ tra cứu nhất.
+     */
+    private Workbook createSampleExcelWorkbook() {
+        Workbook workbook = new XSSFWorkbook();
+
+        // ----------------------------------------------------
+        // SHEET 1: BẢNG NHẬP LỊCH (NhapLich)
+        // ----------------------------------------------------
+        Sheet sheet = workbook.createSheet("NhapLich");
+        sheet.setDisplayGridlines(true);
+
+        Font titleFont = workbook.createFont();
+        titleFont.setFontName("Arial");
+        titleFont.setFontHeightInPoints((short) 14);
+        titleFont.setBold(true);
+        titleFont.setColor(IndexedColors.ROYAL_BLUE.getIndex());
+
+        Font subtitleFont = workbook.createFont();
+        subtitleFont.setFontName("Arial");
+        subtitleFont.setFontHeightInPoints((short) 10);
+        subtitleFont.setItalic(true);
+        subtitleFont.setColor(IndexedColors.GREY_50_PERCENT.getIndex());
+
+        Font headerFont = workbook.createFont();
+        headerFont.setFontName("Arial");
+        headerFont.setFontHeightInPoints((short) 10);
+        headerFont.setBold(true);
+        headerFont.setColor(IndexedColors.WHITE.getIndex());
+
+        Font dataFont = workbook.createFont();
+        dataFont.setFontName("Arial");
+        dataFont.setFontHeightInPoints((short) 10);
+
+        CellStyle titleStyle = workbook.createCellStyle();
+        titleStyle.setFont(titleFont);
+        titleStyle.setAlignment(HorizontalAlignment.LEFT);
+        titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+
+        CellStyle subtitleStyle = workbook.createCellStyle();
+        subtitleStyle.setFont(subtitleFont);
+        subtitleStyle.setAlignment(HorizontalAlignment.LEFT);
+        subtitleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+
+        CellStyle headerStyle = workbook.createCellStyle();
+        headerStyle.setFont(headerFont);
+        headerStyle.setFillForegroundColor(IndexedColors.ROYAL_BLUE.getIndex());
+        headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        headerStyle.setAlignment(HorizontalAlignment.CENTER);
+        headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        headerStyle.setWrapText(true);
+        headerStyle.setBorderTop(BorderStyle.THIN);
+        headerStyle.setBorderBottom(BorderStyle.THIN);
+        headerStyle.setBorderLeft(BorderStyle.THIN);
+        headerStyle.setBorderRight(BorderStyle.THIN);
+
+        CellStyle centerStyle = workbook.createCellStyle();
+        centerStyle.setFont(dataFont);
+        centerStyle.setAlignment(HorizontalAlignment.CENTER);
+        centerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        centerStyle.setWrapText(true);
+        centerStyle.setBorderTop(BorderStyle.THIN);
+        centerStyle.setBorderBottom(BorderStyle.THIN);
+        centerStyle.setBorderLeft(BorderStyle.THIN);
+        centerStyle.setBorderRight(BorderStyle.THIN);
+
+        CellStyle leftStyle = workbook.createCellStyle();
+        leftStyle.setFont(dataFont);
+        leftStyle.setAlignment(HorizontalAlignment.LEFT);
+        leftStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        leftStyle.setWrapText(true);
+        leftStyle.setBorderTop(BorderStyle.THIN);
+        leftStyle.setBorderBottom(BorderStyle.THIN);
+        leftStyle.setBorderLeft(BorderStyle.THIN);
+        leftStyle.setBorderRight(BorderStyle.THIN);
+
+        // Dòng 1 (Row Index 0): Tiêu đề lớn
+        Row titleRow = sheet.createRow(0);
+        titleRow.setHeightInPoints(28);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue("BẢNG MẪU NHẬP LỊCH CÔNG VIỆC CHUẨN - LECTUPLAN");
+        titleCell.setCellStyle(titleStyle);
+
+        // Dòng 2 (Row Index 1): Hướng dẫn nhập liệu
+        Row subRow1 = sheet.createRow(1);
+        subRow1.setHeightInPoints(22);
+        Cell subCell1 = subRow1.createCell(0);
+        subCell1.setCellValue("📌 HƯỚNG DẪN: Nhập lịch từ Dòng 5 trở đi. Cột (*) là bắt buộc. Nhấp vào ô Cột 'Phân loại lịch' & 'Tính thù lao' để chọn từ danh sách thả xuống!");
+        subCell1.setCellStyle(subtitleStyle);
+
+        // Dòng 3 (Row Index 2): Quy chuẩn nhanh định dạng
+        Row subRow2 = sheet.createRow(2);
+        subRow2.setHeightInPoints(22);
+        Cell subCell2 = subRow2.createCell(0);
+        subCell2.setCellValue("💡 QUY CHUẨN: [Ngày]: dd/MM/yyyy (VD: 20/11/2026) • [Giờ]: HH:mm (VD: 07:30) • [Phân loại]: Lịch dạy/học, Lịch sự kiện, Lịch phát sinh, Lịch khác • Tra cứu chi tiết ở Trang Sheet 'HuongDan_QuyChuan'");
+        subCell2.setCellStyle(subtitleStyle);
+
+        // Dòng 4 (Row Index 3): Tiêu đề cột chuẩn 9 trường
+        String[] headers = {
+                "STT",
+                "Tên sự kiện / Lớp giảng dạy (*)",
+                "Ngày tổ chức (*)",
+                "Giờ bắt đầu",
+                "Giờ kết thúc",
+                "Địa điểm / Phòng học",
+                "Đơn vị / Người tổ chức",
+                "Phân loại lịch",
+                "Tính thù lao"
+        };
+        Row headerRow = sheet.createRow(3);
+        headerRow.setHeightInPoints(30);
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle);
+        }
+
+        // Dòng 5 đến Dòng 30 (Row Index 4 đến 29): Các dòng dữ liệu trống sẵn viền
+        for (int r = 4; r < 30; r++) {
+            Row row = sheet.createRow(r);
+            row.setHeightInPoints(22);
+            for (int c = 0; c < headers.length; c++) {
+                Cell cell = row.createCell(c);
+                if (c == 0 || c == 2 || c == 3 || c == 4 || c == 7 || c == 8) {
+                    cell.setCellStyle(centerStyle);
+                } else {
+                    cell.setCellStyle(leftStyle);
+                }
+            }
+        }
+
+        // --- BỔ SUNG DANH SÁCH THẢ XUỐNG (DATA VALIDATION DROPDOWNS) ---
+        try {
+            DataValidationHelper valHelper = sheet.getDataValidationHelper();
+
+            // 1. Dropdown cho Phân loại lịch (Cột H - Column index 7)
+            CellRangeAddressList catRange = new CellRangeAddressList(4, 29, 7, 7);
+            DataValidationConstraint catConstraint = valHelper.createExplicitListConstraint(
+                    new String[]{"Lịch dạy/học", "Lịch sự kiện", "Lịch phát sinh", "Lịch khác"}
+            );
+            DataValidation catValidation = valHelper.createValidation(catConstraint, catRange);
+            catValidation.setShowErrorBox(true);
+            sheet.addValidationData(catValidation);
+
+            // 2. Dropdown cho Tính thù lao (Cột I - Column index 8)
+            CellRangeAddressList incRange = new CellRangeAddressList(4, 29, 8, 8);
+            DataValidationConstraint incConstraint = valHelper.createExplicitListConstraint(
+                    new String[]{"Có", "Không"}
+            );
+            DataValidation incValidation = valHelper.createValidation(incConstraint, incRange);
+            incValidation.setShowErrorBox(true);
+            sheet.addValidationData(incValidation);
+        } catch (Exception ignored) {}
+
+        // Độ rộng các cột Sheet 1
+        sheet.setColumnWidth(0, 8 * 256);   // STT
+        sheet.setColumnWidth(1, 40 * 256);  // Tên sự kiện
+        sheet.setColumnWidth(2, 22 * 256);  // Ngày tổ chức
+        sheet.setColumnWidth(3, 16 * 256);  // Giờ bắt đầu
+        sheet.setColumnWidth(4, 16 * 256);  // Giờ kết thúc
+        sheet.setColumnWidth(5, 24 * 256);  // Địa điểm / Phòng
+        sheet.setColumnWidth(6, 32 * 256);  // Đơn vị tổ chức
+        sheet.setColumnWidth(7, 24 * 256);  // Phân loại lịch
+        sheet.setColumnWidth(8, 16 * 256);  // Tính thù lao
+
+
+        // ----------------------------------------------------
+        // SHEET 2: HƯỚNG DẪN CHI TIẾT & QUY CHUẨN (HuongDan_QuyChuan)
+        // ----------------------------------------------------
+        Sheet guideSheet = workbook.createSheet("HuongDan_QuyChuan");
+        guideSheet.setDisplayGridlines(true);
+
+        Row gTitleRow = guideSheet.createRow(0);
+        gTitleRow.setHeightInPoints(28);
+        Cell gTitleCell = gTitleRow.createCell(0);
+        gTitleCell.setCellValue("📖 BẢNG TRA CỨU QUY CHUẨN CÁC TRƯỜNG DỮ LIỆU NHẬP VÀO LECTUPLAN");
+        gTitleCell.setCellStyle(titleStyle);
+
+        Row gSubRow = guideSheet.createRow(1);
+        gSubRow.setHeightInPoints(20);
+        Cell gSubCell = gSubRow.createCell(0);
+        gSubCell.setCellValue("Dưới đây là mô tả chi tiết ý nghĩa, định dạng chuẩn và ví dụ cho từng cột để giúp bạn điền dữ liệu chính xác 100%:");
+        gSubCell.setCellStyle(subtitleStyle);
+
+        String[] guideHeaders = {"Tên Cột", "Mức độ Bắt buộc", "Định dạng / Lựa chọn", "Ví dụ minh họa", "Giải thích & Tác dụng trong App"};
+        Row gHeaderRow = guideSheet.createRow(3);
+        gHeaderRow.setHeightInPoints(28);
+        for (int i = 0; i < guideHeaders.length; i++) {
+            Cell c = gHeaderRow.createCell(i);
+            c.setCellValue(guideHeaders[i]);
+            c.setCellStyle(headerStyle);
+        }
+
+        String[][] guideData = {
+                {"STT", "Tùy chọn", "Số nguyên (1, 2, 3...)", "1", "Số thứ tự để sắp xếp danh sách. Nếu bỏ trống app tự đánh số."},
+                {"Tên sự kiện / Lớp giảng dạy", "BẮT BUỘC (*)", "Văn bản tự do", "Thực hành Lập trình Di động (Nhóm 01)", "Tên bài giảng, môn học, lớp học phần, cuộc họp, hội đồng thi..."},
+                {"Ngày tổ chức", "BẮT BUỘC (*)", "ngày/tháng/năm (dd/MM/yyyy)", "20/11/2026", "Ngày diễn ra lịch bận. App dùng ngày này để nhắc nhở và lên thời khóa biểu."},
+                {"Giờ bắt đầu", "Tùy chọn", "giờ:phút (HH:mm - 24h)", "07:30", "Giờ bắt đầu. Nếu bỏ trống, app tự suy ra giờ chuẩn theo tiết học."},
+                {"Giờ kết thúc", "Tùy chọn", "giờ:phút (HH:mm - 24h)", "11:35", "Giờ kết thúc buổi dạy hoặc công việc."},
+                {"Địa điểm / Phòng học", "Tùy chọn", "Văn bản tự do", "A-05.02 (Cơ sở An Phú Đông)", "Phòng học, hội trường, cơ sở hoặc địa điểm họp."},
+                {"Đơn vị / Người tổ chức", "Tùy chọn", "Văn bản tự do", "Khoa CNTT - ĐH NTTU", "Đơn vị phân công, khoa bộ môn hoặc người giao việc."},
+                {"Phân loại lịch", "Tùy chọn", "Lịch dạy/học | Lịch sự kiện | Lịch phát sinh | Lịch khác", "Lịch dạy/học (hoặc chọn từ thả xuống)", "App dùng phân loại này để thống kê số tiết, tính thù lao và vẽ biểu đồ."},
+                {"Tính thù lao", "Tùy chọn", "Có | Không", "Có (hoặc chọn từ thả xuống)", "Nếu chọn 'Có', app sẽ cộng số tiết vào bảng dự tính thù lao/thu nhập. Mặc định là Có."}
+        };
+
+        for (int r = 0; r < guideData.length; r++) {
+            Row row = guideSheet.createRow(4 + r);
+            row.setHeightInPoints(26);
+            for (int c = 0; c < guideData[r].length; c++) {
+                Cell cell = row.createCell(c);
+                cell.setCellValue(guideData[r][c]);
+                if (c == 1) {
+                    cell.setCellStyle(centerStyle);
+                } else {
+                    cell.setCellStyle(leftStyle);
+                }
+            }
+        }
+
+        guideSheet.setColumnWidth(0, 28 * 256);
+        guideSheet.setColumnWidth(1, 18 * 256);
+        guideSheet.setColumnWidth(2, 28 * 256);
+        guideSheet.setColumnWidth(3, 32 * 256);
+        guideSheet.setColumnWidth(4, 50 * 256);
+
+        return workbook;
+    }
+
+    /**
+     * Tải và lưu tệp mẫu Excel vào thiết bị của người dùng.
+     */
+    private void downloadSampleExcelTemplate() {
+        String fileName = "FileMau_NhapLich_LectuPlan.xlsx";
+        String savedDisplayPath = "/storage/emulated/0/Download/" + fileName;
+
+        try {
+            Workbook workbook = createSampleExcelWorkbook();
+
+            File appHistoryFile = new File(getHistoryStorageDir(), fileName);
+            try (FileOutputStream fosApp = new FileOutputStream(appHistoryFile)) {
+                workbook.write(fosApp);
+                fosApp.flush();
+            } catch (Exception ignored) {}
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                try {
+                    android.content.ContentValues values = new android.content.ContentValues();
+                    values.put(android.provider.MediaStore.Downloads.DISPLAY_NAME, fileName);
+                    values.put(android.provider.MediaStore.Downloads.MIME_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                    values.put(android.provider.MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+
+                    Uri externalUri = getContentResolver().insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                    if (externalUri != null) {
+                        try (OutputStream os = getContentResolver().openOutputStream(externalUri)) {
+                            if (os != null) {
+                                workbook.write(os);
+                                os.flush();
+                            }
+                        }
+                    }
+                } catch (Exception ignored) {}
+            }
+
+            try {
+                File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                if (!downloadsDir.exists()) downloadsDir.mkdirs();
+                File destFile = new File(downloadsDir, fileName);
+                try (FileOutputStream fos = new FileOutputStream(destFile)) {
+                    workbook.write(fos);
+                    fos.flush();
+                    savedDisplayPath = destFile.getAbsolutePath();
+                }
+                android.media.MediaScannerConnection.scanFile(this,
+                        new String[]{destFile.getAbsolutePath()},
+                        new String[]{"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},
+                        null);
+            } catch (Exception ignored) {}
+
+            workbook.close();
+
+            dbHelper.addFileHistory(fileName, "FILE MẪU EXCEL", 4);
+            refreshFileHistory();
+
+            playSuccessSound();
+
+            String finalPath = savedDisplayPath;
+            new AlertDialog.Builder(this)
+                    .setTitle("📄 TẢI FILE MẪU EXCEL THÀNH CÔNG")
+                    .setMessage("Tệp mẫu '" + fileName + "' đã được tạo và lưu vào thư mục Download của điện thoại:\n\n📂 " + finalPath + "\n\nBạn có thể mở tệp này bằng Microsoft Excel, Google Sheets hoặc WPS Office để điền lịch trình, sau đó chọn 'Nhập Excel' để nạp dữ liệu vào LectuPlan!")
+                    .setPositiveButton("📄 Mở File Mẫu Ngay", (d, w) -> {
+                        openExcelFile(fileName);
+                    })
+                    .setNeutralButton("📥 Nhập Excel Ngay", (d, w) -> {
+                        openExcelFilePicker();
+                    })
+                    .setNegativeButton("Đóng", null)
+                    .show();
+
+        } catch (Exception e) {
+            Toast.makeText(this, "Lỗi tạo file mẫu Excel: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -10277,9 +10783,10 @@ public class MainActivity extends AppCompatActivity {
                         try {
                             int stt = 1;
                             for (EventModel ev : stagingList) {
-                                if (ev != null && ev.isSelectedForImport() && !ev.hasMissingDateTime()) {
-                                    dbHelper.insertEvent(stt++, ev.getTitle(), ev.getDate(), ev.getOrganizer(), ev.getCategory() != null ? ev.getCategory() : EventModel.CAT_TEACHING);
-                                    extractedSummaries.add("[" + ev.getDate() + "] " + ev.getTitle());
+                                if (ev != null && ev.isSelectedForImport() && ev.getDate() != null && !ev.getDate().trim().isEmpty() && ev.getTitle() != null && !ev.getTitle().trim().isEmpty()) {
+                                    String fullTitle = formatSavedTitle(ev.getTitle(), ev.getRoom(), ev.getStartTime(), ev.getEndTime());
+                                    dbHelper.insertEvent(stt++, fullTitle, ev.getDate(), ev.getOrganizer(), ev.getCategory() != null ? ev.getCategory() : EventModel.CAT_TEACHING);
+                                    extractedSummaries.add("[" + ev.getDate() + "] " + fullTitle);
                                     count++;
                                 }
                             }

@@ -136,7 +136,27 @@ public class CampusBufferHelper {
     public static String extractGenericRoom(String text) {
         if (text == null || text.trim().isEmpty()) return "";
         try {
-            // 1. Tìm sau tiền tố Phòng / Room / Địa điểm (hỗ trợ mọi ký tự phòng: gạch ngang, chấm, phẩy, v.v.)
+            // 1. Trích xuất trọn vẹn phần Địa điểm / Phòng học phía sau dấu gạch ngang (VD: "Title - Thư viện lầu 3 [06:50 - 10:30]")
+            int bracketIdx = text.indexOf(" [");
+            if (bracketIdx < 0) bracketIdx = text.indexOf("[");
+            String titlePart = bracketIdx > 0 ? text.substring(0, bracketIdx).trim() : text.trim();
+
+            java.util.regex.Matcher mDash = java.util.regex.Pattern.compile("\\s+[-–—]\\s+(?!\\d{4})").matcher(titlePart);
+            int lastDashEnd = -1;
+            while (mDash.find()) {
+                lastDashEnd = mDash.end();
+            }
+            if (lastDashEnd != -1) {
+                String suffix = titlePart.substring(lastDashEnd).trim();
+                int pipeIdx = suffix.indexOf(" |");
+                if (pipeIdx > 0) suffix = suffix.substring(0, pipeIdx).trim();
+                suffix = suffix.replaceAll("(?i)^(?:phòng|room|địa\\s*điểm)\\s*[:=–-]?\\s*", "").trim();
+                if (!suffix.isEmpty() && !suffix.toLowerCase(Locale.getDefault()).contains("tiết") && !suffix.matches("\\d{4}")) {
+                    return suffix;
+                }
+            }
+
+            // 2. Tìm sau tiền tố Phòng / Room / Địa điểm (hỗ trợ mọi ký tự phòng: gạch ngang, chấm, phẩy, v.v.)
             java.util.regex.Matcher m = java.util.regex.Pattern.compile("(?i)(?:phòng|room|địa\\s*điểm)\\s*[:=–-]?\\s*([^|\\[\\]\\n]+)").matcher(text);
             if (m.find()) {
                 String r = m.group(1).trim();
@@ -146,7 +166,8 @@ public class CampusBufferHelper {
                      .trim();
                 if (!r.isEmpty()) return r;
             }
-            // 2. Tìm mã phòng phổ biến như E1-04, L2.503, A-102, U-01
+
+            // 3. Tìm mã phòng phổ biến như E1-04, L2.503, A-102, U-01
             java.util.regex.Matcher mCode = java.util.regex.Pattern.compile("(?i)\\b([A-Z]\\d?[-–.0-9/]+)\\b").matcher(text);
             if (mCode.find()) {
                 return mCode.group(1).trim();

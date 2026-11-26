@@ -193,11 +193,11 @@
                     android:lineSpacingExtra="5dp"
                     android:layout_marginBottom="16dp" />
 
-                <!-- Mục 7: Nâng cấp Phiên bản v1.4.6 -->
+                <!-- Mục 7: Nâng cấp Phiên bản v1.0.7 -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="7. Nâng cấp Phiên bản v1.4.6 Mới nhất"
+                    android:text="7. Nâng cấp Phiên bản v1.0.7 Mới nhất"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="#2563EB"
@@ -206,7 +206,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="• Tự động lọc định dạng file chuẩn SAF (PDF, Excel) &amp; Cảnh báo chọn sai file.\n• Hiển thị trực quan cảnh báo trùng lịch chi tiết trong Popup Chi tiết lịch.\n• Thêm công cụ Dọn dẹp dữ liệu thủ công theo khoảng ngày chọn trước &amp; Xóa Cache giải phóng bộ nhớ.\n• Thanh lọc cố định 2 hàng vừa vặn 100% màn hình, không cần vuốt ngang.\n• Tối ưu 100% Giao diện Tối (Dark Mode) sắc nét, tăng cỡ chữ chuẩn Lớn dễ đọc."
+                    android:text="• Tải file mẫu Excel (.xlsx) chuẩn 9 trường dữ liệu.\n• Thêm danh sách chọn thả xuống (Data Validation Dropdown) cho Phân loại lịch và Tính thù lao.\n• Bổ sung Trang Sheet 2 (HuongDan_QuyChuan) tra cứu quy chuẩn dữ liệu.\n• Tự động bóc tách và chuẩn hóa Phòng học, Giờ bắt đầu, Giờ kết thúc và Phân loại lịch."
                     android:textSize="14sp"
                     android:textColor="@color/text_secondary"
                     android:justificationMode="inter_word"
@@ -227,7 +227,7 @@
                     android:id="@+id/tvAppIntroTechnicalInfo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="• Phiên bản: v1.4.6 (Stable)\n• Tác giả / Phát triển: TKyl\n• Yêu cầu thiết bị: Android 8.0 trở lên (API 26+)\n• Nền tảng: Android (Java / Kotlin, Material Design 3)\n• Môn học: Lập trình Di động (LTDD)\n• Trường: Đại học Nguyễn Tất Thành (NTTU)"
+                    android:text="• Phiên bản: v1.0.7 (Stable)\n• Tác giả / Phát triển: TKyl\n• Yêu cầu thiết bị: Android 8.0 trở lên (API 26+)\n• Nền tảng: Android (Java / Kotlin, Material Design 3)\n• Môn học: Lập trình Di động (LTDD)\n• Trường: Đại học Nguyễn Tất Thành (NTTU)"
                     android:textSize="14sp"
                     android:textColor="@color/text_secondary"
                     android:justificationMode="inter_word"

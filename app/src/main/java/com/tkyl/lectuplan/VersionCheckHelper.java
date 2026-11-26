@@ -59,12 +59,12 @@ public class VersionCheckHelper {
     public static void checkAndShowWhatsNew(Activity activity) {
         SharedPreferences prefs = activity.getSharedPreferences(PREF_VERSION, Context.MODE_PRIVATE);
         int currentVersionCode = getCurrentVersionCode(activity);
-        boolean shownV146 = prefs.getBoolean("key_shown_v146_dialog", false);
+        boolean shownV107 = prefs.getBoolean("key_shown_v107_dialog", false);
 
-        if (!shownV146) {
-            // Hiển thị Hộp thoại "Có gì mới trong v1.4.6"
+        if (!shownV107) {
+            // Hiển thị Hộp thoại "Có gì mới trong v1.0.7"
             showWhatsNewDialog(activity, currentVersionCode);
-            prefs.edit().putBoolean("key_shown_v146_dialog", true).putInt(KEY_LAST_VERSION_CODE, currentVersionCode).apply();
+            prefs.edit().putBoolean("key_shown_v107_dialog", true).putInt(KEY_LAST_VERSION_CODE, currentVersionCode).apply();
         } else {
             // Kiểm tra bản cập nhật trực tuyến ngầm từ Server/GitHub
             checkRemoteUpdateAsync(activity, false);
@@ -145,7 +145,7 @@ public class VersionCheckHelper {
                     new Handler(Looper.getMainLooper()).post(() -> {
                         if (activity.isFinishing() || activity.isDestroyed()) return;
 
-                        if (remoteVersionCode > currentCode) {
+                        if (remoteVersionCode > currentCode && remoteVersionCode > 200) {
                             showRemoteUpdateAvailableDialog(activity, remoteVersionName, releaseNotes, apkUrl, forceUpdate);
                         } else if (isManualCheck) {
                             showAlreadyLatestDialog(activity);
